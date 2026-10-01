@@ -4,6 +4,7 @@ export type ProjectRole = "organizer" | "contributor";
 export type MediaKind = "image" | "video" | "audio" | "document";
 
 export interface Project {
+  [key: string]: unknown;
   id: string;
   slug: string;
   title: string;
@@ -27,6 +28,7 @@ export interface GuestbookFormatting {
 }
 
 export interface GuestbookEntry {
+  [key: string]: unknown;
   id: string;
   project_id: string;
   author_id: string;
@@ -39,6 +41,7 @@ export interface GuestbookEntry {
 }
 
 export interface Memory {
+  [key: string]: unknown;
   id: string;
   project_id: string;
   author_id: string;
@@ -53,6 +56,7 @@ export interface Memory {
 }
 
 export interface MediaAsset {
+  [key: string]: unknown;
   id: string;
   project_id: string;
   memory_id: string | null;
@@ -64,4 +68,76 @@ export interface MediaAsset {
   size_bytes: number;
   status: PublicationStatus;
   created_at: string;
+}
+
+type Insert<T> = Omit<T, "id" | "created_at"> & {
+  id?: string;
+  created_at?: string;
+};
+
+type Update<T> = Partial<Omit<T, "id" | "created_at">>;
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: { id: string; display_name: string | null; created_at: string; updated_at: string };
+        Insert: { id: string; display_name?: string | null; created_at?: string; updated_at?: string };
+        Update: { display_name?: string | null; updated_at?: string };
+        Relationships: [];
+      };
+      projects: {
+        Row: Project;
+        Insert: Insert<Project>;
+        Update: Update<Project>;
+        Relationships: [];
+      };
+      project_members: {
+        Row: { project_id: string; user_id: string; role: ProjectRole; joined_at: string };
+        Insert: { project_id: string; user_id: string; role?: ProjectRole; joined_at?: string };
+        Update: { role?: ProjectRole };
+        Relationships: [];
+      };
+      guestbook_entries: {
+        Row: GuestbookEntry;
+        Insert: Insert<GuestbookEntry>;
+        Update: Update<GuestbookEntry>;
+        Relationships: [];
+      };
+      memories: {
+        Row: Memory;
+        Insert: Insert<Memory>;
+        Update: Update<Memory>;
+        Relationships: [];
+      };
+      media_assets: {
+        Row: MediaAsset;
+        Insert: Insert<MediaAsset>;
+        Update: Update<MediaAsset>;
+        Relationships: [];
+      };
+    };
+    Views: Record<string, never>;
+    Functions: {
+      is_project_member: {
+        Args: { p_project_id: string; p_user_id?: string };
+        Returns: boolean;
+      };
+      is_project_organizer: {
+        Args: { p_project_id: string; p_user_id?: string };
+        Returns: boolean;
+      };
+      join_project: {
+        Args: { p_project_id: string };
+        Returns: undefined;
+      };
+    };
+    Enums: {
+      project_status: ProjectStatus;
+      project_role: ProjectRole;
+      publication_status: PublicationStatus;
+      media_kind: MediaKind;
+    };
+    CompositeTypes: Record<string, never>;
+  };
 }

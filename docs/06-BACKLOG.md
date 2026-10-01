@@ -14,17 +14,17 @@
 - [ ] Rejoindre un projet.
 
 ## Phase 2 — Livre d'or
-- [ ] Formulaire message.
-- [ ] Éditeur borné.
-- [ ] Brouillon.
-- [ ] Publication.
-- [ ] Modification de sa contribution.
+- [ ] Formulaire message — implémenté, validation Supabase/RLS à faire.
+- [ ] Éditeur borné — implémenté, validation Supabase/RLS à faire.
+- [ ] Brouillon — implémenté, validation Supabase/RLS à faire.
+- [ ] Publication — implémentée, validation Supabase/RLS à faire.
+- [ ] Modification de sa contribution — implémentée, validation Supabase/RLS à faire.
 
 ## Phase 3 — Souvenirs
-- [ ] CRUD souvenir.
-- [ ] Date exacte.
-- [ ] Année/période.
-- [ ] Plusieurs souvenirs par contributeur.
+- [ ] Création, lecture, modification et masquage — implémentées, validation Supabase/RLS à faire.
+- [ ] Date exacte — implémentée, validation Supabase/RLS à faire.
+- [ ] Année/période — implémentée, validation Supabase/RLS à faire.
+- [ ] Plusieurs souvenirs par contributeur — implémenté, validation Supabase/RLS à faire.
 
 ## Phase 4 — Médias
 - [ ] Pré-signature PUT.

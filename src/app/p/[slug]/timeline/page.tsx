@@ -16,7 +16,7 @@ export default async function TimelinePage({ params }: { params: Promise<{ slug:
 
   return (
     <main className="stack">
-      <div><p className="kicker">Chronologie</p><h1>L'histoire de {project.subject_name}</h1></div>
+      <div><p className="kicker">Chronologie</p><h1>L&apos;histoire de {project.subject_name}</h1></div>
       {memories.length === 0 ? <div className="empty">Les souvenirs datés apparaîtront ici.</div> : (
         <section className="timeline">
           {memories.map((memory) => <article className="timeline-item" key={memory.id}><strong>{memoryDateLabel(memory)}</strong><h2>{memory.title ?? "Souvenir"}</h2><p>{memory.body}</p><span className="muted">{memory.display_name}</span></article>)}

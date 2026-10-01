@@ -2,7 +2,7 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextResponse } from "next/server";
 import { getR2Client } from "@/lib/r2";
-import { validateMedia, safeFilename } from "@/lib/media";
+import { validateMediaFile, safeFilename } from "@/lib/media";
 import { presignSchema } from "@/lib/validators";
 import { getSupabaseServiceClient, getUserFromBearerToken } from "@/lib/supabase-server";
 
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Requête invalide.", details: parsed.error.flatten() }, { status: 400 });
     }
 
-    const mediaValidation = validateMedia(parsed.data.mimeType, parsed.data.sizeBytes);
+    const mediaValidation = validateMediaFile(parsed.data.filename, parsed.data.mimeType, parsed.data.sizeBytes);
     if (!mediaValidation.ok) {
       return NextResponse.json({ error: mediaValidation.error }, { status: 400 });
     }

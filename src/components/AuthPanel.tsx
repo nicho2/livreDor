@@ -49,7 +49,7 @@ export function AuthPanel() {
         <form onSubmit={verifyOtp} className="stack">
           <label>Code reçu<input inputMode="numeric" value={otp} onChange={(e) => setOtp(e.target.value)} required /></label>
           <button className="button" disabled={busy}>{busy ? "Vérification…" : "Valider"}</button>
-          <button type="button" className="link-button" onClick={() => setStep("email")}>Changer d'email</button>
+          <button type="button" className="link-button" onClick={() => setStep("email")}>Changer d&apos;email</button>
         </form>
       )}
       {message && <p className="notice">{message}</p>}

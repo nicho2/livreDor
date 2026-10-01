@@ -23,10 +23,22 @@ npm run dev
 
 Puis ouvrir `http://localhost:3000`.
 
+Avant de commiter une évolution :
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
+
+L'accueil et l'écran de connexion peuvent être contrôlés sans backend. Le
+parcours complet projet → OTP → contribution → mur nécessite une configuration
+Supabase de développement et l'application de toutes les migrations.
+
 ## Configuration Supabase
 1. Créer un projet Supabase.
 2. Renseigner `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-3. Appliquer la migration `supabase/migrations/0001_initial_schema.sql`.
+3. Appliquer, dans l'ordre, les migrations de `supabase/migrations/`.
 4. Activer l'authentification par email OTP.
 5. Ajouter l'URL locale et l'URL de production dans les URL de redirection autorisées.
 

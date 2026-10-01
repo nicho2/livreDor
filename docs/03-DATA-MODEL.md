@@ -45,6 +45,10 @@ Profil public minimal séparé de l'email Supabase.
 ## guestbook_entries
 Message principal du livre d'or.
 
+Un contributeur possède au maximum un message principal par projet. Il peut le
+modifier et changer son statut entre `draft` et `published`. Les souvenirs
+restent multiples et indépendants.
+
 La personnalisation est stockée dans `formatting jsonb`, par exemple :
 
 ```json

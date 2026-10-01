@@ -1,14 +1,14 @@
-import { getSupabaseServiceClient } from "@/lib/supabase-server";
+import { getSupabaseAnonClient } from "@/lib/supabase-server";
 import type { GuestbookEntry, Memory, Project } from "@/types/database";
 
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
-  const supabase = getSupabaseServiceClient();
+  const supabase = getSupabaseAnonClient();
   const { data } = await supabase.from("projects").select("*").eq("slug", slug).maybeSingle();
   return (data as Project | null) ?? null;
 }
 
 export async function getPublishedGuestbook(projectId: string): Promise<GuestbookEntry[]> {
-  const supabase = getSupabaseServiceClient();
+  const supabase = getSupabaseAnonClient();
   const { data } = await supabase
     .from("guestbook_entries")
     .select("*")
@@ -19,7 +19,7 @@ export async function getPublishedGuestbook(projectId: string): Promise<Guestboo
 }
 
 export async function getPublishedMemories(projectId: string): Promise<Memory[]> {
-  const supabase = getSupabaseServiceClient();
+  const supabase = getSupabaseAnonClient();
   const { data } = await supabase
     .from("memories")
     .select("*")

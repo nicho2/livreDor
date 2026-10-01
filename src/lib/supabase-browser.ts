@@ -1,8 +1,9 @@
 "use client";
 
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 
-let client: ReturnType<typeof createClient> | undefined;
+let client: ReturnType<typeof createClient<Database>> | undefined;
 
 export function getSupabaseBrowser() {
   if (client) return client;
@@ -14,6 +15,6 @@ export function getSupabaseBrowser() {
     throw new Error("Supabase public environment variables are missing.");
   }
 
-  client = createClient(url, anonKey);
+  client = createClient<Database>(url, anonKey);
   return client;
 }
