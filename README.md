@@ -42,6 +42,15 @@ Supabase de développement et l'application de toutes les migrations.
 4. Activer l'authentification par email OTP.
 5. Ajouter l'URL locale et l'URL de production dans les URL de redirection autorisées.
 
+Pour recevoir un code dès la première connexion, inclure `{{ .Token }}` dans
+les deux modèles d'email Supabase : **Confirm sign up** et **Magic link or OTP**.
+Le premier sert à l'inscription, le second aux connexions suivantes. Le code
+utilise `signInWithOtp` puis `verifyOtp` avec `type: "email"`.
+
+Voir `docs/10-LOCAL-VALIDATION.md` pour les vérifications de développement.
+Pour un contrôle du navigateur Codex en panne après une mise à jour, voir
+`docs/11-BROWSER-TROUBLESHOOTING.md`.
+
 ## Configuration Cloudflare R2
 1. Créer un bucket privé.
 2. Créer des credentials API R2 avec accès au bucket.
