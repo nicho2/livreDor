@@ -49,7 +49,7 @@ de production. Les preuves et limites de validation sont dans
 - [x] Publier/masquer.
 - [x] Gestion média.
 - [x] Clôture et fenêtres de contribution.
-- [x] Paramètres du projet, création guidée et partage avec un deuxième organisateur (migrations 0004/0005 à appliquer pour activation distante).
+- [x] Paramètres du projet, création guidée et partage avec un deuxième organisateur (migrations 0004/0005 appliquées ; partage réel confirmé par l'utilisateur).
 
 ## Phase 7 — Export
 - [x] Export JSON privé.

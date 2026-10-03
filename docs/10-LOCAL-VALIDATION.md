@@ -259,8 +259,46 @@ anonymes, RLS des invitations, politique organisateur, absence d'écriture direc
 sur les invitations et trigger de protection d'identité. PostgREST reconnaît les
 fonctions de création/acceptation et refuse leur appel anonyme (401 / 42501).
 Le site local répond sur la page Organisation. Ces contrôles ne remplacent pas
-la recette réelle de création et de partage entre deux sessions OTP, qui reste
-à effectuer. Les 46 assertions RLS ci-dessus concernent la base locale isolée.
+la recette réelle. Le partage entre deux sessions OTP est désormais confirmé
+par l'utilisateur ; la création réelle d'un nouveau projet reste à effectuer.
+Les 46 assertions RLS ci-dessus concernent la base locale isolée.
 
 La CI est configurée mais pas exécutée sur GitHub (aucun push demandé).
 Voir `14-ONBOARDING-REGRESSION.md` pour activation et contrôles répétables.
+
+## Documentation, Resend et jeu synthétique — 3 octobre 2026
+
+- Relecture des références produit/architecture/sécurité ; index `docs/README.md`
+  ajouté. Mentions d'activation 0004/0005 et de recette du deuxième organisateur
+  corrigées. Le démarrage du socle est explicitement historique, pas une consigne
+  de réinstallation sur la base existante.
+- Le dépôt distant configuré n'annonce aucune référence HEAD/main/master lors
+  de deux contrôles `git ls-remote` réussis. La documentation n'est donc pas
+  publiée sur une branche distante vérifiée ; aucun push effectué.
+- Procédure SMTP Supabase/Resend documentée à partir des références officielles,
+  sans modification du compte SMTP ni ajout de secret ou dépendance Resend.
+- Jeu `fixtures/seed-v1` préparé : quatre auteurs fictifs, quatre messages,
+  huit souvenirs et cinq pièces jointes, dont deux images générées avec l'outil
+  intégré, une vidéo FFmpeg H.264/AAC 6 s et un audio WAV synthétique 3 s.
+  Signatures des fichiers testées ; `ffprobe` confirme le MP4 640 × 360 / yuv420p.
+- Commande PowerShell testée en aperçu, sans backend ni réseau. Le mode Apply
+  exige confirmation, OTP organisateur, même projet Supabase/site, titre TEST,
+  slug test-, projet dédié et collecte ouverte. L'outil n'est pas une route web.
+- **37 tests** passent, dont 13 nouveaux pour le seed et un contrôle de tous les
+  liens Markdown locaux. SDK/API simulés vérifient sessions distinctes, aucune
+  écriture de contribution sous clé service, uploads/finalisations, absence
+  d'emails fictifs, collisions, reprise après panne et absence de doublons.
+- Lint et typecheck réussis. Le premier build dans le sandbox Windows a échoué
+  sur la canonicalisation SWC du chemin (accès refusé) ; relance autorisée hors
+  sandbox réussie, sans changement de configuration ou protection Windows.
+- **46 assertions SQL** repassées sur PostgreSQL temporaire isolé et arrêté ;
+  première tentative sandbox interrompue pendant initdb, avant démarrage serveur.
+- **55 contrôles d'intégration** repassés avec Auth/données HTTP locales et R2
+  réel, objets synthétiques de cette suite nettoyés. Serveur compilé local relancé
+  sur le port 3000. Les avertissements Node sur le type de modules TS restent
+  connus ; aucune erreur de lint ni compilation.
+
+Le nouveau seed n'a **pas** été lancé en mode Apply : aucun compte synthétique
+ou souvenir créé sur Supabase pour cette tâche. Il n'est pas encore validé sur
+un site déployé ; cette recette attend son URL et un projet TEST dédié.
+Voir `15-INSTALLATION-RESEND.md` et `16-SYNTHETIC-SEED.md`.

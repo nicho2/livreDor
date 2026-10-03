@@ -12,7 +12,17 @@ Lis dans cet ordre :
 6. `docs/06-BACKLOG.md`
 7. `docs/08-DECISIONS.md`
 
-## Première mission recommandée
+## État actuel et reprise
+
+La V1 locale est implémentée ; ne pas recommencer la mise en route sur la base
+existante. Lire `README.md`, `docs/README.md` et `docs/10-LOCAL-VALIDATION.md` pour
+les preuves et contrôles restants. Les migrations 0001–0005 sont appliquées sur
+le Supabase de développement. OTP et deuxième organisateur sont validés.
+Installation avec Resend : `docs/15-INSTALLATION-RESEND.md`.
+Alimentation d'un projet TEST dédié : `docs/16-SYNTHETIC-SEED.md`.
+Aucun push, déploiement ou seed distant sans demande explicite.
+
+## Première mission du socle (historique / nouvelle instance)
 1. Vérifier que le projet compile.
 2. Connecter un projet Supabase de développement.
 3. Appliquer `supabase/migrations/0001_initial_schema.sql`.

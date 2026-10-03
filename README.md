@@ -2,6 +2,10 @@
 
 Application de collecte et de restitution de souvenirs, développée et testable localement.
 
+[Index de documentation](docs/README.md) ·
+[Installation avec Resend](docs/15-INSTALLATION-RESEND.md) ·
+[Jeu synthétique pour la recette en ligne](docs/16-SYNTHETIC-SEED.md).
+
 ## Objectif
 Créer une expérience collective permettant de préparer un souvenir numérique pour une personne ou un événement : livre d'or, souvenirs, médias, chronologie et restitution finale.
 
@@ -44,6 +48,7 @@ Supabase de développement et l'application de toutes les migrations.
 ## Configuration Supabase
 1. Créer un projet Supabase.
 2. Renseigner `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+   Renseigner aussi `SUPABASE_SERVICE_ROLE_KEY` côté serveur uniquement.
 3. Appliquer, dans l'ordre, les migrations de `supabase/migrations/`.
 4. Activer l'authentification par email OTP.
 5. Ajouter l'URL locale et l'URL de production dans les URL de redirection autorisées.
@@ -52,6 +57,9 @@ Pour recevoir un code dès la première connexion, inclure `{{ .Token }}` dans
 les deux modèles d'email Supabase : **Confirm sign up** et **Magic link or OTP**.
 Le premier sert à l'inscription, le second aux connexions suivantes. Le code
 utilise `signInWithOtp` puis `verifyOtp` avec `type: "email"`.
+
+Si Resend transporte ces emails, configurer le SMTP dans **Supabase**, pas une
+clé Resend dans le navigateur : suivre [la procédure d'installation](docs/15-INSTALLATION-RESEND.md).
 
 Voir `docs/10-LOCAL-VALIDATION.md` pour les vérifications de développement.
 Pour un contrôle du navigateur Codex en panne après une mise à jour, voir

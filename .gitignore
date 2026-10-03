@@ -9,3 +9,4 @@ out
 coverage
 *.tsbuildinfo
 .pnpm-store
+.seed-runs/

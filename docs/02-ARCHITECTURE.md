@@ -6,7 +6,7 @@
 Navigateur
    |
    v
-Next.js / OpenAI Site
+Next.js (runtime serveur)
    |--------------------------|
    |                          |
    v                          v
@@ -57,4 +57,7 @@ Le client envoie ensuite directement le fichier vers R2.
 - l'architecture reste économique et portable.
 
 ## Déploiement
-Le code est organisé pour un déploiement Next.js standard. Si la cible OpenAI Site impose des restrictions de runtime, conserver le frontend et déplacer les routes serveur vers une fonction Supabase ou un Worker Cloudflare. Le contrat API peut rester identique.
+Le code vise un déploiement Next.js avec runtime serveur : les signatures R2,
+contrôles organisateur et exports ne peuvent pas fonctionner dans un simple
+hébergement statique. Aucun hébergeur n'est choisi ou déployé à ce stade.
+Seul le dossier `site/` de l'export final est autonome et statique.

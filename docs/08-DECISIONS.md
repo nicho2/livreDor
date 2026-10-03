@@ -129,3 +129,23 @@ complexe de rôles. La table `project_organizer_invites` est réservée aux
 organisateurs, ne figure pas dans les exports et ne révèle rien aux tiers.
 La migration 0005 est nécessaire. Aucun compte n'est créé ni recherché par
 email via une API administrateur, aucune promotion générale n'est possible.
+
+## ADR-014 — SMTP Resend et outil de recette synthétique séparé
+
+**Décision :** documenter Resend comme transport SMTP des OTP Supabase, sans
+nouvelle dépendance applicative ni invitation email automatique. Les modèles
+Supabase restent responsables du code ; pas de tracking des emails Auth.
+
+Le jeu synthétique est un outil local d'opérateur, pas une API publique. Il exige
+un projet TEST dédié déjà créé, ouvert, un slug test- et une session organisateur
+OTP contrôlée par l'API du site cible. La clé service locale ne sert qu'à préparer
+quatre identités Auth fictives sans email ni mot de passe ; cette exception de
+recette ne modifie pas le flux produit de l'ADR-013. Contributions sous sessions
+contributeurs/RLS, médias via pré-signature/PUT/finalisation normaux. Aucun seed
+distant exécuté pendant le développement, aucune clé supplémentaire côté client.
+
+**Raison :** permettre une recette reproductible multi-auteurs dès le premier
+projet de test en ligne, sans réutiliser les emails ni souvenirs réels. ID stables,
+pas d'écrasement des edits/modérations, aperçu sans réseau et protections contre
+les cibles réelles. Les données de recette sont conservées après interruption ;
+une purge complète demande une opération séparée explicitement autorisée.
