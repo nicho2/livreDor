@@ -54,8 +54,9 @@ dates/périodes. R2 n'est pas configuré et les médias ne sont pas testés.
 
 ## Reprise du développement — sécurité et dates
 
-Migration `0003_content_access_guards.sql` préparée, **non appliquée à la base
-Supabase distante**. Elle conditionne les lectures publiques à la visibilité du
+Migration `0003_content_access_guards.sql` **appliquée à la base Supabase de
+développement le 3 octobre 2026**, avec confirmation de l'utilisateur :
+`Success. No rows returned`. Elle conditionne les lectures publiques à la visibilité du
 projet, les écritures des contributeurs à sa fenêtre d'ouverture, et conserve
 la modération par l'organisateur après clôture. Des triggers empêchent de
 changer le projet ou l'auteur d'un contenu. Les règles média vérifient le
@@ -78,3 +79,14 @@ lignes ne peut plus être annoncé comme un succès.
 PostgreSQL et le build nécessitent une exécution autorisée hors sandbox sur
 cet environnement Windows (accès refusé dans le sandbox).
 Ni données Supabase existantes, ni secrets, ni publication n'ont été modifiés.
+
+### Contrôle après application sur Supabase
+
+Vérification API en lecture seule : `is_project_public` retourne `true` pour
+`depart-demo` ; `can_contribute` retourne `false` sans session ; un message
+principal et trois souvenirs restent accessibles au client anonyme.
+Ces contrôles ne remplacent pas les tests d'écriture avec plusieurs sessions.
+Contrairement au bootstrap PostgreSQL minimal, le client anonyme peut appeler
+`can_contribute` sur Supabase (qui retourne bien `false`) : les privilèges par
+défaut de la plateforme restent à examiner si l'on souhaite interdire cet appel
+lui-même. Les politiques d'écriture restent réservées à `authenticated`.
