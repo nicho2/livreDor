@@ -126,3 +126,18 @@ un nom prérempli ; une saisie différente et l'effacement du champ sont respect
 Le nom initial a été remis sans enregistrer. `TEST — Second contributeur` est
 visible avec le statut publié. Aucun contenu existant n'a été modifié par ces
 contrôles. Les 11 tests unitaires, lint, TypeScript et build passent.
+
+## Nouveau contrôle multi-contributeurs local
+
+Suite PostgreSQL isolée réexécutée à la demande de l'utilisateur : deux
+contributeurs fictifs, un organisateur et deux projets. Les 21 assertions passent,
+y compris la lecture des publications d'un autre auteur, la confidentialité des
+brouillons, le refus de modification par un autre auteur et les restrictions
+après clôture. Les identités sont simulées dans PostgreSQL, pas des comptes OTP
+réels. Aucun compte n'a été créé dans Supabase et le projet de démonstration n'a
+pas été fermé. Les fixtures sont annulées et l'instance locale est arrêtée.
+
+La page de contribution filtre volontairement les souvenirs par auteur connecté ;
+elle sert à gérer ses propres contenus. Le mur affiche les publications de tous
+les auteurs. Ce comportement ne doit pas être confondu avec un refus RLS de lire
+les contributions publiées des autres.
