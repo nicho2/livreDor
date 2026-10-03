@@ -69,6 +69,19 @@ Pas de seed sur le projet `test-recette` déjà enrichi de contenus utilisateur.
 
 ## État
 
-Enregistrement Sites et variables confirmés, audience public autorisée.
-Compilation et tests locaux réussis. Publication en cours de préparation ;
-recette OTP/CORS réelle à effectuer après succès de déploiement.
+Publication confirmée par Sites le 3 octobre 2026 à 17 h 12 (Paris), statut
+`succeeded`, URL `https://livredor.nicho2.chatgpt.site`, version 1, configuration
+d'environnement révision 6, source `e4770b108a91c85d809fb10dfb479b5b6c5d48a7`.
+Déploiement : `appgdep_6ac11b5f81b48191b29502a59e11ead3`.
+
+La pré-vérification CORS pour cette origine retourne encore 403, sans origine
+autorisée : correction requise dans le dashboard Cloudflare avant les uploads.
+Lecture de politique via S3 interdite (403) avec la clé applicative ; ne pas
+élargir ses droits. Aucun objet créé par cette sonde OPTIONS.
+Recette OTP et navigateur en ligne restant à effectuer par l'utilisateur.
+
+Packaging Windows : le helper fourni appelle GNU tar sous Git Bash. Ajouter
+`TAR_OPTIONS=--force-local` à l'environnement du processus, sinon le lecteur
+`E:` est interprété comme un hôte distant. Aucun changement du packager fourni.
+Les contrôles réussis ont été réutilisés après cette correction ; l'archive
+validée contient uniquement le build et le manifeste, sans clés incorporées.
