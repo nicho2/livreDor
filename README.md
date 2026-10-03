@@ -97,7 +97,15 @@ CORS de développement disponible dans `config/r2-cors.local.json`.
 └── .env.example
 ```
 
-## État du socle
+## État de la V1
+La contribution OTP, les souvenirs multiples, les médias R2 privés, le mur,
+la chronologie et le détail sont implémentés. L'espace organisateur permet
+modération, clôture et export ZIP avec site autonome et sauvegarde privée.
+Voir `docs/13-V1-OPERATIONS.md` pour démarrage, tests, exploitation et limites.
+Le registre `docs/10-LOCAL-VALIDATION.md` distingue vérifications réalisées et
+recette manuelle restant à faire avant une publication.
+
+### État initial du socle (historique)
 Ce dépôt est volontairement un **starter**, pas une application finalisée. Il contient :
 - une architecture exploitable ;
 - le modèle de données initial ;

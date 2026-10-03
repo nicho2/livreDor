@@ -48,3 +48,49 @@ souvenir non publié n'est pas exposé publiquement.
 empêcher les déplacements inter-projets et préserver une modération immédiate.
 La migration `0003_content_access_guards.sql` corrige les politiques initiales ;
 elle doit être appliquée à Supabase pour rendre ces protections effectives.
+
+## ADR-009 — Finalisation et lecture privée des médias
+
+**Décision :** chaque média est attaché à un souvenir enregistré. L'API vérifie
+la session, l'adhésion, l'auteur du souvenir et la fenêtre de collecte. Une
+réservation `draft` précède le PUT signé (5 minutes). Le PUT vise un objet
+temporaire, jamais l'objet final : après contrôle de taille et MIME effectifs,
+une copie conditionnelle sur l'ETag produit l'objet final. Une preuve HMAC dans
+ses métadonnées lie le fichier à sa ligne Supabase. La lecture utilise RLS puis
+vérifie cette preuve avant de délivrer un GET signé de 5 minutes. Un média
+finalisé suit aussi la visibilité de son souvenir parent. Suppression : masquage
+immédiat, puis effacement du fichier final et de son temporaire, avec reprise
+possible en cas d'erreur. 20 médias maximum par souvenir dans l'interface/API.
+
+**Raison :** empêcher l'exposition d'uploads inachevés ou de métadonnées forgées,
+y compris avec les politiques d'écriture média existantes, et empêcher la
+réutilisation d'un PUT signé pour remplacer un fichier déjà validé. Le HMAC
+utilise actuellement la clé secrète R2 : une rotation exige de re-signer les
+métadonnées des objets existants avec l'ancienne clé avant son retrait.
+Les URLs déjà délivrées restent utilisables jusqu'à expiration (au plus 5 minutes).
+Ce contrôle ne constitue pas une analyse antivirus ; le HTML/SVG est refusé.
+
+## ADR-010 — Archive finale et séparation des données privées
+
+**Décision :** l'export final exige un projet `closed` ou `archived` et un rôle
+organisateur vérifié côté serveur. Le ZIP sépare `site/` (seuls contenus publiés,
+médias locaux, HTML/CSS sans backend ni JavaScript) et `archive-privee/`
+(JSON de tous les contenus et médias privés disponibles, sans emails).
+Le README avertit de ne publier que `site/`. Les fichiers publiés absents
+font échouer l'export ; les fichiers supprimés/non finalisés sont signalés dans
+un manifeste. Le ZIP et les médias sont envoyés par flux, sans accumulation
+de l'archive côté serveur. La modération reste possible après clôture.
+
+**Raison :** éviter qu'une sauvegarde complète expose les brouillons ou contenus
+masqués et garantir une restitution réellement utilisable hors ligne.
+`archiver` est la seule dépendance ajoutée pour gérer le ZIP en streaming.
+
+## ADR-011 — Serveur local stable sous Windows
+
+**Décision :** `npm run dev` et `npm run build` utilisent Webpack. Le mode
+Turbopack reste accessible avec `npm run dev:turbo`.
+
+**Raison :** le 3 octobre 2026, Turbopack a paniqué sur un fichier source-map
+verrouillé (erreur Windows 32). Webpack permet de continuer les validations.
+Toujours arrêter le serveur avant un build ; ne pas supprimer les sources,
+ni désactiver les protections Windows pour contourner un verrouillage.

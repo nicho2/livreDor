@@ -33,6 +33,7 @@ export const memorySchema = z
 
 export const presignSchema = z.object({
   projectId: z.string().uuid(),
+  memoryId: z.string().uuid(),
   filename: z.string().min(1).max(255),
   mimeType: z.string().min(1).max(150),
   sizeBytes: z.number().int().positive(),

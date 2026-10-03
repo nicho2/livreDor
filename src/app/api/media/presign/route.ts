@@ -4,67 +4,38 @@ import { NextResponse } from "next/server";
 import { getR2Client } from "@/lib/r2";
 import { validateMediaFile, safeFilename } from "@/lib/media";
 import { presignSchema } from "@/lib/validators";
-import { getSupabaseServiceClient, getUserFromBearerToken } from "@/lib/supabase-server";
+import { getSupabaseServiceClient } from "@/lib/supabase-server";
+import { ApiError, apiError, contributionAccess, jsonBody, requestUser } from "@/lib/api-server";
+import { mediaBucket, uploadKey } from "@/lib/media-server";
 
 export async function POST(request: Request) {
   try {
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    if (!token) return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
-
-    const user = await getUserFromBearerToken(token);
-    if (!user) return NextResponse.json({ error: "Session invalide." }, { status: 401 });
-
-    const parsed = presignSchema.safeParse(await request.json());
-    if (!parsed.success) {
-      return NextResponse.json({ error: "Requête invalide.", details: parsed.error.flatten() }, { status: 400 });
-    }
-
-    const mediaValidation = validateMediaFile(parsed.data.filename, parsed.data.mimeType, parsed.data.sizeBytes);
-    if (!mediaValidation.ok) {
-      return NextResponse.json({ error: mediaValidation.error }, { status: 400 });
-    }
-
-    const supabase = getSupabaseServiceClient();
-    const { data: membership } = await supabase
-      .from("project_members")
-      .select("project_id")
-      .eq("project_id", parsed.data.projectId)
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!membership) {
-      return NextResponse.json({ error: "Accès au projet refusé." }, { status: 403 });
-    }
-
-    const bucket = process.env.R2_BUCKET_NAME;
-    if (!bucket) throw new Error("R2_BUCKET_NAME is missing.");
-
-    const cleanName = safeFilename(parsed.data.filename);
-    const objectKey = `${parsed.data.projectId}/${user.id}/${crypto.randomUUID()}-${cleanName}`;
-
-    const command = new PutObjectCommand({
-      Bucket: bucket,
-      Key: objectKey,
-      ContentType: parsed.data.mimeType,
-      ContentLength: parsed.data.sizeBytes,
-      Metadata: {
-        projectId: parsed.data.projectId,
-        ownerId: user.id,
-        mediaKind: mediaValidation.kind,
-      },
-    });
-
-    const uploadUrl = await getSignedUrl(getR2Client(), command, { expiresIn: 15 * 60 });
-
-    return NextResponse.json({
-      uploadUrl,
-      objectKey,
-      kind: mediaValidation.kind,
-      expiresInSeconds: 900,
-    });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Erreur serveur pendant la préparation de l'upload." }, { status: 500 });
-  }
+    const user = (await requestUser(request))!;
+    const parsed = presignSchema.safeParse(await jsonBody(request));
+    if (!parsed.success) throw new ApiError(400, "Informations du fichier invalides.");
+    const input = parsed.data;
+    const validation = validateMediaFile(input.filename, input.mimeType, input.sizeBytes);
+    if (!validation.ok) throw new ApiError(400, validation.error);
+    await contributionAccess(input.projectId, user.id);
+    const db = getSupabaseServiceClient();
+    const { data: memory, error: memoryError } = await db.from("memories").select("id")
+      .eq("id", input.memoryId).eq("project_id", input.projectId).eq("author_id", user.id).neq("status", "hidden").maybeSingle();
+    if (memoryError) throw new Error("Database unavailable");
+    if (!memory) throw new ApiError(403, "Enregistrez votre souvenir avant d'y joindre un média.");
+    const { count, error: countError } = await db.from("media_assets").select("id", { head: true, count: "exact" })
+      .eq("memory_id", input.memoryId).neq("status", "hidden");
+    if (countError) throw new Error("Database unavailable");
+    if ((count ?? 0) >= 20) throw new ApiError(400, "Limite de 20 médias par souvenir atteinte.");
+    const id = crypto.randomUUID();
+    const { data: media, error } = await db.from("media_assets").insert({
+      id, project_id: input.projectId, memory_id: input.memoryId, owner_id: user.id,
+      kind: validation.kind, object_key: `${input.projectId}/${user.id}/${id}-${safeFilename(input.filename)}`,
+      original_filename: input.filename, mime_type: input.mimeType, size_bytes: input.sizeBytes, status: "draft",
+    }).select("*").single();
+    if (error || !media) throw new Error("Database unavailable");
+    const uploadUrl = await getSignedUrl(getR2Client(), new PutObjectCommand({
+      Bucket: mediaBucket(), Key: uploadKey(media), ContentType: input.mimeType, ContentLength: input.sizeBytes,
+    }), { expiresIn: 300 });
+    return NextResponse.json({ uploadUrl, mediaId: id, expiresInSeconds: 300 }, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) { return apiError(error); }
 }

@@ -41,7 +41,7 @@ export function inferMediaKind(mimeType: string): MediaKind | null {
 export function validateMedia(mimeType: string, sizeBytes: number) {
   const kind = inferMediaKind(mimeType);
   if (!kind) return { ok: false as const, error: "Type de fichier non autorisé." };
-  if (sizeBytes <= 0 || sizeBytes > MEDIA_LIMITS[kind]) {
+  if (!Number.isSafeInteger(sizeBytes) || sizeBytes <= 0 || sizeBytes > MEDIA_LIMITS[kind]) {
     return { ok: false as const, error: "Taille de fichier non autorisée." };
   }
   return { ok: true as const, kind };

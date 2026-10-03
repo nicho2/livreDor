@@ -59,7 +59,7 @@ export function ContributionForm({ projectId }: { projectId: string }) {
     event.preventDefault();
     setBusy(true);
     setFeedback("");
-
+    try {
     const parsed = guestbookEntrySchema.safeParse({ displayName: effectiveDisplayName, message, formatting });
     if (!parsed.success) {
       setBusy(false);
@@ -102,6 +102,8 @@ export function ContributionForm({ projectId }: { projectId: string }) {
     setEntryId(data.id);
     rememberName(parsed.data.displayName);
     setFeedback(status === "published" ? "Votre message est publié." : "Votre brouillon est enregistré.");
+    } catch { setFeedback("Enregistrement impossible. Vérifiez votre connexion puis réessayez."); }
+    finally { setBusy(false); }
   }
 
   return (
@@ -115,10 +117,12 @@ export function ContributionForm({ projectId }: { projectId: string }) {
         <select value={formatting.size} onChange={(e) => setFormatting({ ...formatting, size: e.target.value as GuestbookFormatting["size"] })} aria-label="Taille">
           <option value="sm">Petit</option><option value="md">Normal</option><option value="lg">Grand</option>
         </select>
-        <button type="button" className={formatting.bold ? "toggle active" : "toggle"} onClick={() => setFormatting({ ...formatting, bold: !formatting.bold })}>G</button>
-        <button type="button" className={formatting.italic ? "toggle active" : "toggle"} onClick={() => setFormatting({ ...formatting, italic: !formatting.italic })}><em>I</em></button>
+        <button type="button" aria-label="Gras" aria-pressed={formatting.bold} className={formatting.bold ? "toggle active" : "toggle"} onClick={() => setFormatting({ ...formatting, bold: !formatting.bold })}>G</button>
+        <button type="button" aria-label="Italique" aria-pressed={formatting.italic} className={formatting.italic ? "toggle active" : "toggle"} onClick={() => setFormatting({ ...formatting, italic: !formatting.italic })}><em>I</em></button>
+        <select aria-label="Alignement" value={formatting.align} onChange={(event) => setFormatting({ ...formatting, align: event.target.value as GuestbookFormatting["align"] })}><option value="left">À gauche</option><option value="center">Centré</option><option value="right">À droite</option></select>
+        <select aria-label="Couleur" value={formatting.color} onChange={(event) => setFormatting({ ...formatting, color: event.target.value as GuestbookFormatting["color"] })}><option value="ink">Encre</option><option value="blue">Bleu</option><option value="green">Vert</option><option value="burgundy">Bordeaux</option><option value="gold">Ocre</option></select>
       </div>
-      <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={8} maxLength={5000} placeholder="Écrivez votre message…" required />
+      <label>Votre message<textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={8} maxLength={5000} placeholder="Écrivez votre message…" required /></label>
       <p className="muted small">Vous pourrez ensuite ajouter un ou plusieurs souvenirs.</p>
       <div className="actions">
         <button className="button" disabled={busy}>{busy ? "Enregistrement…" : entryId ? "Mettre à jour et publier" : "Publier mon message"}</button>

@@ -93,3 +93,18 @@ la lecture de la page de contribution et son actualisation fonctionnent.
 La session retrouve le message et les souvenirs après chargement. Aucun
 redémarrage de Codex ni changement de configuration n'a été nécessaire.
 Cette vérification ne remplace pas les tests fonctionnels des formulaires.
+
+## Incident distinct : serveur de développement verrouillé
+
+Lors du développement de la V1, le serveur a retourné 500 et Turbopack a signalé
+`os error 32` sur un `.next/dev/static/chunks/*.js.map`. Ce n'était pas une
+absence du plugin navigateur. Après arrêt du serveur, le build Webpack puis
+`next start` ont servi les pages normalement. Le navigateur a ensuite répondu
+dans un nouvel onglet ; un onglet de l'ancienne page d'erreur pouvait conserver
+une commande d'inspection bloquée. Les scripts `dev`/`build` utilisent maintenant
+Webpack, avec `dev:turbo` disponible explicitement.
+
+Vérifier HTTP et journal du serveur avant de réparer le plugin. Ne pas lancer
+build/typegen en parallèle d'un serveur qui écrit dans `.next`. Réutiliser un
+onglet sain ou créer un onglet neuf si celui d'une page d'erreur est bloqué,
+sans lire ni copier les jetons de session et sans fermer un onglet utilisateur.

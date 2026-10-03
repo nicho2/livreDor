@@ -1,0 +1,118 @@
+# Exploiter la V1 en local
+
+## Démarrer et vérifier
+
+Prérequis : Node 24, `.env.local` configuré, migrations 0001 à 0003 appliquées,
+modèles OTP Supabase et bucket R2 privé/CORS configurés.
+
+```powershell
+npm ci
+npm run dev
+```
+
+Ouvrir `http://localhost:3000`. Webpack est utilisé par défaut sur Windows.
+Ne lancer qu'un serveur sur le port 3000. Arrêter le serveur avant un build.
+Pour vérifier la version compilée : `npm run build`, puis `npm start`.
+Après une modification du code en mode `start`, refaire le build.
+Un verrouillage de `.next` n'autorise pas à supprimer les sources ou à désactiver
+les protections Windows : arrêter le serveur, attendre la libération, relancer.
+Pour le contrôle du navigateur Codex, voir `11-BROWSER-TROUBLESHOOTING.md`.
+
+## Contribuer et consulter
+
+- Connexion par email et code, retour automatique au projet.
+- « Mes contributions » affiche ses propres messages/souvenirs et brouillons.
+- Le nom affiché reprend celui de la dernière contribution, sans écraser une saisie.
+- Un message principal par compte et projet ; plusieurs souvenirs possibles.
+- Enregistrer le souvenir, puis utiliser son champ d'ajout de média.
+- Photo 15 Mo, vidéo 200 Mo, audio 50 Mo, PDF 25 Mo ; 20 fichiers par souvenir.
+- HTML et SVG refusés. HEIC/HEIF sont téléchargeables, sans aperçu garanti.
+- « Voir tous les souvenirs » affiche les contenus publiés de tous les auteurs.
+- Cliquer le titre d'un souvenir ouvre son détail avec ses médias.
+- La chronologie trie dates exactes et périodes ensemble ; les non datés suivent.
+- Si une URL média expire, utiliser « Actualiser les médias ».
+
+Les erreurs réseau sont affichées, sans annoncer une réussite après échec.
+Les formulaires sont désactivés quand la fenêtre est fermée ; RLS et les API
+protègent également les écritures, même si une page ouverte devient obsolète.
+
+## Organiser
+
+Le lien « Organisation » apparaît seulement pour un membre `organizer`.
+Les API revérifient ce rôle sur chaque action ; cacher un lien ne suffit pas.
+Le compte organisateur est celui initialement enregistré dans `project_members`.
+Si le lien n'apparaît pas, se connecter avec ce compte : aucune promotion de rôle
+automatique n'est proposée dans la V1.
+
+- Filtrer brouillons/publiés/masqués, modifier leur visibilité.
+- Un média ne s'affiche publiquement que si son souvenir est également publié.
+- Masquer conserve le fichier ; supprimer le fichier est irréversible et demande
+  une confirmation. Un masquage de souvenir cache aussi ses médias.
+- Régler ouverture/clôture en UTC ; clôturer immédiatement via le bouton.
+- Clôture = arrêt de la contribution, pas suppression du projet.
+- La modération et l'export restent possibles après clôture.
+- Réouvrir nécessite aussi des dates compatibles (effacer une ancienne clôture).
+
+## Export final
+
+Clôturer ou archiver avant d'utiliser « Télécharger l'archive ZIP ».
+Décompresser intégralement, puis ouvrir `site/index.html`.
+
+```
+LivreDor-projet.zip
+├── README.txt
+├── site/                  # seul dossier éventuellement publiable
+│   ├── index.html
+│   ├── assets/app.css
+│   └── media/             # fichiers publiés copiés, sans URLs temporaires
+└── archive-privee/        # ne jamais publier
+    ├── data/             # JSON complet, participants par nom/UUID, sans emails
+    └── media/            # fichiers privés disponibles
+```
+
+Le site fonctionne sans Supabase/R2 ni JavaScript. Les données privées incluent
+brouillons/masqués et identifiants techniques, mais jamais l'email d'authentification.
+Le manifeste indique les uploads non finalisés ou fichiers déjà supprimés.
+Un fichier publié absent bloque l'export : le réparer ou le masquer explicitement.
+Ne pas publier le ZIP entier. Valider consentements, durée de conservation et
+contenus avant toute diffusion. L'export ne réalise aucun déploiement.
+
+## Tests reproductibles
+
+```powershell
+npm run lint
+npm run typecheck
+npm test
+./scripts/test-rls-local.ps1
+npm run build
+npm run test:integration
+```
+
+Le dernier test utilise les API Next compilées, une fixture Auth/PostgREST
+**uniquement locale** et le bucket R2 réellement configuré. Il n'utilise pas de
+session navigateur, ne crée aucun compte Supabase et ne modifie aucun projet
+utilisateur. Il écrit quelques octets sous des UUID aléatoires et nettoie
+uniquement ses propres clés. Il vérifie PUT/CORS/finalisation/GET/suppression,
+droits, clôture, archive ZIP et copie des fichiers. Le test RLS PostgreSQL reste
+distinct : la fixture HTTP n'est pas une preuve de RLS Supabase.
+
+La variable serveur facultative `SUPABASE_URL` permet d'isoler ce test sans
+changer l'URL publique compilée. Ne pas la renseigner dans `.env.local` courant.
+Les clés et `.env.local` ne doivent jamais être ajoutés à Git.
+
+## Limites et vigilance
+
+- Les URLs déjà délivrées restent utilisables jusqu'à 5 minutes après masquage.
+- Les médias ne font pas l'objet d'une analyse antivirus.
+- Rotation de clé R2 : migrer les preuves HMAC des objets avant de retirer
+  l'ancienne clé, sinon la lecture de ces objets échouera par sécurité.
+- Une coupure après PUT peut laisser un temporaire ; l'auteur peut supprimer
+  l'envoi inachevé depuis ses contributions. Prévoir nettoyage périodique avant
+  un usage à grande échelle, sans supprimer les fichiers utilisateur par glob.
+- Le ZIP est généré en flux côté serveur, mais le navigateur le reçoit en blob :
+  pour de très grosses archives, prévoir un téléchargement serveur sur disque.
+- Le seuil 20 médias protège l'usage normal ; ce n'est pas un quota atomique
+  contre des requêtes concurrentes ni une protection complète contre les abus.
+- Les brouillons de projet ne sont pas accessibles par les routes publiques.
+- Révision RGPD/consentements et configuration d'hébergement requises avant
+  publication. Aucun push ni déploiement sans demande explicite.

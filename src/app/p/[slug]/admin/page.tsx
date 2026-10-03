@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { getProjectBySlug } from "@/lib/project-data";
+import { RequireAuth } from "@/components/RequireAuth";
+import { OrganizerPanel } from "@/components/OrganizerPanel";
 
 export default async function AdminPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -9,7 +11,7 @@ export default async function AdminPage({ params }: { params: Promise<{ slug: st
   return (
     <main className="stack">
       <div><p className="kicker">Administration</p><h1>{project.title}</h1></div>
-      <div className="card"><h2>À implémenter en priorité</h2><p>Cette route est volontairement un squelette. Avant production, elle doit vérifier le rôle <code>organizer</code> côté serveur puis fournir les actions publier, masquer, corriger et clôturer.</p></div>
+      <RequireAuth returnTo={`/p/${slug}/admin`}><OrganizerPanel projectId={project.id} /></RequireAuth>
     </main>
   );
 }

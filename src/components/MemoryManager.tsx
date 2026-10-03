@@ -6,6 +6,7 @@ import { memorySchema } from "@/lib/validators";
 import type { Memory, PublicationStatus } from "@/types/database";
 import { useContributionName } from "@/components/ContributionNameProvider";
 import { resolveDisplayName } from "@/lib/display-name";
+import { MediaGallery } from "@/components/MediaGallery";
 
 type DateMode = "none" | "exact" | "period";
 
@@ -99,7 +100,7 @@ export function MemoryManager({ projectId }: { projectId: string }) {
     event.preventDefault();
     setBusy(true);
     setFeedback("");
-
+    try {
     const parsed = memorySchema.safeParse({
       displayName,
       title: form.title,
@@ -158,10 +159,14 @@ export function MemoryManager({ projectId }: { projectId: string }) {
     resetForm();
     setFeedback(status === "published" ? "Souvenir publié." : "Souvenir enregistré en brouillon.");
     await loadMemories();
+    } catch { setFeedback("Enregistrement impossible. Vérifiez votre connexion puis réessayez."); }
+    finally { setBusy(false); }
   }
 
   async function hideMemory(id: string) {
+    if (!window.confirm("Masquer ce souvenir et ses médias sur le mur ?")) return;
     setBusy(true);
+    try {
     const supabase = getSupabaseBrowser();
     // RLS may filter an UPDATE to zero rows (e.g. after project closure).
     // Require a returned row before announcing success.
@@ -173,6 +178,8 @@ export function MemoryManager({ projectId }: { projectId: string }) {
       setFeedback("Souvenir masqué.");
       await loadMemories();
     }
+    } catch { setFeedback("Masquage impossible. Réessayez."); }
+    finally { setBusy(false); }
   }
 
   return (
@@ -196,6 +203,7 @@ export function MemoryManager({ projectId }: { projectId: string }) {
                 <button className="button secondary" type="button" onClick={() => editMemory(memory)}>Modifier</button>
                 <button className="link-button danger" type="button" disabled={busy} onClick={() => void hideMemory(memory.id)}>Masquer</button>
               </div>
+              <MediaGallery memoryId={memory.id} projectId={projectId} editable />
             </article>
           ))}
         </div>
