@@ -14,6 +14,12 @@ Ouvrir http://localhost:3100/auth?next=/p/album-test/guestbook et utiliser
 redémarrage réinitialise la recette. Aucun Supabase/R2 réel n'est contacté.
 La simulation média ne valide pas les signatures R2 ni la sécurité RLS réelle.
 
+Garder le terminal de recette ouvert pendant l'essai. Le port `3101` affiché par
+Next est interne : il contourne le proxy de connexion et de médias. Les accès
+directs à ce port sont désormais redirigés temporairement vers `3100`, en
+conservant le chemin et les paramètres. Cette redirection est limitée au mode
+recette ; le serveur habituel sur `3000` garde ses routes normales.
+
 Pour tester la compilation de production sous PowerShell :
 
 ```powershell

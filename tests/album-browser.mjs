@@ -1,13 +1,19 @@
 // Browser-client Playwright regression suite, run against scripts/ui-fixture.mjs.
 // Accepts the documented tab + viewport handles; no cookies/session injection.
 import assert from "node:assert/strict";
-export async function loginFixture(tab) {
-  await tab.goto("http://localhost:3100/auth?next=/p/album-test/guestbook");
+export async function loginFixture(tab, entryUrl = "http://localhost:3100/auth?next=/p/album-test/guestbook") {
+  await tab.goto(entryUrl);
   await tab.playwright.getByLabel("Email", { exact: true }).fill("recette@example.test");
   await tab.playwright.getByRole("button", { name: "Recevoir mon code" }).click();
   await tab.playwright.getByLabel("Code reçu").fill("123456");
   await tab.playwright.getByRole("button", { name: "Valider", exact: true }).click();
   await tab.playwright.getByRole("button", { name: "Feuilleter le livre" }).waitFor({ state: "visible" });
+}
+
+export async function testInternalPortLogin(tab) {
+  await loginFixture(tab, "http://localhost:3101/auth?next=/p/album-test/guestbook");
+  assert.equal(await tab.url(), "http://localhost:3100/p/album-test/guestbook");
+  return "Accès par 3101 : redirection vers 3100, OTP et livre chargés OK";
 }
 export async function testBook(tab, viewport, width) {
   await viewport.set({ width, height: 900 });

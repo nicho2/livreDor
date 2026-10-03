@@ -389,3 +389,15 @@ les signatures R2, tous les codecs vidéo ni les performances sur téléphone r�
 La réduction des animations est prévue via prefers-reduced-motion ; pas de
 simulation système de ce réglage dans la recette Browser. Procédure détaillée :
 [recette de l'album](18-ALBUM-UI.md).
+
+
+### Correctif d'accès au port interne de la recette
+
+L'ouverture directe de `localhost:3101` contournait le proxy Auth/médias et
+pouvait produire `Failed to fetch`. Une redirection temporaire, uniquement sous
+`LIVREDOR_UI_FIXTURE=1`, conserve chemin et paramètres et ramène vers `3100`.
+Le lanceur annonce explicitement le lien à ouvrir et les identifiants fictifs.
+Test Node ajouté : aucune redirection hors recette, aucun rebouclage du proxy.
+Les 39 tests Node, lint, typecheck et build de recette passent. Playwright vérifie
+le parcours réel `3101/auth` → `3100/auth` → OTP fictif → livre, puis le mur et
+sa galerie. Le serveur de recette est laissé disponible pour l'essai utilisateur.

@@ -54,4 +54,6 @@ await new Promise(resolve => proxy.listen(3100, "127.0.0.1", resolve));
 const app = spawn(process.execPath, ["node_modules/next/dist/bin/next", ...(process.argv.includes("--production") ? ["start"] : ["dev", "--webpack"]), "--port", "3101"], { stdio: "inherit", env: { ...process.env, LIVREDOR_UI_FIXTURE: "1", NEXT_PUBLIC_SUPABASE_URL: "http://localhost:3100", NEXT_PUBLIC_SUPABASE_ANON_KEY: "fixture-only", SUPABASE_SERVICE_ROLE_KEY: "", R2_ACCESS_KEY_ID: "", R2_SECRET_ACCESS_KEY: "" } });
 function close() { app.kill(); fixture.close(); proxy.close(); }
 process.on("SIGINT", close); process.on("SIGTERM", close);
-console.log("UI fixture: http://localhost:3100 — OTP fictif 123456, projet album-test");
+console.log("RECETTE À OUVRIR : http://localhost:3100/auth?next=/p/album-test/guestbook");
+console.log("Email fictif : recette@example.test — code : 123456 (aucun email envoyé)");
+console.log("Le port Next 3101 est interne : les accès directs sont redirigés vers 3100.");
