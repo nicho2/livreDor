@@ -54,6 +54,13 @@ Champs :
 - média ;
 - aperçu.
 
+Le nom affiché est prérempli à partir du dernier souvenir de l'utilisateur dans
+ce projet, puis de son message principal ou de son profil si nécessaire. Il reste
+modifiable et n'est jamais déduit de l'email. Un nom enregistré dans le message
+ou un souvenir est proposé pour les souvenirs suivants sur la même page.
+Une modification manuelle, même l'effacement du champ, n'est pas écrasée par
+l'arrivée d'une suggestion. Modifier un souvenir conserve son propre nom.
+
 ## Mur
 Mobile : une colonne.
 Desktop : grille fluide.

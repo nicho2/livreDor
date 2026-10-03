@@ -4,6 +4,8 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { memorySchema } from "@/lib/validators";
 import type { Memory, PublicationStatus } from "@/types/database";
+import { useContributionName } from "@/components/ContributionNameProvider";
+import { resolveDisplayName } from "@/lib/display-name";
 
 type DateMode = "none" | "exact" | "period";
 
@@ -17,12 +19,15 @@ const emptyForm = {
 };
 
 export function MemoryManager({ projectId }: { projectId: string }) {
+  const { suggestedName, rememberName } = useContributionName();
+  const [nameEdited, setNameEdited] = useState(false);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [dateMode, setDateMode] = useState<DateMode>("none");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
+  const displayName = resolveDisplayName(form.displayName, nameEdited, suggestedName);
 
   const loadMemories = useCallback(async () => {
     const supabase = getSupabaseBrowser();
@@ -70,11 +75,13 @@ export function MemoryManager({ projectId }: { projectId: string }) {
 
   function resetForm() {
     setForm(emptyForm);
+    setNameEdited(false);
     setDateMode("none");
     setEditingId(null);
   }
 
   function editMemory(memory: Memory) {
+    setNameEdited(true);
     setEditingId(memory.id);
     setForm({
       displayName: memory.display_name,
@@ -94,7 +101,7 @@ export function MemoryManager({ projectId }: { projectId: string }) {
     setFeedback("");
 
     const parsed = memorySchema.safeParse({
-      displayName: form.displayName,
+      displayName,
       title: form.title,
       body: form.body,
       occurredOn: dateMode === "exact" ? form.occurredOn : "",
@@ -147,6 +154,7 @@ export function MemoryManager({ projectId }: { projectId: string }) {
       return;
     }
 
+    rememberName(parsed.data.displayName);
     resetForm();
     setFeedback(status === "published" ? "Souvenir publié." : "Souvenir enregistré en brouillon.");
     await loadMemories();
@@ -195,7 +203,7 @@ export function MemoryManager({ projectId }: { projectId: string }) {
 
       <form className="card stack" onSubmit={(event) => saveMemory(event, "published")}>
         <h3>{editingId ? "Modifier le souvenir" : "Nouveau souvenir"}</h3>
-        <label>Nom affiché<input value={form.displayName} onChange={(event) => setForm({ ...form, displayName: event.target.value })} maxLength={80} required /></label>
+        <label>Nom affiché<input value={displayName} onChange={(event) => { setNameEdited(true); setForm({ ...form, displayName: event.target.value }); }} maxLength={80} required /></label>
         <label>Titre (facultatif)<input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} maxLength={120} /></label>
         <label>Anecdote<textarea value={form.body} onChange={(event) => setForm({ ...form, body: event.target.value })} rows={6} maxLength={8000} required /></label>
         <label>Quand ?

@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { guestbookEntrySchema } from "@/lib/validators";
 import type { GuestbookFormatting } from "@/types/database";
+import { useContributionName } from "@/components/ContributionNameProvider";
+import { resolveDisplayName } from "@/lib/display-name";
 
 const defaultFormatting: GuestbookFormatting = {
   font: "sans",
@@ -15,12 +17,15 @@ const defaultFormatting: GuestbookFormatting = {
 };
 
 export function ContributionForm({ projectId }: { projectId: string }) {
+  const { suggestedName, rememberName } = useContributionName();
+  const [nameEdited, setNameEdited] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [message, setMessage] = useState("");
   const [formatting, setFormatting] = useState(defaultFormatting);
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
   const [entryId, setEntryId] = useState<string | null>(null);
+  const effectiveDisplayName = resolveDisplayName(displayName, nameEdited, suggestedName);
 
   useEffect(() => {
     let active = true;
@@ -55,7 +60,7 @@ export function ContributionForm({ projectId }: { projectId: string }) {
     setBusy(true);
     setFeedback("");
 
-    const parsed = guestbookEntrySchema.safeParse({ displayName, message, formatting });
+    const parsed = guestbookEntrySchema.safeParse({ displayName: effectiveDisplayName, message, formatting });
     if (!parsed.success) {
       setBusy(false);
       setFeedback("Vérifiez votre nom, votre message et sa mise en forme.");
@@ -95,13 +100,14 @@ export function ContributionForm({ projectId }: { projectId: string }) {
     setBusy(false);
     if (error) return setFeedback(error.message);
     setEntryId(data.id);
+    rememberName(parsed.data.displayName);
     setFeedback(status === "published" ? "Votre message est publié." : "Votre brouillon est enregistré.");
   }
 
   return (
     <form className="card stack" onSubmit={(event) => submit(event, "published")}>
       <h2>Votre message</h2>
-      <label>Nom affiché<input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={80} required /></label>
+      <label>Nom affiché<input value={effectiveDisplayName} onChange={(e) => { setNameEdited(true); setDisplayName(e.target.value); }} maxLength={80} required /></label>
       <div className="format-bar">
         <select value={formatting.font} onChange={(e) => setFormatting({ ...formatting, font: e.target.value as GuestbookFormatting["font"] })} aria-label="Police">
           <option value="sans">Simple</option><option value="serif">Élégante</option><option value="hand">Manuscrite</option><option value="mono">Machine</option>

@@ -105,3 +105,24 @@ L'en-tête affiche « Connecté » et « Se déconnecter » sans adresse email.
 La session utilisateur est conservée et aucune contribution n'a été modifiée.
 Le nouveau cycle OTP et la déconnexion effective restent à vérifier : aucun
 code n'a été redemandé et l'utilisateur n'a pas été déconnecté pendant ce test.
+
+### Confirmation utilisateur et préremplissage du nom
+
+L'utilisateur confirme ensuite avoir créé `TEST — Second contributeur` en
+brouillon, s'être reconnecté, avoir retrouvé ses souvenirs et l'avoir publié.
+Le cycle de reconnexion et la récupération du brouillon sont donc confirmés
+manuellement ; les tentatives de modification des contenus d'un autre auteur
+restent à vérifier sur Supabase.
+
+Le nom affiché est désormais proposé à partir des contributions du compte
+connecté dans ce projet (dernier souvenir, puis message, puis profil). Une
+nouvelle saisie enregistrée devient la suggestion des souvenirs suivants.
+Aucun email n'est utilisé et les noms des contenus existants restent inchangés.
+Deux tests unitaires supplémentaires vérifient la priorité des suggestions
+et le respect des champs modifiés ou explicitement vidés.
+
+Vérification dans le navigateur connecté : le nouveau souvenir présente bien
+un nom prérempli ; une saisie différente et l'effacement du champ sont respectés.
+Le nom initial a été remis sans enregistrer. `TEST — Second contributeur` est
+visible avec le statut publié. Aucun contenu existant n'a été modifié par ces
+contrôles. Les 11 tests unitaires, lint, TypeScript et build passent.
