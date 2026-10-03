@@ -69,7 +69,7 @@ Pas de seed sur le projet `test-recette` déjà enrichi de contenus utilisateur.
 
 ## État
 
-Publication confirmée par Sites le 3 octobre 2026 à 17 h 12 (Paris), statut
+Première publication confirmée par Sites le 3 octobre 2026 à 17 h 12 (Paris), statut
 `succeeded`, URL `https://livredor.nicho2.chatgpt.site`, version 1, configuration
 d'environnement révision 6, source `e4770b108a91c85d809fb10dfb479b5b6c5d48a7`.
 Déploiement : `appgdep_6ac11b5f81b48191b29502a59e11ead3`.
@@ -105,3 +105,22 @@ d'environnement ni accès R2/Supabase distant ; cette vérification est ajoutée
 à la CI GitHub après compilation Sites.
 La vérification du statut de déploiement ne remplace donc pas le contrôle HTTP
 des pages de l'application. Aucun contenu ni média utilisateur modifié.
+
+### Version corrigée et vérifications en ligne
+
+Version 2 déployée le 3 octobre 2026 à 17 h 27 (Paris), statut `succeeded`,
+configuration d'environnement révision 6, source
+`7936a191f9c4218dafa29a0ba91ee90686056479`.
+Déploiement : `appgdep_6ac11ecc268c8191a5807b04fdc736d3`.
+
+Après publication, des requêtes HTTP réelles confirment le statut 200 et du
+HTML LivreDor sans erreur de module sur `/`, `/auth`, `/nouveau`,
+`/p/test-recette`, `/p/test-recette/wall` et `/p/test-recette/timeline`.
+Les trois premiers scripts référencés par l'accueil répondent également 200
+avec le type JavaScript attendu. L'API organisateur refuse un jeton invalide
+avec HTTP 401. Ces lectures ne modifient pas les données.
+
+En local, 38 tests unitaires, lint, TypeScript et les 73 contrôles d'intégration
+sur chacun des runtimes Next.js et Workers passent. Les 14 contrôles HTML seuls
+passent sans secrets ; leur ajout à la CI attend un prochain push GitHub.
+La recette avec un vrai OTP et un upload navigateur en ligne reste à réaliser.
