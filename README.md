@@ -79,6 +79,9 @@ il doit être exécuté en entier et pas sur une base de production.
 3. Renseigner les variables R2 dans `.env.local`.
 4. Ne jamais exposer les credentials R2 côté client.
 
+Voir `docs/12-R2-LOCAL-SETUP.md` pour le contrôle des identifiants et la règle
+CORS de développement disponible dans `config/r2-cors.local.json`.
+
 ## Structure
 
 ```text
