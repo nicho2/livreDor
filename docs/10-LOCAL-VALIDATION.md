@@ -336,3 +336,25 @@ Validation :
 
 Aucun projet réel supplémentaire créé pour simuler le dépassement. Documentation
 et CI mises à jour ; commit local, aucun push ni publication.
+
+## Consultation avec OTP obligatoire — 3 octobre 2026
+
+L'ADR-017 remplace la consultation anonyme des projets et contenus. Migration
+0007 préparée : quatre politiques réservées à `authenticated`, sans suppression
+ni changement des droits de contribution/modération. Aucune donnée projet chargée
+par le serveur dans les pages HTML/RSC ; chargement navigateur sous session/RLS.
+La lecture média exige une session valide avant toute signature R2.
+
+Validation locale : lint, typecheck, 38 tests unitaires, builds Next et Sites ;
+82 contrôles d'intégration sur chacun des deux runtimes, dont absence de données
+dans sept réponses HTML/RSC anonymes et refus média sans session/jeton invalide.
+21 contrôles HTML seuls passent sans secrets ni accès distant. Suite PostgreSQL
+isolée et quota concurrent réussis, instances temporaires arrêtées.
+Le navigateur déconnecté affiche seulement l'invitation à se connecter sur le
+mur local ; son lien OTP conserve `/wall` comme destination. Aucun OTP envoyé ni
+nouveau compte créé. La session utilisateur connectée n'a pas été revalidée
+dans le navigateur pendant ce changement.
+
+La migration 0007 n'est pas encore appliquée à Supabase et le nouveau code n'est
+pas déployé. La version en ligne reste donc en lecture anonyme jusqu'à ces deux
+opérations autorisées et vérifiées. Aucun push GitHub ni données métier modifiées.

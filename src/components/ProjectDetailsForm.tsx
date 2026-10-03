@@ -29,7 +29,7 @@ export function ProjectDetailsForm({ initial, creating = false, disabled = false
       <label>Présentation (facultative)<textarea name="description" rows={4} maxLength={3000} value={details.description} onChange={(e) => change("description", e.target.value)} /></label>
       <label>Date de l&apos;événement (facultative)<input name="eventDate" type="date" value={details.eventDate} onChange={(e) => change("eventDate", e.target.value)} /></label>
       {creating && <><label>Lien du projet<input name="slug" required minLength={3} maxLength={80} pattern={"[a-z0-9][a-z0-9\\-]{2,79}"} placeholder="depart-marie-2026" value={slug} onChange={(e) => { setFeedback(""); setSlug(e.target.value); }} aria-describedby="project-slug-help" /></label><p id="project-slug-help" className="muted">3 à 80 lettres minuscules, chiffres ou tirets. Ce lien ne pourra pas être changé.</p></>}
-      <p className="muted">Ces informations seront visibles sur le projet et dans sa restitution. Ne saisissez pas d&apos;adresse email ni d&apos;information confidentielle.</p>
+      <p className="muted">Ces informations seront visibles aux personnes connectées à LivreDor et dans la restitution exportée. Ne saisissez pas d&apos;adresse email ni d&apos;information confidentielle.</p>
       {creating && <p>Vous devenez organisateur de ce nouveau projet. La collecte sera ouverte ; aucun droit sur les autres projets n&apos;est accordé.</p>}
       <button type="submit" className="button">{busy ? "Enregistrement…" : creating ? "Créer mon LivreDor" : "Enregistrer les informations"}</button>
     </fieldset>

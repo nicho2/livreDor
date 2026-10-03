@@ -3,10 +3,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authenticatedFetch } from "@/lib/api-client";
 import { ProjectDetailsForm } from "@/components/ProjectDetailsForm";
+import { useProjectUpdate } from "@/components/ProjectAccess";
 import type { Project, GuestbookEntry, Memory, MediaAsset, PublicationStatus } from "@/types/database";
 type Data = { project: Project; entries: GuestbookEntry[]; memories: Memory[]; media: MediaAsset[]; invitation: { email: string; accepted_by: string | null } | null; sharingReady: boolean };
 const labels = { draft: "Brouillon", published: "Publié", hidden: "Masqué" };
 export function OrganizerPanel({ projectId }: { projectId: string }) {
+  const updateProject = useProjectUpdate();
   const [data, setData] = useState<Data | null>(null);
   const [feedback, setFeedback] = useState("");
   const [filter, setFilter] = useState<PublicationStatus | "all">("all");
@@ -21,10 +23,13 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
       const response = await authenticatedFetch(url);
       const loaded: Data = await response.json();
       setData(loaded);
+      // Keep the layout's title/window in sync after organizer edits; a server
+      // refresh alone cannot reload data held by the authenticated client layout.
+      updateProject(loaded.project);
       setOpensAt(loaded.project.opens_at?.slice(0, 16) ?? "");
       setClosesAt(loaded.project.closes_at?.slice(0, 16) ?? "");
     } catch (error) { setFeedback(error instanceof Error ? error.message : "Chargement impossible."); }
-  }, [url]);
+  }, [url, updateProject]);
   useEffect(() => { void Promise.resolve().then(load); }, [load]);
   async function act(action: object) {
     setBusy(true); setFeedback("");

@@ -26,12 +26,12 @@ Ne pas afficher d'emblée un long formulaire. Le message principal doit être l'
 - Un lien de connexion depuis un projet conserve sa destination dans `next`.
 - Après validation du code, retour automatique vers cette destination locale.
 - Une session déjà ouverte ne nécessite pas de saisir à nouveau un code.
-- Sans destination, utiliser le projet démo configuré, sinon l'unique projet
-  public disponible ; avec plusieurs projets, revenir à l'accueil sans en choisir
-  arbitrairement un. Les destinations externes ou non reconnues sont rejetées.
+- Sans destination, revenir à l'accueil dont les projets se chargent après
+  connexion. Aucune recherche anonyme d'un projet démo ou unique. Les destinations
+  externes ou non reconnues sont rejetées ; les détails de souvenirs UUID sont acceptés.
 - L'en-tête affiche « Connecté » et « Se déconnecter » lorsque la session est
   ouverte, jamais l'email. La déconnexion concerne seulement le navigateur courant.
-- Les formulaires de contribution sont remplacés par un accès à la connexion
+- Les projets, leurs publications et les formulaires sont remplacés par un accès à la connexion
   lorsque la session est absente. Ce contrôle UX ne remplace pas la RLS.
 
 ## Écran projet
@@ -77,7 +77,7 @@ Accueil → Créer un LivreDor → email/OTP si nécessaire → titre et nom aff
 présentation/date facultatives, choix du lien stable → création → Organisation.
 Le retour OTP accepte explicitement `/nouveau`, sans élargir les redirections
 aux chemins arbitraires. La collecte commence ouverte ; les informations du
-projet sont publiques, comme indiqué dans le formulaire.
+projet ne sont consultables qu'après connexion LivreDor, comme indiqué dans le formulaire.
 
 Organisation permet de modifier les informations sans changer le lien partagé.
 La date d'événement apparaît sur la page projet et le site statique final.

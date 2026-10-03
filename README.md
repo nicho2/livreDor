@@ -126,6 +126,12 @@ CORS de développement disponible dans `config/r2-cors.local.json`.
 ```
 
 ## État de la V1
+La consultation exige une session OTP LivreDor, comme la contribution. Appliquer
+la migration `0007_authenticated_read.sql` et publier le code correspondant pour
+supprimer la lecture anonyme ; l'accueil reste accessible sans montrer les projets.
+Une liste d'invités nominative n'est pas implémentée : les comptes authentifiés
+peuvent lire les projets non brouillons. Voir ADR-017.
+
 La contribution OTP, les souvenirs multiples, les médias R2 privés, le mur,
 la chronologie et le détail sont implémentés. L'espace organisateur permet
 modération, clôture et export ZIP avec site autonome et sauvegarde privée.

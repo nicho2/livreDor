@@ -2,7 +2,7 @@
 
 ## Démarrer et vérifier
 
-Prérequis : Node 24, `.env.local` configuré, migrations 0001 à 0006 appliquées,
+Prérequis : Node 24, `.env.local` configuré, migrations 0001 à 0007 appliquées,
 modèles OTP Supabase et bucket R2 privé/CORS configurés.
 
 La création exige aussi la migration 0006. `LIVREDOR_MAX_PROJECTS=3` (par défaut)
@@ -26,7 +26,8 @@ Pour le contrôle du navigateur Codex, voir `11-BROWSER-TROUBLESHOOTING.md`.
 
 ## Contribuer et consulter
 
-- Connexion par email et code, retour automatique au projet.
+- Connexion par email et code obligatoire aussi pour consulter ; retour automatique à la page demandée.
+- Sans connexion, ni liste de projets ni messages/souvenirs/médias. Migration 0007 nécessaire aussi contre les lectures directes Supabase.
 - « Mes contributions » affiche ses propres messages/souvenirs et brouillons.
 - Le nom affiché reprend celui de la dernière contribution, sans écraser une saisie.
 - Un message principal par compte et projet ; plusieurs souvenirs possibles.
@@ -57,7 +58,7 @@ Si le lien n'apparaît pas, se connecter avec ce compte ou l'adresse exactement
 invitée : aucune autodéclaration de rôle organisateur n'est proposée.
 
 - Filtrer brouillons/publiés/masqués, modifier leur visibilité.
-- Un média ne s'affiche publiquement que si son souvenir est également publié.
+- Un média ne s'affiche aux comptes connectés que si son souvenir est également publié, sauf droits auteur/organisateur.
 - Masquer conserve le fichier ; supprimer le fichier est irréversible et demande
   une confirmation. Un masquage de souvenir cache aussi ses médias.
 - Régler ouverture/clôture en UTC ; clôturer immédiatement via le bouton.

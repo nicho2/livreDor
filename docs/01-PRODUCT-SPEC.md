@@ -29,6 +29,12 @@ Le modèle est multi-projets dès le départ.
 
 L'email n'apparaît jamais sur les pages publiques.
 
+La consultation des projets, messages, souvenirs, murs, chronologies et médias
+exige elle aussi une connexion OTP LivreDor (ADR-017, migration 0007). L'accueil
+et la connexion restent publics, sans annuaire ni données de projets avant OTP.
+Il n'est pas nécessaire d'avoir un compte ChatGPT. La V1 n'ajoute pas de liste
+d'invités pour la lecture : les comptes connectés voient les projets non brouillons.
+
 ## 3. Profil contributeur
 Données minimales :
 - prénom / nom ou nom affiché ;

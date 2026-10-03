@@ -186,3 +186,28 @@ Les secrets sont configurés dans Sites, jamais dans le manifeste de source.
 **Raison :** Sites attend un Worker ESM, pas un serveur `next start` ni un simple
 export statique. Cette adaptation doit être validée avant de présenter la V1
 hébergée comme exploitable ; particulièrement ZIP en flux et SDK R2.
+
+## ADR-017 — Connexion LivreDor obligatoire aussi pour consulter
+
+**Décision :** à la demande de l'utilisateur le 3 octobre 2026, supprimer la
+lecture anonyme de l'application active. L'accueil et `/auth` restent publics,
+mais ni annuaire ni information de projet ni contenu n'y est chargé sans session.
+La migration 0007 réserve les quatre politiques de lecture aux comptes
+`authenticated`. Les droits auteur/organisateur et les fenêtres de contribution
+sont inchangés. `published` désigne un contenu partagé avec les comptes connectés,
+pas une publication publique sur Internet. Cela remplace la lecture publique
+des ADR-008/012 ; l'accès Sites sans compte ChatGPT de l'ADR-016 reste valable.
+
+Les pages projet ne préchargent plus de données via un client anonyme serveur :
+elles chargent sous session dans le navigateur avec RLS, sans données personnelles
+dans le HTML/RSC. Les composants sont démontés à la déconnexion et recréés lors
+d'un changement de compte. L'API média exige une session vérifiée avant toute
+lecture/signature. Les URLs signées déjà délivrées expirent sous cinq minutes.
+
+**Raison :** l'utilisateur refuse que les souvenirs soient consultables sans OTP.
+Masquer les boutons ne suffit pas : une API Supabase directe doit aussi refuser
+la lecture anonyme. Tests SQL réels des quatre tables, tests HTML/RSC sans données
+et refus média sans jeton/avec jeton invalide préviennent une régression.
+La V1 n'ajoute pas une liste d'invités nominative : tout compte authentifié peut
+encore lire les contenus publiés des projets non brouillons. L'export statique
+reste autonome et n'est public que si l'organisateur le diffuse séparément.

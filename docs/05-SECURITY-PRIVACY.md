@@ -17,11 +17,22 @@ Le système traite au minimum :
 
 ## RLS
 Le schéma fourni impose notamment :
-- lecture publique des contenus uniquement si le projet est publiable et le contenu `published` ;
+- aucune lecture anonyme des projets, contributions, souvenirs ou métadonnées média (migration 0007) ;
+- lecture des contenus `published` des projets non brouillons uniquement après connexion OTP LivreDor ;
 - lecture privée des brouillons par leur auteur et les organisateurs ;
 - modification par auteur ou organisateur selon le cas.
 
 Les politiques doivent être testées avant production.
+
+Une session OTP n'est pas une invitation nominative : les comptes authentifiés
+peuvent consulter les projets non brouillons, même avant de contribuer. Les
+brouillons/masqués restent réservés à leur auteur et aux organisateurs.
+L'accueil public ne fournit pas l'annuaire des projets. Les données sont chargées
+dans le navigateur sous session/RLS, jamais dans le HTML/RSC anonyme.
+L'API de lecture média vérifie une session puis la RLS avant de signer une URL.
+Les URLs déjà signées restent utilisables au maximum cinq minutes.
+Le dossier statique exporté reste sans authentification ; sa diffusion exige
+une décision distincte de l'organisateur.
 
 ## Upload R2
 Le navigateur ne reçoit jamais les clés API R2.

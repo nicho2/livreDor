@@ -41,16 +41,29 @@ insert into public.guestbook_entries(project_id, author_id, display_name, messag
 values ('20000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', 'TEST A', 'private project', 'published');
 insert into public.media_assets(project_id, memory_id, owner_id, kind, object_key, original_filename, mime_type, size_bytes, status)
 values ('20000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', 'image', 'test/private.jpg', 'test.jpg', 'image/jpeg', 10, 'published');
+insert into public.media_assets(project_id, memory_id, owner_id, kind, object_key, original_filename, mime_type, size_bytes, status)
+values ('20000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', 'image', 'test/published.jpg', 'test.jpg', 'image/jpeg', 10, 'published');
+insert into public.guestbook_entries(project_id, author_id, display_name, message, status)
+values ('20000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000003', 'TEST B', 'published message', 'published');
 
 set local role anon;
-select pg_temp.assert_count('select count(*) from public.memories', 1, 'anon: only published content of public project');
-select pg_temp.assert_count('select count(*) from public.guestbook_entries', 0, 'anon: draft project guestbook private');
-select pg_temp.assert_count('select count(*) from public.media_assets', 0, 'anon: media attached to draft memory private');
+select pg_temp.assert_count('select count(*) from public.projects', 0, 'anon: no project metadata');
+select pg_temp.assert_count('select count(*) from public.memories', 0, 'anon: no published memories');
+select pg_temp.assert_count('select count(*) from public.guestbook_entries', 0, 'anon: no guestbook even published');
+select pg_temp.assert_count('select count(*) from public.media_assets', 0, 'anon: no metadata even with published parent');
+select pg_temp.assert_count($q$select public.is_project_public('20000000-0000-4000-8000-000000000001')::int$q$, 0, 'anonymous RPC cannot reveal project visibility');
 select pg_temp.assert_denied($q$insert into public.memories(project_id, author_id, display_name, body) values ('20000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', 'TEST', 'anonymous')$q$, 'anon cannot write');
+reset role;
+
+set local role authenticated;
+select pg_temp.assert_count('select count(*) from public.projects', 0, 'authenticated role without user cannot list projects');
+select pg_temp.assert_count('select count(*) from public.memories', 0, 'authenticated role without user cannot read memories');
 reset role;
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 set local role authenticated;
+select pg_temp.assert_count('select count(*) from public.projects', 1, 'authenticated visitor sees non-draft project');
+select pg_temp.assert_count($q$select count(*) from public.guestbook_entries where message = 'published message'$q$, 1, 'authenticated visitor reads published message before joining');
 select public.join_project('20000000-0000-4000-8000-000000000001');
 select pg_temp.assert_count('select count(*) from public.memories', 3, 'author reads own drafts');
 insert into public.memories(project_id, author_id, display_name, body)
@@ -100,7 +113,7 @@ select pg_temp.assert_count($q$select count(*) from public.memories where status
 reset role;
 select set_config('request.jwt.claim.sub', '', true);
 set local role anon;
-select pg_temp.assert_count('select count(*) from public.memories', 1, 'hidden memory excluded from public reads');
+select pg_temp.assert_count('select count(*) from public.memories', 0, 'anonymous reads remain blocked after closure');
 select pg_temp.assert_count('select count(*) from public.media_assets', 0, 'hidden parent hides media');
 reset role;
 rollback;

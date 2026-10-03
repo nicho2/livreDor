@@ -11,7 +11,7 @@ async function mediaId(context: Context) {
 }
 export async function GET(request: Request, context: Context) {
   try {
-    await requestUser(request, true);
+    await requestUser(request);
     const token = request.headers.get("authorization")?.slice(7);
     const { data: media, error } = await getSupabaseAnonClient(token).from("media_assets").select("*").eq("id", await mediaId(context)).eq("status", "published").maybeSingle();
     if (error) throw new Error("Database unavailable");

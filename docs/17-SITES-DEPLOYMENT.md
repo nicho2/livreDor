@@ -11,8 +11,10 @@ Pas de D1, de nouveau bucket, de connexion ChatGPT ou de changement de RLS.
 L'utilisateur a autorisé l'accès public par lien le 3 octobre 2026. Cela ne rend
 pas les brouillons publics : l'OTP Supabase reste nécessaire pour contribuer,
 et les opérations organisateur contrôlent toujours le rôle côté serveur.
-Les informations et contenus `published` des projets publiables sont accessibles
-aux visiteurs anonymes. Ne pas traiter le lien comme un secret d'accès.
+L'ADR-017 remplace désormais la consultation anonyme : informations et contenus
+exigent une session OTP LivreDor, sans compte ChatGPT. Le lien seul n'accorde
+pas la lecture. Cette correction nécessite la migration 0007 et une nouvelle
+publication du code ; la version 2 décrite plus bas conserve l'ancien comportement.
 
 ## Variables
 
@@ -67,7 +69,10 @@ réussie : exiger le statut succeeded et l'URL officielle du déploiement.
 
 ## Recette après publication
 
-Ouvrir le lien sans session ChatGPT : accueil, projet, mur et chronologie.
+Ouvrir le lien sans session ChatGPT et sans OTP : l'accueil ne doit montrer aucun
+projet ; projet, mur, chronologie et détail doivent demander la connexion sans
+afficher de données. Une requête anonyme directe Supabase ne doit retourner aucun
+projet/contenu/média ; l'API média doit répondre 401 sans signer d'URL.
 Depuis un projet, obtenir un OTP réel, vérifier le retour automatique et le nom
 prérempli, créer un brouillon puis publier ; essayer une petite image et sa lecture.
 Avec un autre compte, vérifier les contenus publiés et l'absence des brouillons.

@@ -23,6 +23,9 @@ Alimentation d'un projet TEST dédié : `docs/16-SYNTHETIC-SEED.md`.
 Déploiement Sites public effectué ; voir `docs/17-SITES-DEPLOYMENT.md` pour
 les preuves, CORS R2 validé et recette OTP/upload en ligne restant à valider.
 Aucun push, déploiement ou seed distant sans demande explicite.
+Correction ADR-017 : consultation réservée aux sessions OTP, migration 0007 et
+nouveau code préparés localement. Ne pas les présenter comme appliqués/publiés
+tant que les opérations distantes n'ont pas été explicitement autorisées et vérifiées.
 
 ## Première mission du socle (historique / nouvelle instance)
 1. Vérifier que le projet compile.

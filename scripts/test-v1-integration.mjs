@@ -80,7 +80,8 @@ const fixture = createServer(async (request, response) => {
       return true;
     });
     let selected = tables[table].filter(matches);
-    // Only this fixture emulates public/owner reads. Real RLS is tested separately in PostgreSQL.
+    // Minimal session/read emulation. Real RLS is tested separately in PostgreSQL.
+    if (token !== "test-service" && !tokens[token]) selected = [];
     if (token !== "test-service" && table === "media_assets") selected = selected.filter((m) => m.owner_id === tokens[token] ||
       (m.status === "published" && tables.memories.some((memory) => memory.id === m.memory_id && memory.status === "published")));
     if (["POST", "PATCH"].includes(request.method)) {
@@ -147,6 +148,7 @@ try {
     check(response.status === 200 && response.headers.get("content-type")?.includes("text/html"), `rendu HTML ${path} disponible`);
     const html = await response.text();
     check(html.includes("LivreDor") && !html.includes("No such module"), `rendu HTML ${path} contient l'application sans erreur de module`);
+    check(!["TEST V1", "Fixture locale", "TEST publié", "Un souvenir publié", "SECRET BROUILLON", "evil()"].some((secret) => html.includes(secret)), `aucune donnée projet dans HTML/RSC anonyme ${path}`);
   }
   if (htmlOnly) {
     console.log(`PASS : ${assertions} contrôles HTML ; fixture locale, aucun accès R2/Supabase distant.`);
@@ -200,19 +202,21 @@ try {
   check((await call("/api/media/presign", { method: "POST", body: { ...input, sizeBytes: 16 * 1024 * 1024 } })).status === 400, "taille excessive refusée");
   const presign = await call("/api/media/presign", { method: "POST", body: input }); check(presign.status === 200, "réservation média créée");
   const { uploadUrl, mediaId } = await presign.json();
-  check((await call(`/api/media/${mediaId}`, { token: null })).status === 404, "upload non finalisé invisible");
+  check((await call(`/api/media/${mediaId}`, { token: null })).status === 401, "lecture média sans session refusée avant finalisation");
   const preflight = await fetch(uploadUrl, { method: "OPTIONS", headers: { Origin: "http://localhost:3000", "Access-Control-Request-Method": "PUT", "Access-Control-Request-Headers": "content-type" } });
   check(preflight.status === 204 && preflight.headers.get("access-control-allow-origin") === "http://localhost:3000", "CORS PUT accepté");
   check((await fetch(uploadUrl, { method: "PUT", body: bytes, headers: { "Content-Type": input.mimeType } })).ok, "PUT signé réel sur R2");
   check((await call(`/api/media/${mediaId}`, { method: "POST", token: "test-b" })).status === 403, "finalisation par autre auteur refusée");
   const finalized = await call(`/api/media/${mediaId}`, { method: "POST" });
   check(finalized.status === 200, `finalisation vérifiée : ${finalized.status}`);
-  const read = await call(`/api/media/${mediaId}`, { token: null }); check(read.status === 200, "GET public autorisé pour parent publié");
+  check((await call(`/api/media/${mediaId}`, { token: null })).status === 401, "média publié inaccessible sans session");
+  check((await call(`/api/media/${mediaId}`, { token: "invalid" })).status === 401, "média publié inaccessible avec jeton invalide");
+  const read = await call(`/api/media/${mediaId}`, { token: "test-b" }); check(read.status === 200, "GET authentifié autorisé pour parent publié");
   const { url } = await read.json(); check(Buffer.from(await (await fetch(url)).arrayBuffer()).equals(bytes), "lecture signée : octets identiques");
   check((await fetch(uploadUrl, { method: "PUT", body: Buffer.alloc(bytes.length), headers: { "Content-Type": input.mimeType } })).ok, "PUT réutilisé cible seulement le temporaire");
   check(Buffer.from(await (await fetch(url)).arrayBuffer()).equals(bytes), "objet final inchangé après réutilisation du PUT");
   tables.memories[0].status = "draft";
-  check((await call(`/api/media/${mediaId}`, { token: null })).status === 404, "parent brouillon rend le média privé");
+  check((await call(`/api/media/${mediaId}`, { token: "test-b" })).status === 404, "parent brouillon rend le média privé aux autres comptes");
   check((await call(`/api/media/${mediaId}`)).status === 200, "auteur conserve son aperçu privé");
   tables.memories[0].status = "published";
   const adminPath = `/api/projects/${ids.project}/admin`, exportPath = `/api/projects/${ids.project}/export`;
