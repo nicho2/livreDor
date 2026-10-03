@@ -28,6 +28,7 @@ Avant de commiter une évolution :
 ```bash
 npm run lint
 npm run typecheck
+npm test
 npm run build
 ```
 
@@ -50,6 +51,27 @@ utilise `signInWithOtp` puis `verifyOtp` avec `type: "email"`.
 Voir `docs/10-LOCAL-VALIDATION.md` pour les vérifications de développement.
 Pour un contrôle du navigateur Codex en panne après une mise à jour, voir
 `docs/11-BROWSER-TROUBLESHOOTING.md`.
+
+### Tests locaux de sécurité
+
+Les tests unitaires utilisent le lanceur intégré de Node.js (Node 22.18+ ou 24).
+Sous Windows, avec `initdb`, `pg_ctl` et `psql` dans le PATH :
+
+```powershell
+./scripts/test-rls-local.ps1
+```
+
+Ce script crée une instance PostgreSQL isolée sur la boucle locale, applique les
+migrations et teste les accès avec les rôles `anon` et `authenticated`. Il ne
+contacte pas Supabase et n'utilise aucune clé. Il arrête l'instance à la fin ; les
+fichiers temporaires et journaux sont conservés pour diagnostic. Le sandbox
+Windows peut empêcher son démarrage et nécessiter une autorisation d'exécution.
+Le schéma `auth` minimal de test ne remplace pas une vérification sur Supabase.
+
+Après application des migrations à une **base Supabase de développement**, le
+fichier `tests/sql/content-access.sql` peut aussi être exécuté dans l'éditeur SQL
+avec un rôle administrateur. Ses données fictives sont annulées par `ROLLBACK` ;
+il doit être exécuté en entier et pas sur une base de production.
 
 ## Configuration Cloudflare R2
 1. Créer un bucket privé.

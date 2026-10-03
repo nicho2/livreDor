@@ -51,3 +51,30 @@ Restent notamment : tests entre deux contributeurs et deux projets, tentatives
 d'écriture anonymes, unicité du message principal, retour de session, fermeture
 du projet, rendu de la personnalisation et ordre chronologique mixte
 dates/périodes. R2 n'est pas configuré et les médias ne sont pas testés.
+
+## Reprise du développement — sécurité et dates
+
+Migration `0003_content_access_guards.sql` préparée, **non appliquée à la base
+Supabase distante**. Elle conditionne les lectures publiques à la visibilité du
+projet, les écritures des contributeurs à sa fenêtre d'ouverture, et conserve
+la modération par l'organisateur après clôture. Des triggers empêchent de
+changer le projet ou l'auteur d'un contenu. Les règles média vérifient le
+rattachement au souvenir et cachent les médias d'un souvenir non publié.
+
+Vérifications locales effectuées sur une instance PostgreSQL 18 temporaire :
+les trois migrations s'appliquent ; 21 assertions passent avec les rôles
+`anon` et `authenticated`, deux contributeurs et un organisateur. L'instance
+est arrêtée en fin de test et toutes les données de test sont annulées.
+Le schéma `auth` est une émulation minimale : il reste nécessaire de valider
+la migration et le parcours authentifié sur Supabase de développement.
+
+Six tests unitaires passent : dates réelles/bissextiles, périodes ordonnées,
+bornes des années, exclusion date/période simultanées, longueur des champs
+et personnalisation bornée. Les mises à jour et masquages des souvenirs
+exigent désormais une ligne retournée : un refus RLS filtrant toutes les
+lignes ne peut plus être annoncé comme un succès.
+
+`npm run lint`, `npm run typecheck`, `npm test` et `npm run build` passent.
+PostgreSQL et le build nécessitent une exécution autorisée hors sandbox sur
+cet environnement Windows (accès refusé dans le sandbox).
+Ni données Supabase existantes, ni secrets, ni publication n'ont été modifiés.

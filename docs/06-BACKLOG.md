@@ -54,7 +54,7 @@
 - [ ] README d'archive.
 
 ## Phase 8 — Qualité
-- [ ] Tests RLS.
+- [ ] Tests RLS — suite PostgreSQL locale ajoutée ; validation Supabase après migration 0003 à faire.
 - [ ] Tests upload.
 - [ ] Accessibilité.
 - [ ] Performance mobile.

@@ -34,3 +34,17 @@
 **Décision :** le produit doit savoir produire une archive autonome.
 
 **Raison :** le site actif n'a pas vocation à rester en ligne éternellement.
+
+## ADR-008 — Fenêtre de contribution et identité des contenus
+
+**Décision :** les écritures des contributeurs exigent un projet ouvert, une
+adhésion et une fenêtre temporelle active. L'organisateur conserve le droit de
+modérer après clôture. L'identifiant, le projet et l'auteur d'un contenu ne sont
+pas modifiables ; un média ne peut être réaffecté à un autre souvenir ou blob.
+La lecture publique exige aussi un projet non brouillon. Un média attaché à un
+souvenir non publié n'est pas exposé publiquement.
+
+**Raison :** aligner la RLS avec les contrôles déjà effectués par `join_project`,
+empêcher les déplacements inter-projets et préserver une modération immédiate.
+La migration `0003_content_access_guards.sql` corrige les politiques initiales ;
+elle doit être appliquée à Supabase pour rendre ces protections effectives.

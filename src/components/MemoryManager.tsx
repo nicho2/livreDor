@@ -134,12 +134,12 @@ export function MemoryManager({ projectId }: { projectId: string }) {
     };
 
     const { error } = editingId
-      ? await supabase.from("memories").update(values).eq("id", editingId)
+      ? await supabase.from("memories").update(values).eq("id", editingId).eq("project_id", projectId).eq("author_id", auth.user.id).select("id").single()
       : await supabase.from("memories").insert({
           ...values,
           project_id: projectId,
           author_id: auth.user.id,
-        });
+        }).select("id").single();
 
     setBusy(false);
     if (error) {
@@ -155,7 +155,9 @@ export function MemoryManager({ projectId }: { projectId: string }) {
   async function hideMemory(id: string) {
     setBusy(true);
     const supabase = getSupabaseBrowser();
-    const { error } = await supabase.from("memories").update({ status: "hidden" }).eq("id", id);
+    // RLS may filter an UPDATE to zero rows (e.g. after project closure).
+    // Require a returned row before announcing success.
+    const { error } = await supabase.from("memories").update({ status: "hidden" }).eq("id", id).eq("project_id", projectId).select("id").single();
     setBusy(false);
     if (error) setFeedback(error.message);
     else {
