@@ -2,6 +2,10 @@
 
 ## Activation sur Supabase
 
+**État au 3 octobre 2026 : 0004 et 0005 appliquées sur le Supabase de
+développement configuré. Ne pas les rejouer sur cette base.** Les instructions
+ci-dessous restent utiles pour une nouvelle instance.
+
 Dans l'éditeur SQL du **projet Supabase de développement configuré**, exécuter
 entièrement, dans l'ordre :
 
@@ -15,6 +19,29 @@ L'application doit déjà disposer des migrations 0001 à 0003.
 L'absence de 0004 produit un message explicite à la création ; sans 0005,
 Organisation reste utilisable et explique pourquoi le partage est désactivé.
 Ne pas coller une clé secrète dans le formulaire ni dans le SQL.
+
+### Connexion directe et dépannage TLS
+
+Pour une application par PostgreSQL, conserver `DATABASE_URL` uniquement dans
+`.env.local` ignoré par Git. Copier la chaîne PostgreSQL complète depuis
+Supabase → Connect (Session pooler), avec le mot de passe de la base et non une
+clé API ; encoder les caractères réservés du mot de passe dans l'URL.
+Vérifier que l'hôte et l'utilisateur correspondent au projet Supabase configuré
+avant toute écriture. Ne jamais afficher cette chaîne dans les logs.
+
+Si `psql` échoue avec une erreur de vérification du certificat, ne pas désactiver
+TLS ni rétrograder sa vérification. Utiliser `sslmode=verify-full` et le certificat
+CA fourni dans Database Settings → SSL Configuration → Download certificate.
+La configuration officielle de Supabase Studio référence aussi ce certificat :
+`https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt`.
+Le télécharger par HTTPS vérifié ; fournir son fichier à `PGSSLROOTCERT`.
+La confiance système seule n'a pas suffi sur ce poste.
+
+Passer les identifiants à `psql` par variables d'environnement du processus,
+pas dans ses arguments ; utiliser `-X` et `ON_ERROR_STOP=1`. Contrôler les objets
+présents avant d'exécuter seulement les migrations absentes, puis vérifier les
+permissions et la conservation des données. Une erreur TLS survient avant
+l'exécution SQL : elle ne signifie pas que la migration a été appliquée.
 
 ## Utilisation
 

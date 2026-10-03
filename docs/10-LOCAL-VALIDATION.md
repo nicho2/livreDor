@@ -247,8 +247,20 @@ handles Windows du serveur temporaire. Cette seule instance a été arrêtée,
 puis le script relancé directement : les 46 contrôles ont réussi. Les journaux
 temporaires sont conservés pour diagnostic, sans accès à la base utilisateur.
 
-Activation distante encore nécessaire : exécuter 0004 puis 0005 dans Supabase.
-Les tests HTTP ne remplacent pas la RLS distante ; la création réelle et le
-partage entre deux sessions OTP restent à recetter après cette activation.
+Activation distante réalisée le 3 octobre 2026, après autorisation utilisateur :
+0004 puis 0005 exécutées intégralement avec `psql`, vérification TLS complète et
+certificat officiel Supabase. Les objets étaient absents avant application.
+Les empreintes des lignes des six tables métier sont identiques avant/après :
+aucune contribution, aucun projet ni rôle existant modifié (1 projet, 3 messages,
+8 souvenirs, 2 médias). Aucun compte créé et aucune invitation envoyée.
+
+Onze contrôles de métadonnées passent : droits des fonctions, refus des appels
+anonymes, RLS des invitations, politique organisateur, absence d'écriture directe
+sur les invitations et trigger de protection d'identité. PostgREST reconnaît les
+fonctions de création/acceptation et refuse leur appel anonyme (401 / 42501).
+Le site local répond sur la page Organisation. Ces contrôles ne remplacent pas
+la recette réelle de création et de partage entre deux sessions OTP, qui reste
+à effectuer. Les 46 assertions RLS ci-dessus concernent la base locale isolée.
+
 La CI est configurée mais pas exécutée sur GitHub (aucun push demandé).
 Voir `14-ONBOARDING-REGRESSION.md` pour activation et contrôles répétables.
