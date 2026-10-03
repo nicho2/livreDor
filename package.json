@@ -14,7 +14,8 @@
     "test:watch": "node --watch --import ./tests/register.mjs --test tests/*.test.mjs",
     "check": "node scripts/check.mjs",
     "test:integration": "node --env-file=.env.local scripts/test-v1-integration.mjs",
-    "test:sites": "node --env-file=.env.local scripts/test-v1-integration.mjs --sites"
+    "test:sites": "node --env-file=.env.local scripts/test-v1-integration.mjs --sites",
+    "test:sites:html": "node scripts/test-v1-integration.mjs --sites --html-only"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1142.0",

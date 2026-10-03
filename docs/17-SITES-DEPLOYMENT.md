@@ -87,3 +87,21 @@ Packaging Windows : le helper fourni appelle GNU tar sous Git Bash. Ajouter
 `E:` est interprété comme un hôte distant. Aucun changement du packager fourni.
 Les contrôles réussis ont été réutilisés après cette correction ; l'archive
 validée contient uniquement le build et le manifeste, sans clés incorporées.
+
+## Incident de rendu HTML après la première publication
+
+L'utilisateur signale une erreur 500 sur `GET /`. Les journaux de production
+identifient `No such module "dist/server/ssr/index.js"` : la compilation émet
+`index.mjs` et `ssr/index.mjs`, mais l'entrée adaptée `index.js` entraîne un
+chargement du rendu HTML à l'emplacement `ssr/index.js`. Ce n'est pas une erreur
+d'OTP, de Supabase ou de CORS. Les tests API ne chargent pas le module SSR.
+
+Le script de build conserve également une copie du module SSR sous le nom
+attendu. Sept routes HTML sont ajoutées à la suite commune : accueil, connexion,
+création, projet, mur, chronologie et détail. Le test d'accueil reproduit l'échec
+avant correction ; après reconstruction, les 73 contrôles Workers passent.
+`npm run test:sites:html` exécute les 14 contrôles HTML seuls sans fichier
+d'environnement ni accès R2/Supabase distant ; cette vérification est ajoutée
+à la CI GitHub après compilation Sites.
+La vérification du statut de déploiement ne remplace donc pas le contrôle HTTP
+des pages de l'application. Aucun contenu ni média utilisateur modifié.

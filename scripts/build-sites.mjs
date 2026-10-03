@@ -5,6 +5,9 @@ const result = spawnSync(process.execPath, ["node_modules/vite/bin/vite.js", "bu
 if (result.error || result.status !== 0) process.exit(result.status || 1);
 // Sites' portable archive contract expects index.js; Vite emits index.mjs.
 copyFileSync("dist/server/index.mjs", "dist/server/index.js");
+// The RSC loader resolves the HTML-rendering entry relative to index.js and
+// therefore asks for ssr/index.js too. API routes never load this module.
+copyFileSync("dist/server/ssr/index.mjs", "dist/server/ssr/index.js");
 const config = JSON.parse(readFileSync("dist/server/wrangler.json", "utf8"));
 config.main = "index.js";
 writeFileSync("dist/server/wrangler.json", JSON.stringify(config));

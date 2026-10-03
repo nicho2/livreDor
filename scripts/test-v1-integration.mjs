@@ -100,6 +100,7 @@ const fixturePort = fixture.address().port;
 const portProbe = createServer(); await new Promise((resolve) => portProbe.listen(0, "127.0.0.1", resolve));
 const appPort = portProbe.address().port; await new Promise((resolve) => portProbe.close(resolve));
 const sitesRuntime = process.argv.includes("--sites");
+const htmlOnly = process.argv.includes("--html-only");
 const child = spawn(process.execPath, sitesRuntime ? ["scripts/test-sites-server.mjs", String(appPort)] : ["node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", String(appPort)], {
   windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
   env: { ...process.env, LIVREDOR_MAX_PROJECTS: "3", SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon", SUPABASE_SERVICE_ROLE_KEY: "test-service" },
@@ -107,7 +108,7 @@ const child = spawn(process.execPath, sitesRuntime ? ["scripts/test-sites-server
 child.stdout.on("data", () => {}); child.stderr.on("data", () => {});
 const base = `http://127.0.0.1:${appPort}`;
 const bucket = process.env.R2_BUCKET_NAME;
-const storage = new S3Client({ region: "auto", endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY } });
+const storage = htmlOnly ? null : new S3Client({ region: "auto", endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY } });
 async function call(path, { token = "test-a", method = "GET", body } = {}) {
   const headers = { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body ? { "Content-Type": "application/json" } : {}) };
   return fetch(`${base}${path}`, { method, headers, ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(30000) });
@@ -130,6 +131,7 @@ function unzip(buffer) {
   }
   return files;
 }
+async function runChecks() {
 try {
   for (let i = 0; i < 60; i++) {
     try { if ((await call("/api/media/presign", { method: "POST", token: null })).status === 401) break; }
@@ -138,6 +140,18 @@ try {
     if (i === 59) throw new Error("Test server failed to start");
   }
   const input = { projectId: ids.project, memoryId: ids.memory, filename: "test-pixel.png", mimeType: "image/png", sizeBytes: 68 };
+  // API-only checks miss SSR module imports. Exercise HTML routes before any
+  // writes, using the same isolated fixture on Next.js and on Workers.
+  for (const path of ["/", "/auth", "/nouveau", "/p/integration-test", "/p/integration-test/wall", "/p/integration-test/timeline", `/p/integration-test/memories/${ids.memory}`]) {
+    const response = await call(path, { token: null });
+    check(response.status === 200 && response.headers.get("content-type")?.includes("text/html"), `rendu HTML ${path} disponible`);
+    const html = await response.text();
+    check(html.includes("LivreDor") && !html.includes("No such module"), `rendu HTML ${path} contient l'application sans erreur de module`);
+  }
+  if (htmlOnly) {
+    console.log(`PASS : ${assertions} contrôles HTML ; fixture locale, aucun accès R2/Supabase distant.`);
+    return;
+  }
   const newDetails = { title: "TEST Nouveau LivreDor", subjectName: "TEST Marie Martin", description: "Présentation de test", eventDate: "2026-10-03", slug: `test-${randomUUID()}` };
   check((await call("/api/projects", { method: "POST", token: null, body: newDetails })).status === 401, "création sans session refusée");
   check((await call("/api/projects", { method: "POST", body: { ...newDetails, created_by: ids.b } })).status === 400, "créateur forgé refusé");
@@ -242,3 +256,5 @@ try {
     child.kill(); await new Promise((resolve) => fixture.close(resolve));
   }
 }
+}
+await runChecks();
