@@ -96,7 +96,7 @@ try {
     if (i === 59) throw new Error("Test server failed to start");
   }
   const input = { projectId: ids.project, memoryId: ids.memory, filename: "test-pixel.png", mimeType: "image/png", sizeBytes: 68 };
-  const bytes = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6p8AAAAASUVORK5CYII=", "base64");
+  const bytes = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=", "base64");
   input.sizeBytes = bytes.length;
   check((await call("/api/media/presign", { method: "POST", token: null, body: input })).status === 401, "authentification obligatoire");
   check((await call("/api/media/presign", { method: "POST", token: "invalid", body: input })).status === 401, "jeton invalide refusé");
@@ -150,11 +150,15 @@ try {
   console.log(`PASS : ${assertions} contrôles ; Auth/données fictives locales, R2 réel.`);
 } finally {
   // Delete only keys derived from this run's UUIDs, never enumerating user objects.
-  for (const row of tables.media_assets) {
-    const staging = `${ids.project}/${row.owner_id}/uploads/${row.id}`;
-    const final = `${ids.project}/${row.owner_id}/${row.id}-test-pixel.png`;
-    await storage.send(new DeleteObjectCommand({ Bucket: bucket, Key: staging }));
-    await storage.send(new DeleteObjectCommand({ Bucket: bucket, Key: final }));
+  try {
+    for (const row of tables.media_assets) {
+      const staging = `${ids.project}/${row.owner_id}/uploads/${row.id}`;
+      const final = `${ids.project}/${row.owner_id}/${row.id}-test-pixel.png`;
+      await storage.send(new DeleteObjectCommand({ Bucket: bucket, Key: staging }));
+      await storage.send(new DeleteObjectCommand({ Bucket: bucket, Key: final }));
+    }
+  } finally {
+    // A storage failure must not leave a fixture or child server running.
+    child.kill(); await new Promise((resolve) => fixture.close(resolve));
   }
-  child.kill(); await new Promise((resolve) => fixture.close(resolve));
 }

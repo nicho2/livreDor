@@ -27,7 +27,11 @@ export async function projectArchive(project: Project, signal: AbortSignal) {
   const available = new Set<string>();
   const manifest: { id: string; path: string | null; reason?: string }[] = [];
   for (const item of media) {
-    try { await checkedObject(item); available.add(item.id); manifest.push({ id: item.id, path: archiveMediaPath(item) }); }
+    try {
+      await checkedObject(item); available.add(item.id);
+      const publicFile = item.status === "published" && memories.some((m) => m.id === item.memory_id && m.status === "published");
+      manifest.push({ id: item.id, path: `${publicFile ? "site" : "archive-privee"}/${archiveMediaPath(item)}` });
+    }
     catch (error) {
       if (!(error instanceof ApiError) || ![404, 409].includes(error.status)) throw error;
       // Missing published files must fail loudly, not yield a misleading "complete" archive.

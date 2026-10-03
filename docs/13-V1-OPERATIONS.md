@@ -110,7 +110,10 @@ Les clés et `.env.local` ne doivent jamais être ajoutés à Git.
   l'envoi inachevé depuis ses contributions. Prévoir nettoyage périodique avant
   un usage à grande échelle, sans supprimer les fichiers utilisateur par glob.
 - Le ZIP est généré en flux côté serveur, mais le navigateur le reçoit en blob :
-  pour de très grosses archives, prévoir un téléchargement serveur sur disque.
+  pour de très grosses archives, `scripts/export-project.mjs` permet le transfert
+  direct sur disque via l'API locale et une session organisateur autorisée,
+  sans écraser un fichier existant. Ne jamais fournir le jeton en argument CLI.
+  Un téléchargement interrompu est conservé avec le suffixe `.partial`.
 - Le seuil 20 médias protège l'usage normal ; ce n'est pas un quota atomique
   contre des requêtes concurrentes ni une protection complète contre les abus.
 - Les brouillons de projet ne sont pas accessibles par les routes publiques.

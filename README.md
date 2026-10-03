@@ -1,6 +1,6 @@
-# LivreDor — Starter Kit
+# LivreDor
 
-Socle de départ du projet **LivreDor**, préparé pour être repris localement avec Codex ou un autre agent de développement.
+Application de collecte et de restitution de souvenirs, développée et testable localement.
 
 ## Objectif
 Créer une expérience collective permettant de préparer un souvenir numérique pour une personne ou un événement : livre d'or, souvenirs, médias, chronologie et restitution finale.
@@ -54,7 +54,7 @@ Pour un contrôle du navigateur Codex en panne après une mise à jour, voir
 
 ### Tests locaux de sécurité
 
-Les tests unitaires utilisent le lanceur intégré de Node.js (Node 22.18+ ou 24).
+Les tests unitaires utilisent le lanceur intégré et les hooks de modules de Node.js 24.
 Sous Windows, avec `initdb`, `pg_ctl` et `psql` dans le PATH :
 
 ```powershell
@@ -116,7 +116,7 @@ Ce dépôt est volontairement un **starter**, pas une application finalisée. Il
 - les écrans de base mur/chronologie/admin ;
 - une documentation suffisamment précise pour permettre à un agent de poursuivre sans réinterpréter le besoin.
 
-## Ordre de travail recommandé
+## Ordre de travail initial (historique)
 1. Faire fonctionner Supabase local/remote.
 2. Valider le parcours OTP.
 3. Créer un premier projet de démonstration.

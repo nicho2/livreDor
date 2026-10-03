@@ -32,8 +32,6 @@ LivreDor-NomProjet/
 - fichiers JSON lisibles ;
 - site statique navigable localement ou hébergeable ailleurs.
 
-## PDF / livre
-
 ## Implémentation V1
 
 L'export ZIP organisateur est disponible dans l'interface après clôture.
@@ -45,5 +43,8 @@ Les noms de fichiers utilisent des UUID et extensions contrôlées ; les textes
 sont échappés et la mise en forme est limitée aux classes autorisées.
 Les fichiers absents/non finalisés sont signalés dans un manifeste. Un fichier
 publié manquant provoque une erreur explicite, pas une archive dite complète.
-Le PDF/livre imprimable reste hors V1. Voir `13-V1-OPERATIONS.md`.
+Voir `13-V1-OPERATIONS.md`.
+
+## PDF / livre
+
 Le PDF imprimable est une évolution post-V1. L'architecture doit néanmoins conserver suffisamment de structure pour générer ultérieurement une maquette : auteur, date, texte, média principal, ordre chronologique.

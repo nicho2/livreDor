@@ -1,61 +1,69 @@
-# Backlog recommandé
+# Backlog V1 — état au 3 octobre 2026
+
+Les cases cochées indiquent une fonctionnalité implémentée, pas une certification
+de production. Les preuves et limites de validation sont dans
+`10-LOCAL-VALIDATION.md` ; l'exploitation est décrite dans `13-V1-OPERATIONS.md`.
 
 ## Phase 0 — Mise en route
-- [ ] Créer Supabase.
-- [ ] Créer R2.
-- [ ] Renseigner `.env.local`.
-- [ ] Appliquer migration SQL.
-- [ ] Créer un projet de démonstration.
+- [x] Créer Supabase.
+- [x] Créer R2 privé et configurer le CORS local.
+- [x] Renseigner `.env.local` (ignoré par Git).
+- [x] Appliquer les migrations SQL du socle.
+- [x] Créer un projet de démonstration.
 
 ## Phase 1 — Auth
-- [ ] OTP email complet.
-- [ ] Gestion retour de session — retour automatique et en-tête synchronisé implémentés ; restauration locale vérifiée, nouveau cycle OTP/déconnexion à valider.
-- [ ] Profil public minimal.
-- [ ] Rejoindre un projet.
+- [x] OTP email complet — connexion réelle confirmée par l'utilisateur.
+- [x] Retour au projet, restauration de session et en-tête synchronisé.
+- [x] Nom affiché minimal, réutilisé par défaut sans exposer l'email.
+- [x] Rejoindre un projet.
 
 ## Phase 2 — Livre d'or
-- [ ] Formulaire message — implémenté, validation Supabase/RLS à faire.
-- [ ] Éditeur borné — implémenté, validation Supabase/RLS à faire.
-- [ ] Brouillon — implémenté, validation Supabase/RLS à faire.
-- [ ] Publication — implémentée, validation Supabase/RLS à faire.
-- [ ] Modification de sa contribution — implémentée, validation Supabase/RLS à faire.
+- [x] Formulaire message.
+- [x] Éditeur borné (pas de HTML/CSS libre).
+- [x] Brouillon.
+- [x] Publication.
+- [x] Modification de sa contribution.
 
 ## Phase 3 — Souvenirs
-- [ ] Création, lecture, modification et masquage — implémentées, validation Supabase/RLS à faire.
-- [ ] Date exacte — implémentée, validation Supabase/RLS à faire.
-- [ ] Année/période — implémentée, validation Supabase/RLS à faire.
-- [ ] Plusieurs souvenirs par contributeur — implémenté, validation Supabase/RLS à faire.
+- [x] Création, lecture, modification et masquage.
+- [x] Date exacte.
+- [x] Année/période.
+- [x] Plusieurs souvenirs par contributeur.
 
 ## Phase 4 — Médias
-- [ ] Pré-signature PUT.
-- [ ] Upload direct R2.
-- [ ] Enregistrement métadonnées.
-- [ ] URL GET signée.
-- [ ] Suppression logique et physique.
+- [x] Pré-signature PUT contrôlée côté serveur.
+- [x] Upload direct R2 puis finalisation vers un objet distinct.
+- [x] Enregistrement et vérification des métadonnées.
+- [x] URL GET temporaire signée selon les droits de lecture.
+- [x] Suppression logique et physique.
 
 ## Phase 5 — Consultation
-- [ ] Mur.
-- [ ] Vue détail.
-- [ ] Chronologie.
-- [ ] Responsive.
+- [x] Mur.
+- [x] Vue détail.
+- [x] Chronologie.
+- [x] Responsive — formulaire et détail contrôlés à 375 px.
 
 ## Phase 6 — Administration
-- [ ] Liste des contenus.
-- [ ] Filtre par statut.
-- [ ] Publier/masquer.
-- [ ] Gestion média.
-- [ ] Clôture.
+- [x] Liste des contenus.
+- [x] Filtre par statut.
+- [x] Publier/masquer.
+- [x] Gestion média.
+- [x] Clôture et fenêtres de contribution.
 
 ## Phase 7 — Export
-- [ ] Export JSON.
-- [ ] Téléchargement des médias.
-- [ ] Génération d'un site statique.
-- [ ] ZIP final.
-- [ ] README d'archive.
+- [x] Export JSON privé.
+- [x] Copie des médias, sans dépendance aux URL signées.
+- [x] Génération d'un site statique publiable séparément.
+- [x] ZIP final après clôture.
+- [x] README d'archive distinguant sauvegarde privée et restitution.
 
 ## Phase 8 — Qualité
-- [ ] Tests RLS — suite PostgreSQL locale ajoutée ; validation Supabase après migration 0003 à faire.
-- [ ] Tests upload.
-- [ ] Accessibilité.
-- [ ] Performance mobile.
-- [ ] Gestion des erreurs.
+- [x] Tests unitaires et suite RLS PostgreSQL isolée.
+- [x] Tests d'intégration API avec R2 réel et données métier isolées.
+- [x] Upload, publication, persistance et lecture d'une image dans le navigateur local.
+- [x] Gestion des erreurs et contrôle des accès organisateur.
+- [ ] Recette finale avec une session organisateur réelle : modération, clôture intentionnelle et téléchargement du ZIP.
+- [ ] Contrôle complémentaire RLS sur Supabase de développement.
+- [ ] Recette de fichiers audio/vidéo représentatifs et de leurs codecs.
+- [ ] Audit complet d'accessibilité et mesure de performance sur téléphone réel.
+- [ ] Avant publication : hébergement, consentement, durée de conservation et validation des URL publiques du bucket.

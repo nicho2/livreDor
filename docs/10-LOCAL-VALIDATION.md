@@ -141,3 +141,66 @@ La page de contribution filtre volontairement les souvenirs par auteur connecté
 elle sert à gérer ses propres contenus. Le mur affiche les publications de tous
 les auteurs. Ce comportement ne doit pas être confondu avec un refus RLS de lire
 les contributions publiées des autres.
+
+## V1 complète — médias, organisation et archive (3 octobre 2026)
+
+Fonctionnalités implémentées : réservation média, PUT R2 direct avec progression,
+vérification et copie finale immuable, GET signé privé, suppression avec masquage
+puis effacement ; navigation projet commune, noms/styles bornés, détail des
+souvenirs, chronologie mixte ; modération organisateur, fenêtre de collecte,
+clôture, archivage ; ZIP avec site autonome et sauvegarde privée séparés.
+Aucune nouvelle migration SQL n'est nécessaire pour ce jalon.
+
+### Vérifications réellement réalisées
+
+- `npm run lint` : zéro erreur, zéro avertissement.
+- `npm run typecheck` et build Webpack de production : réussis.
+- `npm test` : 17 tests unitaires passent (OTP/navigation, nom, dates/périodes,
+  formats et tailles médias, tri chronologique, classes de style autorisées,
+  exclusion brouillons/masqués et échappement des textes du site statique).
+- Suite PostgreSQL 18 isolée réexécutée : 21 assertions RLS passent avec rôles
+  anon/authenticated, deux auteurs, un organisateur et deux projets ; rollback
+  des fixtures et arrêt de l'instance.
+- `npm run test:integration` : 33 contrôles des **API Next compilées**, avec
+  Auth/PostgREST fictifs **locaux** et stockage **R2 réel**, réussis. Ils couvrent
+  session obligatoire/invalide, auteur/projet, taille/extension, PUT/CORS,
+  finalisation, GET et contenu binaire identique, réutilisation du PUT sans
+  écrasement final, parent brouillon privé, admin/export interdits au contributeur,
+  clôture/modération, export ZIP extrait et média identique, exclusion brouillons
+  et HTML utilisateur, suppression logique/physique, clé objet forgée refusée.
+  Aucun compte Supabase créé, aucune session navigateur extraite : les objets R2
+  de cette suite utilisent des UUID aléatoires et sont nettoyés au terme du test.
+- Dans le navigateur avec la **vraie session Supabase** déjà ouverte : création
+  de `TEST — Médias V1` en brouillon, upload d'une image PNG synthétique,
+  finalisation et aperçu privé, publication et persistance au rechargement,
+  lecture sur le mur et sur la page détail. Image décodée : 1 × 1 pixel.
+  Aucun contenu existant d'un utilisateur n'a été modifié.
+- Le compte contributeur actuel reçoit « Accès au projet refusé » sur la route
+  organisateur ; il ne voit pas le lien Organisation ni les contenus administrateur.
+- Largeur mobile 375 pixels : détail sans débordement horizontal ; viewport remis
+  au réglage initial après test. La preuve visuelle est sauvegardée hors du dépôt.
+- Client anonyme Supabase : le média du souvenir publié est lisible ; R2 sans
+  signature refuse la lecture (HTTP 400). Ce dernier contrôle concerne l'endpoint
+  S3, pas la configuration d'éventuels domaines publics du bucket.
+- `npm audit --omit=dev` : zéro vulnérabilité connue. L'audit complet indique
+  5 alertes élevées **dans les outils de lint** via `braces` 3.0.3. Le registre
+  ne propose pas de version corrigée de cette dépendance ; aucun `audit fix
+  --force` ni rétrogradation majeure de Next n'a été appliqué.
+
+### Recette avant publication
+
+Le parcours OTP/reconnexion a déjà été confirmé par l'utilisateur. Les tests
+présents n'envoient pas un nouveau code et ne déconnectent pas sa session.
+L'organisateur doit encore essayer visuellement son panneau avec son propre
+compte et ouvrir son ZIP final après une clôture intentionnelle. Le projet
+`depart-demo` n'a pas été clôturé pour les tests. L'API organisateur/export a été
+testée automatiquement, pas avec une session réelle organisateur dans le navigateur.
+La fixture HTTP n'est pas une preuve supplémentaire de RLS Supabase.
+
+Les médias vidéo/audio/HEIC dépendent des codecs du navigateur : leur liste MIME
+et leurs limites sont testées, mais seul l'aperçu PNG a été vérifié visuellement.
+Avant déploiement : origine CORS réelle, configuration URL/OTP, revue consentements
+et contenu, et recette mobile avec des fichiers représentatifs.
+Voir `13-V1-OPERATIONS.md` pour utilisation, conservation et limites.
+
+Sauvegarde par commits locaux ; aucun push et aucune publication réalisés.
