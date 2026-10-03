@@ -13,8 +13,9 @@ pas les brouillons publics : l'OTP Supabase reste nécessaire pour contribuer,
 et les opérations organisateur contrôlent toujours le rôle côté serveur.
 L'ADR-017 remplace désormais la consultation anonyme : informations et contenus
 exigent une session OTP LivreDor, sans compte ChatGPT. Le lien seul n'accorde
-pas la lecture. Cette correction nécessite la migration 0007 et une nouvelle
-publication du code ; la version 2 décrite plus bas conserve l'ancien comportement.
+pas la lecture. Migration 0007 appliquée et nouveau code publié en version 3 ;
+la version 2 décrite plus bas conserve l'ancien comportement et ne doit pas être
+redéployée sans tenir compte de cette migration.
 
 ## Variables
 
@@ -136,3 +137,20 @@ En local, 38 tests unitaires, lint, TypeScript et les 73 contrôles d'intégrati
 sur chacun des runtimes Next.js et Workers passent. Les 14 contrôles HTML seuls
 passent sans secrets ; leur ajout à la CI attend un prochain push GitHub.
 La recette avec un vrai OTP et un upload navigateur en ligne reste à réaliser.
+
+### Version 3 — consultation avec OTP obligatoire
+
+Publiée le 3 octobre 2026 à 18 h 41 (Paris), statut `succeeded`, configuration
+d'environnement révision 6, source `66a224bbc9b17ba7bdb47ee34e32c85b00ecdb15`.
+Déploiement : `appgdep_6ac1302783d08191aca9ce70bf14a8e6`.
+L'adresse réelle reste uniquement dans les notes locales ignorées par Git.
+
+Migration 0007 appliquée sur le Supabase configuré, avec certificat racine
+Supabase et TLS `verify-full`. Quatre politiques réservées à `authenticated` ;
+empreintes des six tables métier identiques avant/après dans la transaction.
+Lectures anonymes PostgREST réelles : aucune ligne pour projets, messages,
+souvenirs et métadonnées média. Aucun compte ni contenu supprimé ou ajouté.
+Après publication, accueil, connexion, projet, mur et chronologie répondent
+HTTP 200 sans erreur de rendu. L'API média répond HTTP 401 sans URL signée
+pour une requête anonyme comme pour un jeton invalide.
+La recette avec un vrai OTP sur cette version reste à confirmer par l'utilisateur.

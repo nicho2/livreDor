@@ -358,3 +358,13 @@ dans le navigateur pendant ce changement.
 La migration 0007 n'est pas encore appliquée à Supabase et le nouveau code n'est
 pas déployé. La version en ligne reste donc en lecture anonyme jusqu'à ces deux
 opérations autorisées et vérifiées. Aucun push GitHub ni données métier modifiées.
+
+### Application et publication autorisées ensuite
+
+Après accord explicite de l'utilisateur, migration 0007 appliquée avec TLS
+vérifié et empreintes des six tables métier inchangées. Les lectures anonymes
+directes PostgREST des quatre tables ne retournent aucune ligne. Version 3 Sites
+publiée avec succès le 3 octobre à 18 h 41 (Paris), source `66a224b` : accueil,
+connexion, projet, mur et chronologie HTTP 200 ; API média HTTP 401 sans signature
+pour absence de session ou jeton invalide. Aucun push vers GitHub. La recette OTP
+réelle sur la version 3 reste à confirmer ; les tests ne créent aucun compte.
