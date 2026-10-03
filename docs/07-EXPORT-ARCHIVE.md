@@ -45,6 +45,17 @@ Les fichiers absents/non finalisés sont signalés dans un manifeste. Un fichier
 publié manquant provoque une erreur explicite, pas une archive dite complète.
 Voir `13-V1-OPERATIONS.md`.
 
+La chronologie du site final contient uniquement les souvenirs datés ou associés
+à une période ; les souvenirs sans date restent présents sur le mur, comme dans
+l'application. Les médias sont indexés par souvenir pour éviter des parcours
+répétés de toute la collection lors de la génération de grandes archives.
+
+Après préparation du ZIP, un lien « Enregistrer le ZIP préparé » reste disponible
+sur la page Organisation si le téléchargement automatique ne démarre pas.
+La confirmation indique que l'archive est prête : seul le navigateur peut
+confirmer l'enregistrement effectif sur disque. Le fichier préparé est libéré
+quand l'utilisateur quitte la page ou prépare une nouvelle archive.
+
 ## PDF / livre
 
 Le PDF imprimable est une évolution post-V1. L'architecture doit néanmoins conserver suffisamment de structure pour générer ultérieurement une maquette : auteur, date, texte, média principal, ordre chronologique.

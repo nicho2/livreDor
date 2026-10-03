@@ -16,11 +16,13 @@ export async function testInternalPortLogin(tab) {
   return "Accès par 3101 : redirection vers 3100, OTP et livre chargés OK";
 }
 export async function testBook(tab, viewport, width) {
-  await viewport.set({ width, height: 900 });
   await tab.goto("http://localhost:3100/p/album-test/guestbook");
+  await viewport.set({ width, height: 900 });
+  assert.equal(await tab.playwright.evaluate(() => innerWidth), width);
   await tab.playwright.getByRole("button", { name: "Feuilleter le livre" }).click();
   const pages = width < 768 ? 1 : 2;
-  assert.equal(await tab.playwright.locator(".open-book .book-page").count(), pages);
+  await tab.playwright.locator(".open-book > .book-page").nth(1).waitFor({ state: pages === 1 ? "hidden" : "visible" });
+  assert.equal(await tab.playwright.locator(".open-book > .book-page").count(), pages);
   assert.equal(await tab.playwright.getByRole("button", { name: "← Précédent" }).isEnabled(), false);
   await tab.playwright.getByRole("button", { name: "Suivant →", exact: true }).click();
   assert.match(await tab.playwright.locator(".book-controls").innerText(), new RegExp(`Page ${pages + 1}`));
@@ -30,8 +32,9 @@ export async function testBook(tab, viewport, width) {
   return `Livre ${width}px : pages, navigation, absence de débordement OK`;
 }
 export async function testEditor(tab, viewport, width) {
-  await viewport.set({ width, height: 900 });
   await tab.goto("http://localhost:3100/p/album-test/contribute");
+  await viewport.set({ width, height: 900 });
+  assert.equal(await tab.playwright.evaluate(() => innerWidth), width);
   await tab.playwright.getByPlaceholder("Écrivez votre message…").fill("Merci Camille 🌻\nUne belle histoire ensemble.");
   const bold = tab.playwright.getByRole("button", { name: "Gras", exact: true });
   if (await bold.getAttribute("aria-pressed") !== "true") await bold.click();
@@ -51,8 +54,9 @@ export async function testEditor(tab, viewport, width) {
   return `Éditeur ${width}px : aperçu, formatage et enregistrement OK`;
 }
 export async function testWall(tab, viewport, width) {
-  await viewport.set({ width, height: 900 });
   await tab.goto("http://localhost:3100/p/album-test/wall");
+  await viewport.set({ width, height: 900 });
+  assert.equal(await tab.playwright.evaluate(() => innerWidth), width);
   await tab.playwright.getByRole("button", { name: "Un bel instant 1", exact: true }).waitFor({ state: "visible" });
   assert.equal(await tab.playwright.locator(".memory-card").count(), 24);
   await tab.playwright.getByRole("button", { name: "Un bel instant 1", exact: true }).click();
@@ -72,8 +76,9 @@ export async function testWall(tab, viewport, width) {
   return `Mur ${width}px : galerie, zoom, audio, Échap, focus et lots OK`;
 }
 export async function testTimeline(tab, viewport, width) {
-  await viewport.set({ width, height: 900 });
   await tab.goto("http://localhost:3100/p/album-test/timeline");
+  await viewport.set({ width, height: 900 });
+  assert.equal(await tab.playwright.evaluate(() => innerWidth), width);
   await tab.playwright.getByRole("button", { name: "Un bel instant 1", exact: true }).waitFor({ state: "visible" });
   const columns = await tab.playwright.locator(".album-timeline").evaluate(el => getComputedStyle(el).gridTemplateColumns.split(" ").length);
   assert.equal(columns, width < 768 ? 1 : 2);
@@ -104,8 +109,9 @@ export async function testThemeAndAccess(tab) {
 }
 
 export async function testPageTurn(tab, viewport, width) {
-  await viewport.set({ width, height: 900 });
   await tab.goto("http://localhost:3100/p/album-test/guestbook");
+  await viewport.set({ width, height: 900 });
+  assert.equal(await tab.playwright.evaluate(() => innerWidth), width);
   await tab.playwright.getByRole("button", { name: "Feuilleter le livre" }).click();
   const previous = tab.playwright.getByRole("button", { name: "← Précédent" });
   const next = tab.playwright.getByRole("button", { name: "Suivant →", exact: true });
@@ -131,4 +137,36 @@ export async function testPageTurn(tab, viewport, width) {
   assert.equal(await tab.playwright.locator(".book-controls").innerText(), lastPage);
   assert.equal(await next.evaluate(el => getComputedStyle(el).cursor), "default");
   return `Livre ${width}px : feuille tournée dans les deux sens, limites et curseurs OK`;
+}
+
+export async function testLargeAlbum(tab, viewport, width) {
+  await tab.goto("http://localhost:3100/p/album-test/wall");
+  await viewport.set({ width, height: 900 });
+  assert.equal(await tab.playwright.evaluate(() => innerWidth), width);
+  await tab.playwright.getByRole("button", { name: "Un bel instant 1", exact: true }).waitFor({ state: "visible" });
+  await tab.playwright.getByRole("button", { name: "Ouvrir le souvenir · 20 médias", exact: true }).first().waitFor({ state: "visible" });
+  while (await tab.playwright.getByRole("button", { name: "Afficher davantage de souvenirs" }).count()) {
+    const previousCount = await tab.playwright.locator(".memory-card").count();
+    await tab.playwright.getByRole("button", { name: "Afficher davantage de souvenirs" }).press("Enter");
+    await tab.playwright.locator(".memory-card").nth(previousCount).waitFor({ state: "attached", timeoutMs: 4000 });
+  }
+  await tab.playwright.locator(".memory-card").last().getByRole("button", { name: "Ouvrir le souvenir · 20 médias", exact: true }).waitFor({ state: "visible", timeoutMs: 10000 });
+  assert.equal(await tab.playwright.locator(".memory-card").count(), 300);
+  assert.equal(await tab.playwright.getByRole("button", { name: "Ouvrir le souvenir · 20 médias", exact: true }).count(), 300);
+  assert.equal(await tab.playwright.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  return `Album ${width}px : 300 souvenirs et 6000 métadonnées sans troncature ni débordement OK`;
+}
+
+export async function testStaticArchive(tab, viewport, width) {
+  await tab.goto("http://localhost:3102");
+  await viewport.set({ width, height: 900 });
+  assert.equal(await tab.playwright.evaluate(() => innerWidth), width);
+  await tab.playwright.getByRole("heading", { name: "TEST V1", exact: true }).waitFor({ state: "visible" });
+  assert.equal(await tab.playwright.locator("img").evaluate(el => el.complete && el.naturalWidth > 0), true);
+  assert.equal(await tab.playwright.locator("script").count(), 0);
+  assert.equal(await tab.playwright.getByText("SECRET BROUILLON", { exact: true }).count(), 0);
+  assert.equal(await tab.playwright.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await tab.playwright.getByRole("link", { name: "Mur des souvenirs", exact: true }).click();
+  assert.ok((await tab.url()).endsWith("#mur"));
+  return `Archive ${width}px : photo locale, navigation et confidentialité OK`;
 }

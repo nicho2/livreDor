@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { inflateRawSync } from "node:zlib";
 import { S3Client, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 const ids = { project: randomUUID(), a: randomUUID(), b: randomUUID(), organizer: randomUUID(), memory: randomUUID(), otherMemory: randomUUID() };
@@ -229,6 +231,19 @@ try {
   check((await call(`/api/media/${mediaId}`, { method: "DELETE" })).status === 403, "suppression contributeur après clôture refusée");
   const exported = await call(exportPath, { token: "test-organizer", method: "POST" }); check(exported.status === 200, "export ZIP après clôture");
   const files = unzip(Buffer.from(await exported.arrayBuffer()));
+  if (process.argv.includes("--save-site")) {
+    // Only synthetic public site files, in a fresh run directory; never private JSON.
+    const output = resolve(".archive-tests", ids.project);
+    for (const [name, content] of files) {
+      if (!name.startsWith("site/") || name.endsWith("/")) continue;
+      assert.ok(!name.includes("..") && !name.includes("\\") && !name.includes(":"));
+      const target = resolve(output, name);
+      assert.ok(target.startsWith(output + "/") || target.startsWith(output + "\\"));
+      await mkdir(dirname(target), { recursive: true });
+      await writeFile(target, content, { flag: "wx" });
+    }
+    console.log(`SITE DE TEST : ${output}/site/index.html`);
+  }
   const html = files.get("site/index.html").toString();
   check(files.has("README.txt") && files.has("site/assets/app.css"), "site et instructions présents");
   check(!html.includes("SECRET BROUILLON") && !html.includes("<script>") && html.includes("&lt;script&gt;"), "site publié : brouillons exclus et HTML échappé");

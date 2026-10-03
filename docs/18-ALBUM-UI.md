@@ -39,6 +39,10 @@ Arrêter la recette avec Ctrl+C avant de recompiler `.next-ui`.
 Browser Codex. Après initialisation du Browser selon sa compétence, fournir
 un onglet de recette `tab` et sa capacité `viewport` :
 
+Utiliser un onglet de test nouvellement créé et sélectionné pour la série de
+tests responsive : la capacité viewport agit sur l'onglet actif. Les assertions
+contrôlent `innerWidth` pour ne pas certifier une taille qui n'a pas été appliquée.
+
 ```javascript
 const suite = await import('file:///CHEMIN_ABSOLU/tests/album-browser.mjs');
 await suite.loginFixture(tab);
@@ -62,6 +66,31 @@ changement/persistance d'ambiance et accès anonyme.
 Ces tests sont séparés de `npm test` (tests Node sans navigateur). Aucun secret
 ni stockage de session n'est nécessaire dans les tests. Les migrations, API et
 règles RLS existantes demeurent couvertes par les suites du socle.
+
+### Volume et restitution
+
+`node scripts/ui-fixture.mjs --production --large` fournit 300 souvenirs et
+6000 métadonnées média (20 par souvenir), un message long et un plafond simulé
+de 1000 résultats par requête. `suite.testLargeAlbum(tab, viewport, width)`
+vérifie que les 300 cartes gardent leurs compteurs complets et restent sans
+débordement. Le chargement utilise des groupes de 24 identifiants ; les photos
+réservent leur hauteur pendant la récupération de l'URL signée.
+
+`node --env-file=.env.local scripts/test-v1-integration.mjs --save-site`
+conserve uniquement le site synthétique extrait du ZIP dans `.archive-tests/`,
+ignoré par Git. Pour une compilation isolée, définir `LIVREDOR_UI_FIXTURE=1`
+dans le terminal de ce test. Puis démarrer la prévisualisation en lui passant
+le dossier `site` affiché :
+
+```powershell
+node scripts/preview-archive-test.mjs .archive-tests/IDENTIFIANT_DU_TEST/site
+```
+
+`suite.testStaticArchive(tab, viewport, width)` vérifie le site sur le port 3102 :
+navigation, photo locale décodée, absence de scripts et de brouillons, largeur
+mobile. Ce serveur écoute seulement la boucle locale et ne sert pas les JSON
+privés. Les fichiers et comptes Supabase réels ne sont pas modifiés par ce test ;
+les fichiers R2 portant les UUID du test sont nettoyés à sa fin.
 
 ## Limites volontaires
 

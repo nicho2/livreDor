@@ -38,3 +38,25 @@ test("informations du projet et date d'événement incluses dans la restitution"
   assert.ok(html.includes("Date de l'événement : 3 octobre 2026"));
   assert.ok(!renderStaticSite({ project: { ...project, event_date: null }, entries: [], memories: [], media: [] }, new Set()).includes("Date de l'événement"));
 });
+
+test("archive : le mur conserve les souvenirs sans date, la frise ne les invente pas", () => {
+  const html = renderStaticSite({ project: { title: "Album" }, entries: [], memories: [base, { ...base, id: "dated", year_from: 2008 }], media: [] }, new Set());
+  const wall = html.split('<section id="mur">')[1].split('<section id="chronologie">')[0];
+  const timeline = html.split('<section id="chronologie">')[1];
+  assert.ok(wall.includes('id="souvenir-1"'));
+  assert.ok(timeline.includes('href="#souvenir-dated"'));
+  assert.ok(!timeline.includes('href="#souvenir-1"'));
+});
+
+test("archive : 300 souvenirs gardent leurs médias publiés et excluent les fichiers privés ou absents", () => {
+  const memories = Array.from({ length: 300 }, (_, i) => ({ ...base, id: `memory-${i}`, year_from: 2000 + i % 20 }));
+  const media = memories.flatMap(m => [
+    { id: `photo-${m.id}`, memory_id: m.id, kind: "image", mime_type: "image/png", status: "published", original_filename: "photo.png" },
+    { id: `private-${m.id}`, memory_id: m.id, kind: "image", mime_type: "image/png", status: "hidden", original_filename: "PRIVATE.png" },
+    { id: `missing-${m.id}`, memory_id: m.id, kind: "audio", mime_type: "audio/mpeg", status: "published", original_filename: "MISSING.mp3" },
+  ]);
+  const html = renderStaticSite({ project: { title: "Album" }, entries: [], memories, media }, new Set(media.filter(m => m.status === "hidden" || m.id.startsWith("photo-")).map(m => m.id)));
+  assert.equal((html.match(/<img /g) ?? []).length, 300);
+  for (const memory of memories) assert.ok(html.includes(`src="media/image/photo-${memory.id}.png"`));
+  assert.ok(!html.includes("PRIVATE") && !html.includes("MISSING"));
+});

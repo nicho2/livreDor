@@ -8,15 +8,24 @@ const timestamp = "2026-10-03T12:00:00Z";
 const user = { id: userId, aud: "authenticated", email: "recette@example.test", app_metadata: {}, user_metadata: {}, created_at: timestamp };
 const token = `${Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url")}.${Buffer.from(JSON.stringify({ sub: userId, exp: Math.floor(Date.now() / 1000) + 86400, role: "authenticated" })).toString("base64url")}.fixture`;
 const formatting = { font: "serif", size: "md", align: "left", color: "ink", bold: false, italic: false };
+const largeAlbum = process.argv.includes("--large");
 const tables = {
   projects: [{ id: projectId, slug: "album-test", title: "Une nouvelle aventure", subject_name: "Camille", description: "Tous ces petits instants qui font une grande histoire.", status: "open", opens_at: null, closes_at: null, event_date: "2026-12-01", created_by: userId, created_at: timestamp }],
   project_members: [{ project_id: projectId, user_id: userId, role: "contributor" }],
   profiles: [{ id: userId, display_name: "Alex" }],
   guestbook_entries: Array.from({ length: 5 }, (_, i) => ({ id: `entry-${i}`, project_id: projectId, author_id: i ? `other-${i}` : userId, display_name: ["Alex", "Léa", "Sam", "Lou", "Morgan"][i], message: `Merci pour ces belles années ! Message ${i + 1} 🌻`, formatting, status: "published", created_at: timestamp, updated_at: timestamp })),
-  memories: Array.from({ length: 30 }, (_, i) => ({ id: `30000000-0000-4000-8000-${String(i + 1).padStart(12, "0")}`, project_id: projectId, author_id: `other-${i}`, display_name: "Léa", title: `Un bel instant ${i + 1}`, body: "Un café, des rires et cette journée que nous n’oublierons pas.\nUn souvenir à partager ensemble.", occurred_on: null, year_from: i === 29 ? null : 1990 + i, year_to: null, status: "published", created_at: timestamp })),
+  memories: Array.from({ length: largeAlbum ? 300 : 30 }, (_, i) => ({ id: `30000000-0000-4000-8000-${String(i + 1).padStart(12, "0")}`, project_id: projectId, author_id: `other-${i}`, display_name: "Léa", title: `Un bel instant ${i + 1}`, body: "Un café, des rires et cette journée que nous n’oublierons pas.\nUn souvenir à partager ensemble.", occurred_on: null, year_from: i === 29 ? null : 1990 + i, year_to: null, status: "published", created_at: timestamp })),
   media_assets: [],
 };
 tables.media_assets = [1, 2, 3].map(i => ({ id: `photo-${i}`, project_id: projectId, memory_id: tables.memories[0].id, owner_id: userId, kind: i === 3 ? "audio" : "image", object_key: "fixture", original_filename: i === 3 ? "signal.wav" : `album-${i}.png`, mime_type: i === 3 ? "audio/wav" : "image/png", size_bytes: 1024, status: "published", created_at: timestamp }));
+if (largeAlbum) {
+  tables.media_assets = tables.memories.flatMap((memory, index) => Array.from({ length: 20 }, (_, i) => ({
+    id: `large-${index}-${i}`, project_id: projectId, memory_id: memory.id, owner_id: userId,
+    kind: i === 0 ? "image" : "document", object_key: "fixture", original_filename: i === 0 ? "cafe.png" : `document-${i}.txt`,
+    mime_type: i === 0 ? "image/png" : "text/plain", size_bytes: 1024, status: "published", created_at: timestamp,
+  })));
+  tables.guestbook_entries[0].message = "Un long message, des souvenirs et des émotions 🌻. ".repeat(150);
+}
 async function body(req) { const chunks = []; for await (const chunk of req) chunks.push(chunk); return JSON.parse(Buffer.concat(chunks).toString() || "{}"); }
 const fixture = createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "http://localhost:3100");
@@ -37,7 +46,7 @@ const fixture = createServer(async (req, res) => {
     if (value.startsWith("in.(")) return value.slice(4, -1).split(",").includes(row[key]);
     return true;
   });
-  let rows = (tables[name] ?? []).filter(matches);
+  let rows = (tables[name] ?? []).filter(matches).slice(0, 1000);
   if (req.method === "PATCH") { const values = await body(req); rows.forEach(row => Object.assign(row, values)); }
   if (req.method === "POST") { const values = await body(req); const row = { ...values, id: "new-entry", created_at: timestamp }; tables[name]?.push(row); rows = [row]; }
   res.end(JSON.stringify(req.headers.accept?.includes("application/vnd.pgrst.object+json") ? rows[0] ?? null : rows));

@@ -13,6 +13,11 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
   const [feedback, setFeedback] = useState("");
   const [filter, setFilter] = useState<PublicationStatus | "all">("all");
   const [busy, setBusy] = useState(false);
+  const [archiveUrl, setArchiveUrl] = useState("");
+  useEffect(() => {
+    if (!archiveUrl) return;
+    return () => URL.revokeObjectURL(archiveUrl);
+  }, [archiveUrl]);
   const [opensAt, setOpensAt] = useState("");
   const [closesAt, setClosesAt] = useState("");
   const [organizerEmail, setOrganizerEmail] = useState("");
@@ -40,14 +45,15 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
     finally { setBusy(false); }
   }
   async function exportArchive() {
+    setArchiveUrl("");
     setBusy(true); setFeedback("Préparation de l'archive et copie des médias…");
     try {
       const response = await authenticatedFetch(`/api/projects/${projectId}/export`, { method: "POST" });
       const blob = await response.blob();
       const objectUrl = URL.createObjectURL(blob);
+      setArchiveUrl(objectUrl);
       const link = document.createElement("a"); link.href = objectUrl; link.download = `LivreDor-${data?.project.slug ?? projectId}.zip`; link.click();
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
-      setFeedback("Archive téléchargée. Décompressez-la, puis ouvrez site/index.html. Le dossier archive-privee ne doit pas être publié.");
+      setFeedback("Archive prête. Si le téléchargement ne démarre pas, utilisez le lien ci-dessous. Décompressez-la, puis ouvrez site/index.html. Le dossier archive-privee ne doit pas être publié.");
     } catch (error) { setFeedback(error instanceof Error ? error.message : "Export impossible."); }
     finally { setBusy(false); }
   }
@@ -84,6 +90,7 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
             void act({ action: "project", status, opensAt: opensAt ? `${opensAt}:00Z` : null, closesAt: closesAt ? `${closesAt}:00Z` : null });
           }}>{status === "open" ? "Ouvrir / enregistrer les dates" : status === "closed" ? "Clôturer" : "Archiver"}</button>)}
           <button className="button" disabled={busy || !["closed", "archived"].includes(data.project.status)} onClick={() => void exportArchive()}>Télécharger l&apos;archive ZIP</button>
+          {archiveUrl && <a className="button secondary" href={archiveUrl} download={`LivreDor-${data.project.slug}.zip`}>Enregistrer le ZIP préparé</a>}
         </div><p className="muted">Clôturez avant l&apos;export final. L&apos;archive contient un site autonome avec les seuls contenus publiés et une sauvegarde privée des autres contenus, sans adresses e-mail. L&apos;export ne clôture pas automatiquement le projet.</p>
       </section>
       <label>Filtrer les contenus<select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)}><option value="all">Tous</option>{Object.entries(labels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>

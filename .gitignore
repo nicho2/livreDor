@@ -11,6 +11,7 @@ coverage
 *.tsbuildinfo
 .pnpm-store
 .seed-runs/
+.archive-tests/
 dist/
 .wrangler/
 .sites-runtime/

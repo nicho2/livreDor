@@ -411,3 +411,48 @@ les curseurs neutres et la dernière page inchangée après une flèche droite.
 Les trois scénarios existants de consultation du livre passent également.
 Les 39 tests Node, lint, typecheck et build de recette passent.
 Capture visuelle : [feuille en rotation](screenshots/livre-page-tournee.jpg).
+
+## Parcours réel, volume et restitution — 3 octobre 2026
+
+Sur la branche `feat/album-chaleureux`, recette locale avec Supabase et R2 réels
+dans le projet « TEST - Recette », explicitement désigné par l'utilisateur.
+Un message « Exemple de recette » et un souvenir « RECETTE — Le café de 2008 »
+ont été publiés, avec une photo et un signal audio synthétiques. Aucun contenu
+préexistant n'a été remplacé. Déconnexion, OTP réel, retour à la chronologie
+demandée, lecture depuis mur/frise et photo décodée sur mobile (375 px) vérifiés.
+Les exemples sont conservés pour l'essai utilisateur. Ni email ni OTP dans Git.
+
+Après accord explicite de clôture/export/réouverture, le serveur a préparé le
+ZIP réel avec les médias. Le navigateur automatisé n'a pas confirmé le fichier
+enregistré sur disque (événement et récupération du téléchargement indisponibles).
+La confirmation « téléchargée » a été corrigée en « prête », avec un lien visible
+de récupération conservant le ZIP préparé. Présence du lien et URL blob vérifiées.
+La confirmation native bloquait ensuite le navigateur ; la réouverture a été
+effectuée côté serveur après vérification de l'ID, du titre et de l'état du seul
+projet de recette, en préservant les dates. État final Supabase : `open`.
+L'enregistrement du ZIP réel sur disque reste à confirmer dans un navigateur
+utilisateur ; ne pas assimiler la préparation à un téléchargement confirmé.
+
+Tests indépendants : 85 contrôles sur Next compilé, Auth/données fictives et R2
+réel, dont PUT/CORS/finalisation/lecture/suppression, clôture et inspection du ZIP
+(média identique, brouillons privés, aucun lien signé). Fichiers R2 du test nettoyés.
+Le site extrait du ZIP est vérifié avec Playwright à 1440 et 375 px : photo locale,
+navigation par ancres, absence de scripts/brouillons et de débordement.
+RLS et quota concurrent PostgreSQL isolés réussis, instance arrêtée.
+
+Volume : 300 souvenirs et 6000 métadonnées sous un plafond HTTP de 1000 résultats
+par requête ; les 300 compteurs de 20 médias passent à 1440 et 375 px. Chargement
+par groupes de 24 IDs et index des médias par souvenir évitent troncature et
+parcours répétés. Hauteur photo réservée pour limiter les déplacements de cartes.
+Un message de 7650 caractères reste intégralement visible en lecture mobile.
+La feuille animée est contenue dans le livre pour éviter un débordement temporaire.
+La chronologie statique exclut maintenant les souvenirs non datés, conservés sur
+le mur. Deux tests Node ajoutés (frise sans dates et archive de 300 souvenirs).
+
+Captures : [souvenir réel](screenshots/recette-reelle-souvenir.jpg),
+[lecteur mobile](screenshots/recette-reelle-mobile.jpg),
+[export préparé](screenshots/recette-export-pret.jpg).
+
+Validation finale : lint, typecheck, 41 tests Node, `git diff --check` et build
+Next de recette réussis. Le livre avec message long passe également à 375,
+900 et 1440 px, y compris pendant la transition, sans débordement horizontal.
