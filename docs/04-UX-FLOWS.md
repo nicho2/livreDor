@@ -21,6 +21,19 @@ Publier / enregistrer
 ## Règle de progressivité
 Ne pas afficher d'emblée un long formulaire. Le message principal doit être l'action centrale. Les souvenirs et médias sont des enrichissements facultatifs.
 
+## Retour après connexion
+
+- Un lien de connexion depuis un projet conserve sa destination dans `next`.
+- Après validation du code, retour automatique vers cette destination locale.
+- Une session déjà ouverte ne nécessite pas de saisir à nouveau un code.
+- Sans destination, utiliser le projet démo configuré, sinon l'unique projet
+  public disponible ; avec plusieurs projets, revenir à l'accueil sans en choisir
+  arbitrairement un. Les destinations externes ou non reconnues sont rejetées.
+- L'en-tête affiche « Connecté » et « Se déconnecter » lorsque la session est
+  ouverte, jamais l'email. La déconnexion concerne seulement le navigateur courant.
+- Les formulaires de contribution sont remplacés par un accès à la connexion
+  lorsque la session est absente. Ce contrôle UX ne remplace pas la RLS.
+
 ## Écran projet
 Doit immédiatement expliquer :
 - pour qui est le LivreDor ;

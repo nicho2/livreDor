@@ -9,7 +9,7 @@
 
 ## Phase 1 — Auth
 - [ ] OTP email complet.
-- [ ] Gestion retour de session.
+- [ ] Gestion retour de session — retour automatique et en-tête synchronisé implémentés ; restauration locale vérifiée, nouveau cycle OTP/déconnexion à valider.
 - [ ] Profil public minimal.
 - [ ] Rejoindre un projet.
 

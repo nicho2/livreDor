@@ -90,3 +90,18 @@ Contrairement au bootstrap PostgreSQL minimal, le client anonyme peut appeler
 `can_contribute` sur Supabase (qui retourne bien `false`) : les privilèges par
 défaut de la plateforme restent à examiner si l'on souhaite interdire cet appel
 lui-même. Les politiques d'écriture restent réservées à `authenticated`.
+
+## Correction du parcours de connexion
+
+Retour automatique après authentification, état partagé de session dans
+l'en-tête et écran de connexion préalable aux formulaires de contribution.
+La navigation n'utilise que des destinations projet locales validées.
+Neuf tests unitaires (dont trois de navigation) passent, ainsi que lint,
+TypeScript et build.
+
+Dans le navigateur local déjà connecté : `/auth` mène automatiquement à
+`/p/depart-demo/contribute` ; `/auth?next=%2Fp%2Fdepart-demo%2Fwall` mène au mur.
+L'en-tête affiche « Connecté » et « Se déconnecter » sans adresse email.
+La session utilisateur est conservée et aucune contribution n'a été modifiée.
+Le nouveau cycle OTP et la déconnexion effective restent à vérifier : aucun
+code n'a été redemandé et l'utilisateur n'a pas été déconnecté pendant ce test.

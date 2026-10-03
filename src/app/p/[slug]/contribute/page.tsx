@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { ContributionForm } from "@/components/ContributionForm";
 import { MemoryManager } from "@/components/MemoryManager";
+import { RequireAuth } from "@/components/RequireAuth";
 import { getProjectBySlug } from "@/lib/project-data";
 
 export default async function ContributePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -11,8 +12,10 @@ export default async function ContributePage({ params }: { params: Promise<{ slu
   return (
     <main className="stack">
       <div><p className="kicker">Contribution</p><h1>{project.subject_name}</h1><p className="muted">Commencez par votre message. Les souvenirs et médias viennent ensuite.</p></div>
-      <ContributionForm projectId={project.id} />
-      <MemoryManager projectId={project.id} />
+      <RequireAuth returnTo={`/p/${slug}/contribute`}>
+        <ContributionForm projectId={project.id} />
+        <MemoryManager projectId={project.id} />
+      </RequireAuth>
     </main>
   );
 }
