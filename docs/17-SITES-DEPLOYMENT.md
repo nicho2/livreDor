@@ -74,8 +74,10 @@ Publication confirmée par Sites le 3 octobre 2026 à 17 h 12 (Paris), statut
 d'environnement révision 6, source `e4770b108a91c85d809fb10dfb479b5b6c5d48a7`.
 Déploiement : `appgdep_6ac11b5f81b48191b29502a59e11ead3`.
 
-La pré-vérification CORS pour cette origine retourne encore 403, sans origine
-autorisée : correction requise dans le dashboard Cloudflare avant les uploads.
+Après correction dans Cloudflare confirmée par l'utilisateur, la pré-vérification
+CORS pour cette origine retourne HTTP 204, avec origine exacte autorisée,
+méthodes `PUT, GET, HEAD` et en-tête `content-type`. Autorisation navigateur
+validée ; cela ne remplace pas l'essai d'upload réel sur le site hébergé.
 Lecture de politique via S3 interdite (403) avec la clé applicative ; ne pas
 élargir ses droits. Aucun objet créé par cette sonde OPTIONS.
 Recette OTP et navigateur en ligne restant à effectuer par l'utilisateur.

@@ -21,7 +21,7 @@ le Supabase de développement. OTP et deuxième organisateur sont validés.
 Installation avec Resend : `docs/15-INSTALLATION-RESEND.md`.
 Alimentation d'un projet TEST dédié : `docs/16-SYNTHETIC-SEED.md`.
 Déploiement Sites public effectué ; voir `docs/17-SITES-DEPLOYMENT.md` pour
-les preuves, CORS R2 à corriger et recette OTP en ligne restant à valider.
+les preuves, CORS R2 validé et recette OTP/upload en ligne restant à valider.
 Aucun push, déploiement ou seed distant sans demande explicite.
 
 ## Première mission du socle (historique / nouvelle instance)
