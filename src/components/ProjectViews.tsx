@@ -20,13 +20,14 @@ export function ProjectOverview() {
     {project.event_date && <p>Date de l&apos;événement : {memoryDateLabel({ occurred_on: project.event_date, year_from: null, year_to: null })}</p>}
     <div className="actions">
       <Link className="button" href={`/p/${project.slug}/contribute`}>Laisser un message</Link>
+      <Link className="button secondary" href={`/p/${project.slug}/guestbook`}>Lire le livre d’or</Link>
       <Link className="button secondary" href={`/p/${project.slug}/wall`}>Voir le mur</Link>
       <Link className="button secondary" href={`/p/${project.slug}/timeline`}>Chronologie</Link>
     </div>
   </section></main>;
 }
 
-export function PublishedView({ view, memoryId }: { view: "wall" | "timeline" | "memory"; memoryId?: string }) {
+export function PublishedView({ view, memoryId }: { view: "guestbook" | "wall" | "timeline" | "memory"; memoryId?: string }) {
   const project = useProject();
   const [content, setContent] = useState<{ entries: GuestbookEntry[]; memories: Memory[] } | null>(null);
   const [error, setError] = useState("");
@@ -38,10 +39,10 @@ export function PublishedView({ view, memoryId }: { view: "wall" | "timeline" | 
         let query = db.from("memories").select("*").eq("project_id", project.id).eq("status", "published");
         if (view === "memory") query = query.eq("id", memoryId ?? "");
         const [memories, entries] = await Promise.all([
-          query,
-          view === "wall" ? db.from("guestbook_entries").select("*").eq("project_id", project.id).eq("status", "published").order("created_at", { ascending: false }) : Promise.resolve({ data: [], error: null }),
+          view === "guestbook" ? Promise.resolve({ data: [], error: null }) : query,
+          view === "guestbook" ? db.from("guestbook_entries").select("*").eq("project_id", project.id).eq("status", "published").order("created_at", { ascending: false }).order("id") : Promise.resolve({ data: [], error: null }),
         ]);
-        if (memories.error || entries.error) throw new Error("Impossible de charger les souvenirs. Réessayez.");
+        if (memories.error || entries.error) throw new Error(view === "guestbook" ? "Impossible de charger les messages. Réessayez." : "Impossible de charger les souvenirs. Réessayez.");
         if (view === "memory" && !memories.data?.length) throw new Error("Souvenir introuvable ou accès refusé.");
         if (active) setContent({ entries: entries.data ?? [], memories: chronologicalMemories(memories.data ?? []) });
       } catch (error) { if (active) setError(error instanceof Error ? error.message : "Chargement impossible."); }
@@ -50,8 +51,16 @@ export function PublishedView({ view, memoryId }: { view: "wall" | "timeline" | 
     return () => { active = false; };
   }, [project.id, view, memoryId]);
   if (error) return <p className="notice" role="alert">{error}</p>;
-  if (!content) return <p className="notice" role="status">Chargement des souvenirs…</p>;
+  if (!content) return <p className="notice" role="status">{view === "guestbook" ? "Chargement des messages…" : "Chargement des souvenirs…"}</p>;
   const { entries, memories } = content;
+  if (view === "guestbook") return <main className="stack">
+    <div><p className="kicker">Livre d’or</p><h1>Les messages pour {project.subject_name}</h1><p className="muted">Les mots de chacun, réunis dans le livre d’or.</p></div>
+    {!entries.length && <div className="empty">Aucun message publié pour le moment.</div>}
+    <section className="grid">{entries.map((entry) => <article className="card stack" key={entry.id}>
+      <p className={formattingClasses(entry.formatting)}>{entry.message}</p><strong>{entry.display_name}</strong>
+    </article>)}</section>
+    <div className="actions"><Link className="button" href={`/p/${project.slug}/contribute`}>Laisser un message</Link></div>
+  </main>;
   if (view === "memory") {
     const memory = memories[0];
     return <main className="stack"><article className="card stack">
@@ -70,9 +79,8 @@ export function PublishedView({ view, memoryId }: { view: "wall" | "timeline" | 
   </main>;
   return <main className="stack">
     <div><p className="kicker">Mur des souvenirs</p><h1>{project.subject_name}</h1></div>
-    {!entries.length && !memories.length && <div className="empty">Aucun contenu publié pour le moment.</div>}
+    {!memories.length && <div className="empty">Aucun souvenir publié pour le moment.</div>}
     <section className="grid">
-      {entries.map((entry) => <article className="card" key={entry.id}><p className={formattingClasses(entry.formatting)}>{entry.message}</p><strong>{entry.display_name}</strong></article>)}
       {memories.map((memory) => <article className="card stack" key={memory.id}>
         <p className="kicker">{memoryDateLabel(memory)}</p><h2><Link href={`/p/${project.slug}/memories/${memory.id}`}>{memory.title || "Souvenir"}</Link></h2>
         <p className="message">{memory.body}</p><strong>{memory.display_name}</strong><MediaGallery projectId={project.id} memoryId={memory.id} />

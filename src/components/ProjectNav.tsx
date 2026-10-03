@@ -19,7 +19,7 @@ export function ProjectNav({ slug, projectId }: { slug: string; projectId: strin
     }
     void load(); return () => { active = false; };
   }, [projectId, user]);
-  const links = [["", "Le projet"], ["/contribute", "Mes contributions"], ["/wall", "Voir tous les souvenirs"], ["/timeline", "Chronologie"]];
+  const links = [["", "Le projet"], ["/contribute", "Mes contributions"], ["/guestbook", "Livre d’or"], ["/wall", "Voir tous les souvenirs"], ["/timeline", "Chronologie"]];
   if (organizer) links.push(["/admin", "Organisation"]);
   return <nav className="project-nav" aria-label="Navigation du projet">{links.map(([suffix, title]) => {
     const href = `/p/${slug}${suffix}`;

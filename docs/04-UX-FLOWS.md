@@ -61,7 +61,16 @@ ou un souvenir est proposé pour les souvenirs suivants sur la même page.
 Une modification manuelle, même l'effacement du champ, n'est pas écrasée par
 l'arrivée d'une suggestion. Modifier un souvenir conserve son propre nom.
 
+## Livre d'or
+La navigation et l'accueil du projet donnent accès à `/p/[slug]/guestbook`.
+Cette vue affiche uniquement les messages principaux publiés, du plus récent au
+plus ancien, avec leur nom affiché et leur mise en forme bornée. Elle exige la
+connexion LivreDor et applique la RLS existante. Les brouillons et messages
+masqués restent dans les espaces auteur/organisateur.
+
 ## Mur
+Le mur affiche uniquement les souvenirs (anecdotes et médias), sans messages
+principaux du livre d'or, conformément à ADR-004.
 Mobile : une colonne.
 Desktop : grille fluide.
 

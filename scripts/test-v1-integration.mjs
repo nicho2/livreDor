@@ -143,7 +143,7 @@ try {
   const input = { projectId: ids.project, memoryId: ids.memory, filename: "test-pixel.png", mimeType: "image/png", sizeBytes: 68 };
   // API-only checks miss SSR module imports. Exercise HTML routes before any
   // writes, using the same isolated fixture on Next.js and on Workers.
-  for (const path of ["/", "/auth", "/nouveau", "/p/integration-test", "/p/integration-test/wall", "/p/integration-test/timeline", `/p/integration-test/memories/${ids.memory}`]) {
+  for (const path of ["/", "/auth", "/nouveau", "/p/integration-test", "/p/integration-test/guestbook", "/p/integration-test/wall", "/p/integration-test/timeline", `/p/integration-test/memories/${ids.memory}`]) {
     const response = await call(path, { token: null });
     check(response.status === 200 && response.headers.get("content-type")?.includes("text/html"), `rendu HTML ${path} disponible`);
     const html = await response.text();

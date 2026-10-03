@@ -1,4 +1,4 @@
-const projectPath = /^\/p\/[a-z0-9][a-z0-9-]{2,79}(?:\/(?:contribute|wall|timeline|admin|memories\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))?$(?![\s\S])/;
+const projectPath = /^\/p\/[a-z0-9][a-z0-9-]{2,79}(?:\/(?:contribute|guestbook|wall|timeline|admin|memories\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))?$(?![\s\S])/;
 
 // Only known local project routes may be used as post-login destinations.
 // Never pass arbitrary query parameters to router.replace (open redirect/XSS).

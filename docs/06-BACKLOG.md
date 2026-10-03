@@ -38,6 +38,7 @@ de production. Les preuves et limites de validation sont dans
 - [x] Suppression logique et physique.
 
 ## Phase 5 — Consultation
+- [x] Livre d'or dédié aux messages publiés, distinct du mur des souvenirs.
 - [x] Mur.
 - [x] Vue détail.
 - [x] Chronologie.

@@ -70,6 +70,11 @@ réussie : exiger le statut succeeded et l'URL officielle du déploiement.
 
 ## Recette après publication
 
+La vue `/p/[slug]/guestbook` présente les messages publiés avec leur mise en
+forme et leur nom affiché. Le mur contient uniquement les souvenirs et médias.
+Le contrôle HTML Workers inclut cette nouvelle route et vérifie aussi l'absence
+de données projet dans sa réponse anonyme, comme pour les autres vues.
+
 Ouvrir le lien sans session ChatGPT et sans OTP : l'accueil ne doit montrer aucun
 projet ; projet, mur, chronologie et détail doivent demander la connexion sans
 afficher de données. Une requête anonyme directe Supabase ne doit retourner aucun
