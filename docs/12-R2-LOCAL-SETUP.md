@@ -46,3 +46,14 @@ Aucun objet n'a été lu, ajouté ou supprimé. Aucune règle distante n'a été
 Après correction du nom, retester l'accès ; si le refus persiste, vérifier le
 compte, le bucket sélectionné dans la portée du jeton et les identifiants S3.
 Les uploads depuis le navigateur restent à implémenter et à tester.
+
+### Nouveau contrôle après correction du nom du bucket
+
+L'accès en lecture au bucket retourne maintenant HTTP 200 : les identifiants
+permettent bien d'atteindre le bucket configuré. La lecture de la configuration
+CORS reste interdite (403), compatible avec un jeton limité aux objets.
+Une requête de pré-vérification OPTIONS, pour un PUT signé depuis
+`http://localhost:3000` avec `Content-Type`, retourne également 403 sans en-tête
+CORS. L'autorisation navigateur n'est donc pas encore validée : vérifier la
+politique dans le tableau de bord et appliquer `config/r2-cors.local.json`.
+Aucun PUT n'a été envoyé et aucun objet n'a été créé ou supprimé.
