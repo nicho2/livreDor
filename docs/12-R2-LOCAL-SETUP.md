@@ -57,3 +57,11 @@ Une requête de pré-vérification OPTIONS, pour un PUT signé depuis
 CORS. L'autorisation navigateur n'est donc pas encore validée : vérifier la
 politique dans le tableau de bord et appliquer `config/r2-cors.local.json`.
 Aucun PUT n'a été envoyé et aucun objet n'a été créé ou supprimé.
+
+### CORS confirmé après enregistrement de la politique
+
+Après confirmation de l'utilisateur, la même pré-vérification OPTIONS retourne
+HTTP 204, `Access-Control-Allow-Origin: http://localhost:3000`, les méthodes
+`PUT, GET, HEAD` et l'en-tête autorisé `content-type`. La préparation CORS de
+l'upload local est validée. Aucun fichier n'a été envoyé ; les droits d'écriture,
+la lecture d'un objet signé et le parcours d'upload applicatif restent à tester.
