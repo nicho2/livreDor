@@ -22,7 +22,7 @@ Créer le projet Supabase, puis compléter `.env.local` :
 - Variables R2 : suivre [la procédure dédiée](12-R2-LOCAL-SETUP.md).
 
 Sur une **nouvelle base seulement**, appliquer les fichiers entiers dans l'ordre :
-0001, 0002, 0003, 0004 et 0005 depuis `supabase/migrations/`. Sur la base actuelle,
+0001, 0002, 0003, 0004, 0005 et 0006 depuis `supabase/migrations/`. Sur la base actuelle,
 ils sont déjà appliqués : ne pas rejouer trigger/table. Voir
 [activation et TLS](14-ONBOARDING-REGRESSION.md).
 

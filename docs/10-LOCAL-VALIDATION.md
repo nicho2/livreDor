@@ -302,3 +302,37 @@ Le nouveau seed n'a **pas** été lancé en mode Apply : aucun compte synthétiq
 ou souvenir créé sur Supabase pour cette tâche. Il n'est pas encore validé sur
 un site déployé ; cette recette attend son URL et un projet TEST dédié.
 Voir `15-INSTALLATION-RESEND.md` et `16-SYNTHETIC-SEED.md`.
+
+## Plafond global des projets — 3 octobre 2026
+
+L'utilisateur confirme la création réelle de `test-recette` depuis l'accueil et
+son accès organisateur, puis une recette convaincante après alimentation
+synthétique. Contrôle de comptage ultérieur : 5 messages, 8 souvenirs et 5 médias
+dans ce projet (le test utilisateur peut ajouter du contenu). Aucune de ces
+lignes n'a été modifiée pendant l'implémentation du plafond.
+
+`LIVREDOR_MAX_PROJECTS=3` ajouté à `.env.local` ignoré et à l'exemple public.
+La valeur par défaut est également 3 ; 0 suspend les créations, valeurs invalides
+refusées explicitement. Le plafond compte tous les projets de la même base,
+même fermés/archivés. Les détails de confiance serveur remplacent l'appel de
+création utilisateur de l'ADR-012 : voir ADR-015.
+
+Validation :
+
+- `npm run check` réussit : lint, typecheck, **38 tests**, build Webpack.
+- Les **46 assertions SQL du socle**, **12 assertions de quota** et un test avec
+  **deux connexions concurrentes** passent sur PostgreSQL temporaire isolé.
+  Une seule création réussit quand il ne reste qu'une place ; la seconde est
+  refusée et ne laisse aucune adhésion orpheline. Instance arrêtée ensuite.
+- **59 contrôles d'intégration** passent : plafond global, limite client rejetée,
+  erreur HTTP 409 explicite, création atomique, socle/modération/ZIP et R2 réel.
+  Les seuls objets R2 de cette suite sont nettoyés ; aucun projet utilisateur créé.
+- Migration **0006 appliquée à Supabase** après contrôle des prérequis, avec TLS
+  vérifié. Empreintes des six tables métier identiques avant/après ; **2 projets
+  existants**, donc une place restante. RPC limitée accessible seulement au rôle
+  service ; ancienne RPC interdite aux clients. PostgREST reconnaît les deux
+  fonctions et refuse leurs appels anonymes sans effectuer d'insertion.
+- Serveur compilé relancé sur 3000, nouvelle variable chargée, page locale OK.
+
+Aucun projet réel supplémentaire créé pour simuler le dépassement. Documentation
+et CI mises à jour ; commit local, aucun push ni publication.

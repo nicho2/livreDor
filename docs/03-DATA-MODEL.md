@@ -20,6 +20,11 @@ auth.users
 ## projects
 Représente un livre d'or / événement.
 
+Depuis 0006, les nouvelles créations passent par la RPC serveur
+`create_project_limited` : le nombre total de lignes (tous états) est comparé au
+plafond d'environnement sous verrou transactionnel global. Ni nouveau statut
+ni table de quota ; pas de suppression quand le plafond est abaissé.
+
 Principaux champs :
 - `id uuid`
 - `slug text unique`

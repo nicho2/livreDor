@@ -48,5 +48,7 @@ confirmé en base avec l'adresse privée enregistrée. Deux organisateurs maximu
 sans auto-promotion par email déclaré ni accès aux invitations d'autres projets.
 L'adresse d'invitation est exclue de la consultation publique et de l'archive.
 Elle est conservée dans le projet pour identifier le partage des droits.
-La création n'a pas encore de quota anti-abus global ; une ouverture publique
-à grande échelle exige une protection supplémentaire.
+La migration 0006 limite globalement les créations selon l'environnement serveur
+(`LIVREDOR_MAX_PROJECTS`, 3 par défaut), avec comptage/verrou transactionnel en
+base et RPC exclusivement serveur. Ni créateur ni limite ne viennent du client.
+Ce plafond ne remplace pas un quota d'octets ou une protection anti-abus complète.

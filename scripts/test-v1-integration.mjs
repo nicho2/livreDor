@@ -39,12 +39,14 @@ const fixture = createServer(async (request, response) => {
       const body = JSON.parse(Buffer.concat(chunks).toString());
       const rpc = url.pathname.split("/").pop(), user = tokens[token];
       const fail = (code) => { response.statusCode = 400; response.end(JSON.stringify({ code, message: "Fixture refusal" })); };
-      if (!user) { fail("42501"); return; }
-      if (rpc === "create_project") {
+      if (!user && token !== "test-service") { fail("42501"); return; }
+      if (rpc === "create_project_limited") {
+        if (token !== "test-service") { fail("42501"); return; }
         if (creationUnavailable) { fail("PGRST202"); return; }
         if (tables.projects.some((p) => p.slug === body.p_slug)) { fail("23505"); return; }
-        const project = { id: randomUUID(), slug: body.p_slug, title: body.p_title, subject_name: body.p_subject_name, description: body.p_description, event_date: body.p_event_date, status: "open", created_by: user, opens_at: null, closes_at: null, created_at: timestamp };
-        tables.projects.push(project); tables.project_members.push({ project_id: project.id, user_id: user, role: "organizer" });
+        if (tables.projects.length >= body.p_limit) { response.statusCode = 400; response.end(JSON.stringify({ code: "P0001", message: "PROJECT_LIMIT_REACHED" })); return; }
+        const project = { id: randomUUID(), slug: body.p_slug, title: body.p_title, subject_name: body.p_subject_name, description: body.p_description, event_date: body.p_event_date, status: "open", created_by: body.p_actor, opens_at: null, closes_at: null, created_at: timestamp };
+        tables.projects.push(project); tables.project_members.push({ project_id: project.id, user_id: body.p_actor, role: "organizer" });
         response.end(JSON.stringify([project])); return;
       }
       const invitation = tables.project_organizer_invites.find((i) => i.project_id === body.p_project_id);
@@ -99,7 +101,7 @@ const portProbe = createServer(); await new Promise((resolve) => portProbe.liste
 const appPort = portProbe.address().port; await new Promise((resolve) => portProbe.close(resolve));
 const child = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", String(appPort)], {
   windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
-  env: { ...process.env, SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon", SUPABASE_SERVICE_ROLE_KEY: "test-service" },
+  env: { ...process.env, LIVREDOR_MAX_PROJECTS: "3", SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon", SUPABASE_SERVICE_ROLE_KEY: "test-service" },
 });
 child.stdout.on("data", () => {}); child.stderr.on("data", () => {});
 const base = `http://127.0.0.1:${appPort}`;
@@ -138,6 +140,7 @@ try {
   const newDetails = { title: "TEST Nouveau LivreDor", subjectName: "TEST Marie Martin", description: "Présentation de test", eventDate: "2026-10-03", slug: `test-${randomUUID()}` };
   check((await call("/api/projects", { method: "POST", token: null, body: newDetails })).status === 401, "création sans session refusée");
   check((await call("/api/projects", { method: "POST", body: { ...newDetails, created_by: ids.b } })).status === 400, "créateur forgé refusé");
+  check((await call("/api/projects", { method: "POST", body: { ...newDetails, p_limit: 9999 } })).status === 400, "limite fournie par client refusée");
   check((await call("/api/projects", { method: "POST", body: { ...newDetails, eventDate: "2026-02-30" } })).status === 400, "création avec date invalide refusée");
   creationUnavailable = true;
   check((await call("/api/projects", { method: "POST", body: newDetails })).status === 503, "migration absente signalée explicitement");
@@ -145,6 +148,10 @@ try {
   const created = await call("/api/projects", { method: "POST", body: newDetails });
   check(created.status === 201, "création authentifiée réussie");
   const createdProject = await created.json();
+  check((await call("/api/projects", { method: "POST", body: { ...newDetails, slug: `test-${randomUUID()}` } })).status === 201, "troisième projet global autorisé");
+  const quotaBlocked = await call("/api/projects", { method: "POST", body: { ...newDetails, slug: `test-${randomUUID()}` } });
+  check(quotaBlocked.status === 409 && (await quotaBlocked.json()).error.includes("capacité"), "quatrième projet refusé avec message explicite");
+  check(tables.projects.length === 3, "refus sans création partielle");
   const newAdmin = `/api/projects/${createdProject.id}/admin`;
   check(tables.project_members.some((m) => m.project_id === createdProject.id && m.user_id === ids.a && m.role === "organizer"), "créateur devient organisateur de son nouveau projet");
   check((await call("/api/projects", { method: "POST", token: "test-b", body: newDetails })).status === 409, "collision de lien ne donne aucun droit");

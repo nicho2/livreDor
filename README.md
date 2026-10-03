@@ -86,6 +86,21 @@ fichier `tests/sql/content-access.sql` peut aussi être exécuté dans l'éditeu
 avec un rôle administrateur. Ses données fictives sont annulées par `ROLLBACK` ;
 il doit être exécuté en entier et pas sur une base de production.
 
+## Plafond global des projets
+
+Dans `.env.local` en local, ou dans les variables serveur de l'hébergeur :
+
+```dotenv
+LIVREDOR_MAX_PROJECTS=3
+```
+
+Valeur par défaut : 3. `0` suspend les nouvelles créations. Tous les projets
+comptent, même fermés/archivés ; aucune donnée n'est supprimée si le plafond baisse.
+Appliquer la migration `0006_project_quota.sql` et redémarrer le serveur après
+changement d'environnement. Compter et créer est atomique en base ; le navigateur
+ne peut pas imposer une limite différente. Garder la même valeur sur toutes les
+instances utilisant ce Supabase. Ce n'est pas un quota global de volume média.
+
 ## Configuration Cloudflare R2
 1. Créer un bucket privé.
 2. Créer des credentials API R2 avec accès au bucket.

@@ -21,7 +21,7 @@ Ils sont embarqués et n'exigent ni FFmpeg ni service de génération à l'exéc
 
 ## Préparer le projet en ligne
 
-1. Déployer la V1 avec migrations 0001–0005 et R2 privé configuré. Le déploiement
+1. Déployer la V1 avec migrations 0001–0006 et R2 privé configuré. Le déploiement
    reste à réaliser ; ce document ne suppose aucune URL déjà publiée.
 2. Dans l'accueil, créer **un projet de recette dédié**, titre `TEST — Recette`,
    lien `test-recette`, ouvert aux contributions.

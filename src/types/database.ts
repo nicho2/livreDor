@@ -125,6 +125,10 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      create_project_limited: {
+        Args: { p_actor: string; p_limit: number; p_slug: string; p_title: string; p_subject_name: string; p_description: string | null; p_event_date: string | null };
+        Returns: Project[];
+      };
       invite_project_organizer: { Args: { p_project_id: string; p_email: string }; Returns: undefined };
       accept_project_organizer_invite: { Args: { p_project_id: string }; Returns: boolean };
       cancel_project_organizer_invite: { Args: { p_project_id: string }; Returns: undefined };

@@ -16,6 +16,8 @@ try {
     $testStarted = $true
     & psql -X -h 127.0.0.1 -p $testPort -U postgres -d postgres -v ON_ERROR_STOP=1 -f (Join-Path $PSScriptRoot '../tests/sql/local-bootstrap.sql')
     if ($LASTEXITCODE -ne 0) { throw 'RLS tests failed' }
+    & node (Join-Path $PSScriptRoot 'test-quota-concurrency.mjs') $testPort
+    if ($LASTEXITCODE -ne 0) { throw 'Concurrent project quota test failed' }
 } finally {
     if ($testStarted) { & pg_ctl -D $testData -m fast -w stop }
     Write-Host "Temporary test files retained at $testRoot"

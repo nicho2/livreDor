@@ -31,3 +31,7 @@ jobs:
         run: psql -X -h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1 -f tests/sql/local-bootstrap.sql
         env:
           PGPASSWORD: local-regression-only
+      - name: Quota en créations simultanées
+        run: node scripts/test-quota-concurrency.mjs 5432
+        env:
+          PGPASSWORD: local-regression-only

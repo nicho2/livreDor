@@ -149,3 +149,27 @@ projet de test en ligne, sans réutiliser les emails ni souvenirs réels. ID sta
 pas d'écrasement des edits/modérations, aperçu sans réseau et protections contre
 les cibles réelles. Les données de recette sont conservées après interruption ;
 une purge complète demande une opération séparée explicitement autorisée.
+
+## ADR-015 — Plafond global des projets pour la capacité média
+
+**Décision :** `LIVREDOR_MAX_PROJECTS`, uniquement serveur, vaut 3 par défaut ;
+entier de 0 à 10000, zéro suspend la création. Compter tous les projets de la
+base, y compris drafts, fermés et archivés : les médias sont encore conservés.
+Aucun projet existant supprimé si la limite baisse ; modifier/contribuer/exporter
+sur un projet existant reste possible selon les règles habituelles.
+
+La migration 0006 retire l'accès client à l'ancienne RPC `create_project`.
+L'API vérifie la session puis appelle `create_project_limited`, exécutable
+uniquement par `service_role`. Le créateur est issu de cette session vérifiée,
+pas du JSON, et le plafond vient de l'environnement serveur. Cela remplace
+l'appel utilisateur de l'ADR-012 pour empêcher une limite fournie par le navigateur.
+Un verrou transactionnel global PostgreSQL sérialise comptage et création, même
+entre utilisateurs/serveurs concurrents ; projet et organisateur restent atomiques.
+Les administrateurs DB/clés service restent des opérateurs privilégiés.
+
+**Raison :** empêcher une quatrième création lorsque trois espaces existent,
+sans modifier les rôles ni le parcours OTP. Un simple count côté API ne protège
+pas des courses ni d'un appel direct Supabase. Ce plafond n'est pas un quota
+d'octets ni un dispositif anti-abus complet : quelques projets peuvent encore
+accumuler de nombreux médias. Tous les serveurs d'une même base doivent utiliser
+la même valeur ; une base distincte a son propre plafond.

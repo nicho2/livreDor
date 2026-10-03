@@ -2,7 +2,7 @@
 
 ## Activation sur Supabase
 
-**État au 3 octobre 2026 : 0004 et 0005 appliquées sur le Supabase de
+**État au 3 octobre 2026 : 0004, 0005 et 0006 appliquées sur le Supabase de
 développement configuré. Ne pas les rejouer sur cette base.** Les instructions
 ci-dessous restent utiles pour une nouvelle instance.
 
@@ -11,6 +11,7 @@ entièrement, dans l'ordre :
 
 1. `supabase/migrations/0004_project_onboarding.sql`.
 2. `supabase/migrations/0005_shared_organization.sql`.
+3. `supabase/migrations/0006_project_quota.sql` (création limitée côté serveur).
 
 Ces migrations ajoutent fonctions, protection d'identité et table d'invitations.
 Elles ne suppriment aucune contribution et n'attribuent aucun nouveau rôle à un

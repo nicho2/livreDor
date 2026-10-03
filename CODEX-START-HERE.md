@@ -16,7 +16,7 @@ Lis dans cet ordre :
 
 La V1 locale est implémentée ; ne pas recommencer la mise en route sur la base
 existante. Lire `README.md`, `docs/README.md` et `docs/10-LOCAL-VALIDATION.md` pour
-les preuves et contrôles restants. Les migrations 0001–0005 sont appliquées sur
+les preuves et contrôles restants. Les migrations 0001–0006 sont appliquées sur
 le Supabase de développement. OTP et deuxième organisateur sont validés.
 Installation avec Resend : `docs/15-INSTALLATION-RESEND.md`.
 Alimentation d'un projet TEST dédié : `docs/16-SYNTHETIC-SEED.md`.

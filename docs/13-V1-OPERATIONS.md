@@ -2,8 +2,14 @@
 
 ## Démarrer et vérifier
 
-Prérequis : Node 24, `.env.local` configuré, migrations 0001 à 0005 appliquées,
+Prérequis : Node 24, `.env.local` configuré, migrations 0001 à 0006 appliquées,
 modèles OTP Supabase et bucket R2 privé/CORS configurés.
+
+La création exige aussi la migration 0006. `LIVREDOR_MAX_PROJECTS=3` (par défaut)
+limite à trois projets au total, tous états confondus. `0` suspend la création.
+Modifier cette variable serveur puis redémarrer ; une valeur invalide fait
+échouer la création explicitement. Fermer/archiver ne libère pas une place,
+car les médias restent stockés. Les projets existants restent utilisables.
 
 ```powershell
 npm ci
