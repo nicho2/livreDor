@@ -430,8 +430,10 @@ de récupération conservant le ZIP préparé. Présence du lien et URL blob vé
 La confirmation native bloquait ensuite le navigateur ; la réouverture a été
 effectuée côté serveur après vérification de l'ID, du titre et de l'état du seul
 projet de recette, en préservant les dates. État final Supabase : `open`.
-L'enregistrement du ZIP réel sur disque reste à confirmer dans un navigateur
-utilisateur ; ne pas assimiler la préparation à un téléchargement confirmé.
+Confirmation utilisateur reçue ensuite : ZIP réel téléchargé et décompressé,
+fichiers et répertoires attendus présents, puis `site/index.html` ouvert avec
+tous les résultats attendus. Le parcours d'export réel est donc validé jusqu'à
+la consultation de l'archive par l'utilisateur.
 
 Tests indépendants : 85 contrôles sur Next compilé, Auth/données fictives et R2
 réel, dont PUT/CORS/finalisation/lecture/suppression, clôture et inspection du ZIP

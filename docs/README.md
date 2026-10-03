@@ -5,6 +5,8 @@ versionnés avec le code, pas publiés sur le site applicatif.
 
 ## Installer, tester, exploiter
 
+- [Présentation de l'application en images, ordinateur et mobile](19-PRESENTATION-VISUELLE.md)
+- [Interface Album chaleureux et recette locale](18-ALBUM-UI.md)
 - [Installation, Supabase et Resend](15-INSTALLATION-RESEND.md)
 - [Configuration R2 locale](12-R2-LOCAL-SETUP.md)
 - [Création et organisation partagée](14-ONBOARDING-REGRESSION.md)

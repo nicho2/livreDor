@@ -10,6 +10,20 @@ Application de collecte et de restitution de souvenirs, développée et testable
 ## Objectif
 Créer une expérience collective permettant de préparer un souvenir numérique pour une personne ou un événement : livre d'or, souvenirs, médias, chronologie et restitution finale.
 
+## Aperçu de l'application
+
+Pages réelles du projet de recette, avec des souvenirs de démonstration et le
+thème **Album chaleureux**.
+
+![Accueil de LivreDor](docs/screenshots/presentation-accueil-desktop.jpg)
+
+![Livre d'or ouvert](docs/screenshots/presentation-livre-desktop.jpg)
+
+![Mur des souvenirs](docs/screenshots/presentation-mur-desktop.jpg)
+
+Retrouvez l'éditeur avec aperçu, la chronologie, le lecteur de souvenir et les
+versions mobiles dans la [présentation en images](docs/19-PRESENTATION-VISUELLE.md).
+
 ## Stack retenue
 - Next.js / React / TypeScript
 - Supabase Auth (OTP email)
