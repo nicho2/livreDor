@@ -211,3 +211,39 @@ et refus média sans jeton/avec jeton invalide préviennent une régression.
 La V1 n'ajoute pas une liste d'invités nominative : tout compte authentifié peut
 encore lire les contenus publiés des projets non brouillons. L'export statique
 reste autonome et n'est public que si l'organisateur le diffuse séparément.
+
+
+## ADR-018 — Album chaleureux et vues partagées
+
+**Décision :** introduire une identité crème/ivoire/terracotta pilotée par des
+variables CSS (couleurs, polices, espacements, rayons, ombres, durées). Une
+ambiance Classique permet de vérifier la substitution des tokens. Le sélecteur
+est une préférence locale du navigateur, facultative et sans donnée personnelle,
+non un réglage partagé du projet. Le choix d'un thème par l'organisateur reste
+une évolution ultérieure : aucune migration ni nouveau champ métier à ce stade.
+
+`GuestBookPage` rend les mêmes données structurées dans la grille, le livre et
+l'aperçu de saisie. Le livre montre deux pages dès 768 px, une page en dessous,
+avec boutons, clavier et glissement tactile. Les médias restent exclusivement
+attachés aux souvenirs, comme dans le modèle actuel ; l'aperçu du message montre
+son texte et son formatage, sans inventer une association photo/message.
+
+`MemoryCollection` partage ses cartes entre mur et chronologie. Celle-ci exclut
+les souvenirs sans date/période, qui restent sur le mur. `MemoryDetail` est
+partagé par la route détail et le dialogue `MemoryViewer` ; les liens existants
+vers les détails restent valables. Le dialogue natif fournit confinement du
+focus, Échap et restitution du focus. `MediaGallery` conserve les uploads et
+lectures privées existants, avec galerie, miniatures, zoom et lecture audio/vidéo.
+Les fichiers HEIC/HEIF restent téléchargeables si le navigateur ne les décode pas.
+
+Les cartes sont affichées par lots de 24 ; une requête de métadonnées par lot
+évite une requête par souvenir et les signatures des aperçus sont demandées à
+l'approche du viewport. Les données textuelles restent chargées pour le projet ;
+ce choix vise plusieurs centaines de souvenirs, pas une pagination serveur de
+collections illimitées. Le lecteur charge au plus les 20 fichiers autorisés.
+Les animations sont ponctuelles et neutralisées avec prefers-reduced-motion.
+
+**Raison :** enrichir la consultation et rendre l'édition prévisible, sans
+changer OTP, Supabase/RLS, R2 privé, rôles, statuts ni export autonome. Le site
+statique conserve son rendu autonome existant ; les interactions React de
+l'application active ne sont pas ajoutées implicitement à l'archive.

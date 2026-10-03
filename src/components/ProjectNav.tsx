@@ -23,6 +23,6 @@ export function ProjectNav({ slug, projectId }: { slug: string; projectId: strin
   if (organizer) links.push(["/admin", "Organisation"]);
   return <nav className="project-nav" aria-label="Navigation du projet">{links.map(([suffix, title]) => {
     const href = `/p/${slug}${suffix}`;
-    return <Link key={href} href={href} aria-current={pathname === href ? "page" : undefined}>{title}</Link>;
+    return <Link key={href} href={href} aria-current={pathname === href ? "page" : undefined}><span className="desktop-nav-label">{title}</span><span className="mobile-nav-label">{({ "": "Accueil", "/contribute": "Écrire", "/guestbook": "Livre", "/wall": "Souvenirs", "/timeline": "Frise", "/admin": "Organiser" } as Record<string, string>)[suffix]}</span></Link>;
   })}</nav>;
 }

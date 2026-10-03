@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { guestbookEntrySchema } from "@/lib/validators";
 import type { GuestbookFormatting } from "@/types/database";
 import { useContributionName } from "@/components/ContributionNameProvider";
+import { GuestBookPage } from "@/components/GuestBook";
 import { resolveDisplayName } from "@/lib/display-name";
 
 const defaultFormatting: GuestbookFormatting = {
@@ -17,11 +18,15 @@ const defaultFormatting: GuestbookFormatting = {
 };
 
 export function ContributionForm({ projectId }: { projectId: string }) {
+  // A late initial fetch must never replace text/formatting already edited locally.
+  const edited = useRef(false);
   const { suggestedName, rememberName } = useContributionName();
+  const [loaded, setLoaded] = useState(false);
   const [nameEdited, setNameEdited] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [message, setMessage] = useState("");
   const [formatting, setFormatting] = useState(defaultFormatting);
+  const [editorTab, setEditorTab] = useState("write");
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
   const [entryId, setEntryId] = useState<string | null>(null);
@@ -33,23 +38,27 @@ export function ContributionForm({ projectId }: { projectId: string }) {
     async function loadEntry() {
       const supabase = getSupabaseBrowser();
       const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) return;
+      if (!auth.user) throw new Error("Votre session a expiré. Reconnectez-vous avant de déposer un message.");
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("guestbook_entries")
         .select("id, display_name, message, formatting")
         .eq("project_id", projectId)
         .eq("author_id", auth.user.id)
         .maybeSingle();
 
-      if (!active || !data) return;
+      if (error) throw new Error("Impossible de retrouver votre message. Actualisez la page avant de réessayer.");
+      if (!active) return;
+      setLoaded(true);
+      if (!data) return;
       setEntryId(data.id);
+      if (edited.current) return;
       setDisplayName(data.display_name);
       setMessage(data.message);
       setFormatting(data.formatting);
     }
 
-    void loadEntry();
+    void loadEntry().catch(error => { if (active) setFeedback(error instanceof Error ? error.message : "Impossible de retrouver votre message. Actualisez la page avant de réessayer."); });
     return () => {
       active = false;
     };
@@ -107,8 +116,10 @@ export function ContributionForm({ projectId }: { projectId: string }) {
   }
 
   return (
-    <form className="card stack" onSubmit={(event) => submit(event, "published")}>
+    <form className="card stack" onChangeCapture={() => { edited.current = true; }} onClickCapture={event => { if ((event.target as HTMLElement).closest(".format-bar")) edited.current = true; }} onSubmit={(event) => submit(event, "published")}>
       <h2>Votre message</h2>
+      <div className="actions editor-tabs"><button type="button" className="button secondary" aria-pressed={editorTab === "write"} onClick={() => setEditorTab("write")}>Écrire</button><button type="button" className="button secondary" aria-pressed={editorTab === "preview"} onClick={() => setEditorTab("preview")}>Aperçu</button></div>
+      <div className={`editor-layout editor-tab-${editorTab}`}><div className="stack editor-input">
       <label>Nom affiché<input value={effectiveDisplayName} onChange={(e) => { setNameEdited(true); setDisplayName(e.target.value); }} maxLength={80} required /></label>
       <div className="format-bar">
         <select value={formatting.font} onChange={(e) => setFormatting({ ...formatting, font: e.target.value as GuestbookFormatting["font"] })} aria-label="Police">
@@ -123,12 +134,13 @@ export function ContributionForm({ projectId }: { projectId: string }) {
         <select aria-label="Couleur" value={formatting.color} onChange={(event) => setFormatting({ ...formatting, color: event.target.value as GuestbookFormatting["color"] })}><option value="ink">Encre</option><option value="blue">Bleu</option><option value="green">Vert</option><option value="burgundy">Bordeaux</option><option value="gold">Ocre</option></select>
       </div>
       <label>Votre message<textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={8} maxLength={5000} placeholder="Écrivez votre message…" required /></label>
+      </div><section className="editor-preview" aria-label="Aperçu du message"><GuestBookPage message={message} displayName={effectiveDisplayName} formatting={formatting} /></section></div>
       <p className="muted small">Vous pourrez ensuite ajouter un ou plusieurs souvenirs.</p>
       <div className="actions">
-        <button className="button" disabled={busy}>{busy ? "Enregistrement…" : entryId ? "Mettre à jour et publier" : "Publier mon message"}</button>
-        <button className="button secondary" type="button" disabled={busy} onClick={(event) => void submit(event as unknown as FormEvent, "draft")}>Enregistrer en brouillon</button>
+        <button className="button" disabled={busy || !loaded}>{busy ? "Enregistrement…" : entryId ? "Mettre à jour et publier" : "Publier mon message"}</button>
+        <button className="button secondary" type="button" disabled={busy || !loaded} onClick={(event) => void submit(event as unknown as FormEvent, "draft")}>Enregistrer en brouillon</button>
       </div>
-      {feedback && <p className="notice">{feedback}</p>}
+      {feedback && <p className="notice" role="status">{feedback}</p>}
     </form>
   );
 }

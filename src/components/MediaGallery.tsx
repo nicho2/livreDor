@@ -1,5 +1,6 @@
+/* eslint-disable @next/next/no-img-element -- Private signed URLs must bypass public image optimizers. */
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { authenticatedFetch } from "@/lib/api-client";
 import { validateMediaFile } from "@/lib/media";
@@ -20,6 +21,9 @@ function uploadFile(url: string, file: File, progress: (value: number) => void) 
 }
 
 export function MediaGallery({ memoryId, projectId, editable = false }: { memoryId: string; projectId: string; editable?: boolean }) {
+  const [imageIndex, setImageIndex] = useState(0);
+  const [zoom, setZoom] = useState(false);
+  const swipeStart = useRef<number | null>(null);
   const [media, setMedia] = useState<MediaAsset[]>([]);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState("");
@@ -73,11 +77,22 @@ export function MediaGallery({ memoryId, projectId, editable = false }: { memory
     finally { setBusy(false); await load(); }
   }
 
+  const images = media.filter(m => m.kind === "image" && !["image/heic", "image/heif"].includes(m.mime_type) && urls[m.id]);
+  const index = Math.min(imageIndex, Math.max(0, images.length - 1));
+  const image = images[index];
+  function move(direction: number) { setImageIndex((index + direction + images.length) % images.length); setZoom(false); }
   return <div className="stack media-gallery">
-    {media.map((item) => <figure key={item.id}>
+    {!editable && image && <section className="stack" aria-label="Galerie de photos">
+      <div className={zoom ? "image-stage zoomed" : "image-stage"} onTouchStart={e => { swipeStart.current = e.touches[0].clientX; }} onTouchEnd={e => { if (swipeStart.current !== null && Math.abs(e.changedTouches[0].clientX - swipeStart.current) > 60) move(e.changedTouches[0].clientX < swipeStart.current ? 1 : -1); swipeStart.current = null; }}>
+
+        <img src={urls[image.id]} alt={image.original_filename} onError={() => setFeedback("Photo indisponible. Actualisez les médias.")} />
+      </div><div className="actions book-controls"><button type="button" className="button secondary" disabled={images.length < 2} onClick={() => move(-1)}>← Photo précédente</button><span role="status">Photo {index + 1} sur {images.length}</span><button type="button" className="button secondary" disabled={images.length < 2} onClick={() => move(1)}>Photo suivante →</button><button type="button" className="button secondary" aria-pressed={zoom} onClick={() => setZoom(!zoom)}>{zoom ? "Réduire" : "Zoomer"}</button><a href={urls[image.id]} target="_blank" rel="noreferrer">Ouvrir en plein écran</a></div>
+      <div className="image-thumbnails">{images.map((item, i) => <button type="button" key={item.id} aria-label={`Photo ${i + 1} : ${item.original_filename}`} aria-pressed={index === i} onClick={() => { setImageIndex(i); setZoom(false); }}><img src={urls[item.id]} alt="" loading="lazy" /></button>)}</div>
+    </section>}
+    {media.filter(item => editable || !images.some(image => image.id === item.id)).map((item) => <figure key={item.id}>
       {urls[item.id] ? <>
         {/* Signed private URLs must not be cached by a public image optimizer. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+
         {item.kind === "image" && !["image/heic", "image/heif"].includes(item.mime_type) && <a href={urls[item.id]} target="_blank" rel="noreferrer"><img src={urls[item.id]} alt={item.original_filename} loading="lazy" onError={() => setFeedback("Aperçu indisponible. Actualisez les médias ou téléchargez le fichier.")} /></a>}
         {item.kind === "video" && <video src={urls[item.id]} controls preload="metadata" />}
         {item.kind === "audio" && <audio src={urls[item.id]} controls preload="metadata" />}

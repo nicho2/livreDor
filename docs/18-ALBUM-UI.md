@@ -1,0 +1,65 @@
+# Album chaleureux — recette locale
+
+L'identité et les composants de consultation sont décrits dans ADR-018.
+
+## Démarrage de la recette isolée
+
+`npm run test:ui:fixture` démarre Next sur 3101, un proxy sur 3100 et des services
+Auth/PostgREST fictifs sur 54329. Les ports doivent être disponibles. Le répertoire
+`.next-ui` isole la compilation du serveur de développement habituel.
+
+Ouvrir http://localhost:3100/auth?next=/p/album-test/guestbook et utiliser
+`recette@example.test`, code fictif `123456`. Aucun email n'est envoyé. Les
+30 souvenirs, cinq messages et médias synthétiques sont en mémoire ; un
+redémarrage réinitialise la recette. Aucun Supabase/R2 réel n'est contacté.
+La simulation média ne valide pas les signatures R2 ni la sécurité RLS réelle.
+
+Pour tester la compilation de production sous PowerShell :
+
+```powershell
+$env:LIVREDOR_UI_FIXTURE='1'
+$env:NEXT_PUBLIC_SUPABASE_URL='http://localhost:3100'
+$env:NEXT_PUBLIC_SUPABASE_ANON_KEY='fixture-only'
+npm run build
+node scripts/ui-fixture.mjs --production
+```
+
+Utiliser un terminal dédié : ces variables servent uniquement à la recette.
+Arrêter la recette avec Ctrl+C avant de recompiler `.next-ui`.
+
+## Tests Playwright persistants
+
+`tests/album-browser.mjs` exporte des tests utilisant l'API Playwright du
+Browser Codex. Après initialisation du Browser selon sa compétence, fournir
+un onglet de recette `tab` et sa capacité `viewport` :
+
+```javascript
+const suite = await import('file:///CHEMIN_ABSOLU/tests/album-browser.mjs');
+await suite.loginFixture(tab);
+for (const width of [1440, 900, 375]) {
+  await suite.testBook(tab, viewport, width);
+  await suite.testEditor(tab, viewport, width);
+  await suite.testWall(tab, viewport, width);
+  await suite.testTimeline(tab, viewport, width);
+}
+await suite.testThemeAndAccess(tab);
+await viewport.reset();
+```
+
+Assertions : pages simples/doubles, navigation, aperçu et classes de formatage,
+brouillon/publication, absence de débordement, lots de souvenirs, galerie et zoom,
+audio, fermeture Échap et focus restitué, dispositions de la frise et exclusion
+des souvenirs non datés. Compléter par captures visuelles, navigation clavier,
+changement/persistance d'ambiance et accès anonyme.
+
+Ces tests sont séparés de `npm test` (tests Node sans navigateur). Aucun secret
+ni stockage de session n'est nécessaire dans les tests. Les migrations, API et
+règles RLS existantes demeurent couvertes par les suites du socle.
+
+## Limites volontaires
+
+Le thème est une préférence locale ; la personnalisation organisateur persistée
+par projet est ultérieure. Pas de photos associées aux messages principaux,
+ni d'éditeur libre. Les médias restent sur les souvenirs. L'export final conserve
+le rendu statique existant. Le bouton plein écran ouvre le fichier signé dans un
+onglet ; les codecs audio/vidéo dépendent du navigateur.

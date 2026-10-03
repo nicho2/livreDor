@@ -368,3 +368,24 @@ publiée avec succès le 3 octobre à 18 h 41 (Paris), source `66a224b` : accuei
 connexion, projet, mur et chronologie HTTP 200 ; API média HTTP 401 sans signature
 pour absence de session ou jeton invalide. Aucun push vers GitHub. La recette OTP
 réelle sur la version 3 reste à confirmer ; les tests ne créent aucun compte.
+
+
+## Recette Album chaleureux — 3 octobre 2026
+
+Branche `feat/album-chaleureux`. Compilation Next.js/Webpack de production isolée
+(`.next-ui`) réussie, avec services fictifs locaux et médias du seed, sans accès
+au Supabase ni au R2 réels. Tests Playwright persistants dans
+`tests/album-browser.mjs` : 12 scénarios (livre, éditeur, mur, chronologie à 1440,
+900 et 375 px), plus thèmes/persistance, clavier et retrait des contenus après
+déconnexion. Tous passent. Vérifications incluses : brouillon et publication,
+mise en forme de l'aperçu, pages simples/doubles, galerie, zoom, audio, Échap,
+focus restitué, lots de 24/30 souvenirs, 29 souvenirs datés, absence de débordement.
+Les captures desktop/mobile sont dans `docs/screenshots/` avec données fictives.
+
+`npm run lint`, `npm run typecheck`, les 38 tests Node et `git diff --check`
+passent. Aucune migration ni modification des contrôles API/RLS. La fixture
+valide l'UX et les interactions ; elle ne certifie pas les règles RLS réelles,
+les signatures R2, tous les codecs vidéo ni les performances sur téléphone réel.
+La réduction des animations est prévue via prefers-reduced-motion ; pas de
+simulation système de ce réglage dans la recette Browser. Procédure détaillée :
+[recette de l'album](18-ALBUM-UI.md).

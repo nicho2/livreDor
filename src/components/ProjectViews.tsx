@@ -3,18 +3,22 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useProject } from "@/components/ProjectAccess";
-import { MediaGallery } from "@/components/MediaGallery";
+import { MemoryDetail, MemoryViewer } from "@/components/MemoryViewer";
+import { GuestBook } from "@/components/GuestBook";
+import { MemoryCollection } from "@/components/MemoryCollection";
+import { AlbumCover } from "@/components/AlbumCover";
 import { ContributionForm } from "@/components/ContributionForm";
 import { MemoryManager } from "@/components/MemoryManager";
 import { ContributionNameProvider } from "@/components/ContributionNameProvider";
 import { OrganizerPanel } from "@/components/OrganizerPanel";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
-import { chronologicalMemories, formattingClasses, memoryDateLabel, projectWindow } from "@/lib/presentation";
+import { chronologicalMemories, memoryDateLabel, projectWindow } from "@/lib/presentation";
 import type { GuestbookEntry, Memory } from "@/types/database";
 
 export function ProjectOverview() {
   const project = useProject();
-  return <main><section className="hero">
+  return <main><section className="hero hero-album">
+    <AlbumCover />
     <p className="kicker">Pour {project.subject_name}</p><h1>{project.title}</h1>
     {project.description && <p>{project.description}</p>}
     {project.event_date && <p>Date de l&apos;événement : {memoryDateLabel({ occurred_on: project.event_date, year_from: null, year_to: null })}</p>}
@@ -24,6 +28,10 @@ export function ProjectOverview() {
       <Link className="button secondary" href={`/p/${project.slug}/wall`}>Voir le mur</Link>
       <Link className="button secondary" href={`/p/${project.slug}/timeline`}>Chronologie</Link>
     </div>
+  </section><section className="grid album-navigation" aria-label="Parcourir l’album">
+    <Link className="card" href={`/p/${project.slug}/guestbook`}><span className="album-symbol" aria-hidden="true">✎</span><h2>Les mots de chacun</h2><p>Un livre à parcourir, des mots à garder.</p></Link>
+    <Link className="card" href={`/p/${project.slug}/wall`}><span className="album-symbol" aria-hidden="true">▧</span><h2>Nos souvenirs partagés</h2><p>Photos, anecdotes et petits moments précieux.</p></Link>
+    <Link className="card" href={`/p/${project.slug}/timeline`}><span className="album-symbol" aria-hidden="true">↝</span><h2>Le fil de notre histoire</h2><p>Retrouver les moments au fil des années.</p></Link>
   </section></main>;
 }
 
@@ -31,6 +39,7 @@ export function PublishedView({ view, memoryId }: { view: "guestbook" | "wall" |
   const project = useProject();
   const [content, setContent] = useState<{ entries: GuestbookEntry[]; memories: Memory[] } | null>(null);
   const [error, setError] = useState("");
+  const [selected, setSelected] = useState<Memory | null>(null);
   useEffect(() => {
     let active = true;
     async function load() {
@@ -55,37 +64,17 @@ export function PublishedView({ view, memoryId }: { view: "guestbook" | "wall" |
   const { entries, memories } = content;
   if (view === "guestbook") return <main className="stack">
     <div><p className="kicker">Livre d’or</p><h1>Les messages pour {project.subject_name}</h1><p className="muted">Les mots de chacun, réunis dans le livre d’or.</p></div>
-    {!entries.length && <div className="empty">Aucun message publié pour le moment.</div>}
-    <section className="grid">{entries.map((entry) => <article className="card stack" key={entry.id}>
-      <p className={formattingClasses(entry.formatting)}>{entry.message}</p><strong>{entry.display_name}</strong>
-    </article>)}</section>
+    <GuestBook entries={entries} />
     <div className="actions"><Link className="button" href={`/p/${project.slug}/contribute`}>Laisser un message</Link></div>
   </main>;
   if (view === "memory") {
     const memory = memories[0];
-    return <main className="stack"><article className="card stack">
-      <p className="kicker">{memoryDateLabel(memory)}</p><h1>{memory.title || "Souvenir"}</h1>
-      <p className="message">{memory.body}</p><strong>{memory.display_name}</strong>
-      <MediaGallery projectId={project.id} memoryId={memory.id} />
-    </article><Link href={`/p/${project.slug}/wall`}>Retour au mur des souvenirs</Link></main>;
+    return <main className="stack"><div className="card"><MemoryDetail memory={memory} projectId={project.id} /></div><Link href={`/p/${project.slug}/wall`}>Retour au mur des souvenirs</Link></main>;
   }
-  if (view === "timeline") return <main className="stack">
-    <div><p className="kicker">Chronologie</p><h1>L&apos;histoire de {project.subject_name}</h1></div>
-    {!memories.length && <div className="empty">Les souvenirs datés apparaîtront ici.</div>}
-    <section className="timeline">{memories.map((memory) => <article className="timeline-item" key={memory.id}>
-      <strong>{memoryDateLabel(memory)}</strong><h2><Link href={`/p/${project.slug}/memories/${memory.id}`}>{memory.title || "Souvenir"}</Link></h2>
-      <p className="message">{memory.body}</p><span className="muted">{memory.display_name}</span>
-    </article>)}</section>
-  </main>;
   return <main className="stack">
-    <div><p className="kicker">Mur des souvenirs</p><h1>{project.subject_name}</h1></div>
-    {!memories.length && <div className="empty">Aucun souvenir publié pour le moment.</div>}
-    <section className="grid">
-      {memories.map((memory) => <article className="card stack" key={memory.id}>
-        <p className="kicker">{memoryDateLabel(memory)}</p><h2><Link href={`/p/${project.slug}/memories/${memory.id}`}>{memory.title || "Souvenir"}</Link></h2>
-        <p className="message">{memory.body}</p><strong>{memory.display_name}</strong><MediaGallery projectId={project.id} memoryId={memory.id} />
-      </article>)}
-    </section>
+    <div><p className="kicker">{view === "timeline" ? "Chronologie" : "Mur des souvenirs"}</p><h1>{view === "timeline" ? `L’histoire de ${project.subject_name}` : project.subject_name}</h1><p className="muted">Des instants partagés, une histoire qui nous ressemble.</p></div>
+    <MemoryCollection memories={memories} projectId={project.id} timeline={view === "timeline"} onOpen={setSelected} />
+    {selected && <MemoryViewer memory={selected} projectId={project.id} onClose={() => setSelected(null)} />}
   </main>;
 }
 

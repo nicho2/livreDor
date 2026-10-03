@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthProvider } from "@/components/AuthProvider";
 import { AuthNav } from "@/components/AuthNav";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="fr">
       <body>
-        <AuthProvider>
+        <ThemeProvider><AuthProvider>
           <div className="shell">
             <header className="header">
               <Link className="brand" href="/">LivreDor</Link>
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </header>
             {children}
           </div>
-        </AuthProvider>
+        </AuthProvider></ThemeProvider>
       </body>
     </html>
   );

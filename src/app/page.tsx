@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { ProjectList } from "@/components/ProjectList";
+import { AlbumCover } from "@/components/AlbumCover";
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   return (
     <main>
-      <section className="hero">
+      <section className="hero hero-album">
+        <AlbumCover />
         <p className="kicker">Livre d&apos;or + souvenirs</p>
         <h1>Construire ensemble une histoire à transmettre.</h1>
         <p>LivreDor rassemble messages, anecdotes, photos, vidéos et souvenirs dans un espace collectif, puis permet de restituer l&apos;ensemble sous une forme durable.</p>

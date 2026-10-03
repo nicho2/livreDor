@@ -2,6 +2,7 @@
 
 Application de collecte et de restitution de souvenirs, développée et testable localement.
 
+[Recette Album chaleureux](docs/18-ALBUM-UI.md) ·
 [Index de documentation](docs/README.md) ·
 [Installation avec Resend](docs/15-INSTALLATION-RESEND.md) ·
 [Jeu synthétique pour la recette en ligne](docs/16-SYNTHETIC-SEED.md).
