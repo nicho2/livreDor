@@ -32,6 +32,11 @@ npm test
 npm run build
 ```
 
+`npm run check` enchaîne ces contrôles et s'arrête au premier échec.
+`npm run test:watch` signale immédiatement les régressions des tests unitaires
+pendant le développement. La CI GitHub reprend ces contrôles et les migrations/RLS
+sur PostgreSQL isolé, sans secret ni accès au projet Supabase réel.
+
 L'accueil et l'écran de connexion peuvent être contrôlés sans backend. Le
 parcours complet projet → OTP → contribution → mur nécessite une configuration
 Supabase de développement et l'application de toutes les migrations.
@@ -101,6 +106,9 @@ CORS de développement disponible dans `config/r2-cors.local.json`.
 La contribution OTP, les souvenirs multiples, les médias R2 privés, le mur,
 la chronologie et le détail sont implémentés. L'espace organisateur permet
 modération, clôture et export ZIP avec site autonome et sauvegarde privée.
+Les paramètres du projet sont modifiables dans Organisation. La création depuis
+l'accueil et l'invitation d'un deuxième organisateur nécessitent respectivement
+les migrations 0004 et 0005, après les trois migrations du socle.
 Voir `docs/13-V1-OPERATIONS.md` pour démarrage, tests, exploitation et limites.
 Le registre `docs/10-LOCAL-VALIDATION.md` distingue vérifications réalisées et
 recette manuelle restant à faire avant une publication.

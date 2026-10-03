@@ -94,3 +94,38 @@ Turbopack reste accessible avec `npm run dev:turbo`.
 verrouillé (erreur Windows 32). Webpack permet de continuer les validations.
 Toujours arrêter le serveur avant un build ; ne pas supprimer les sources,
 ni désactiver les protections Windows pour contourner un verrouillage.
+
+## ADR-012 — Création guidée et informations du projet
+
+**Décision :** après OTP, `/nouveau` permet de créer un projet et son adhésion
+organisateur dans une seule transaction PostgreSQL (`create_project`, migration
+0004). Le créateur provient uniquement de `auth.uid()`, jamais du formulaire.
+Le nouveau projet est `open`, avec avertissement explicite de visibilité des
+informations. La création ne confère aucun droit sur un projet existant et une
+collision de slug échoue sans le modifier. Le slug, l'ID et le créateur restent
+immuables. L'organisateur peut modifier titre, nom affiché, présentation et date
+d'événement ; validation Zod bornée et contrôle de rôle côté serveur.
+
+**Raison :** supprimer la configuration SQL manuelle pour chaque projet, tout
+en respectant le modèle multi-projets et les droits existants. Le nom affiché
+reste un champ libre unique (personne ou événement) ; pas de date de naissance
+collectée sans besoin validé. Les champs secondaires sont facultatifs.
+
+## ADR-013 — Deux organisateurs, invitation par adresse vérifiée
+
+**Décision :** un organisateur peut enregistrer une invitation privée pour une
+deuxième adresse, y compris sans compte existant. La personne reçoit le lien
+du projet par l'organisateur et se connecte via son propre OTP. Aucun email
+d'invitation automatique. La RPC d'acceptation lit l'email **confirmé** du compte
+dans `auth.users`, jamais une adresse déclarée dans une requête. Lors de l'ouverture
+du projet ou de son administration, l'invitation correspondante est acceptée.
+Le projet est verrouillé pendant invitation/acceptation ; deux organisateurs
+maximum. Les droits sont identiques, pour ce seul projet. Une invitation en
+attente est remplaçable/annulable ; une invitation acceptée ne l'est pas dans
+l'interface V1. Une révocation exceptionnelle nécessite une intervention contrôlée.
+
+**Raison :** partager simplement la responsabilité sans ajouter une gestion
+complexe de rôles. La table `project_organizer_invites` est réservée aux
+organisateurs, ne figure pas dans les exports et ne révèle rien aux tiers.
+La migration 0005 est nécessaire. Aucun compte n'est créé ni recherché par
+email via une API administrateur, aucune promotion générale n'est possible.

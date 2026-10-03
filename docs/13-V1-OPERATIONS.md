@@ -2,7 +2,7 @@
 
 ## Démarrer et vérifier
 
-Prérequis : Node 24, `.env.local` configuré, migrations 0001 à 0003 appliquées,
+Prérequis : Node 24, `.env.local` configuré, migrations 0001 à 0005 appliquées,
 modèles OTP Supabase et bucket R2 privé/CORS configurés.
 
 ```powershell
@@ -38,11 +38,17 @@ protègent également les écritures, même si une page ouverte devient obsolèt
 
 ## Organiser
 
+Depuis l'accueil, « Créer un LivreDor » permet au compte connecté de créer son
+projet et d'en devenir organisateur sans configuration manuelle. Les informations
+du projet sont modifiables dans Organisation. Le partage avec un deuxième compte
+par email vérifié est décrit dans `14-ONBOARDING-REGRESSION.md`.
+
 Le lien « Organisation » apparaît seulement pour un membre `organizer`.
 Les API revérifient ce rôle sur chaque action ; cacher un lien ne suffit pas.
-Le compte organisateur est celui initialement enregistré dans `project_members`.
-Si le lien n'apparaît pas, se connecter avec ce compte : aucune promotion de rôle
-automatique n'est proposée dans la V1.
+Le compte organisateur est le créateur, un compte initialement enregistré dans
+`project_members`, ou la personne ayant accepté l'invitation privée correspondante.
+Si le lien n'apparaît pas, se connecter avec ce compte ou l'adresse exactement
+invitée : aucune autodéclaration de rôle organisateur n'est proposée.
 
 - Filtrer brouillons/publiés/masqués, modifier leur visibilité.
 - Un média ne s'affiche publiquement que si son souvenir est également publié.

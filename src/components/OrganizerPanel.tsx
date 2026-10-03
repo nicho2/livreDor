@@ -2,8 +2,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authenticatedFetch } from "@/lib/api-client";
+import { ProjectDetailsForm } from "@/components/ProjectDetailsForm";
 import type { Project, GuestbookEntry, Memory, MediaAsset, PublicationStatus } from "@/types/database";
-type Data = { project: Project; entries: GuestbookEntry[]; memories: Memory[]; media: MediaAsset[] };
+type Data = { project: Project; entries: GuestbookEntry[]; memories: Memory[]; media: MediaAsset[]; invitation: { email: string; accepted_by: string | null } | null; sharingReady: boolean };
 const labels = { draft: "Brouillon", published: "Publié", hidden: "Masqué" };
 export function OrganizerPanel({ projectId }: { projectId: string }) {
   const [data, setData] = useState<Data | null>(null);
@@ -12,6 +13,7 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
   const [busy, setBusy] = useState(false);
   const [opensAt, setOpensAt] = useState("");
   const [closesAt, setClosesAt] = useState("");
+  const [organizerEmail, setOrganizerEmail] = useState("");
   const router = useRouter();
   const url = `/api/projects/${projectId}/admin`;
   const load = useCallback(async () => {
@@ -48,6 +50,27 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
     {feedback && <p role="status" className="notice">{feedback}</p>}
     {!data && <button type="button" className="button secondary" onClick={() => void load()}>Charger l&apos;espace organisateur</button>}
     {data && <>
+      <ProjectDetailsForm disabled={busy} initial={{ title: data.project.title, subjectName: data.project.subject_name, description: data.project.description ?? "", eventDate: data.project.event_date ?? "" }} onSave={async (details) => {
+        // Unlike moderation, propagate errors so the form cannot report a false success.
+        setBusy(true); setFeedback("");
+        try {
+          await authenticatedFetch(url, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "details", ...details }) });
+          await load(); router.refresh();
+        } finally { setBusy(false); }
+      }} />
+      <section className="card stack"><h2>Partager l&apos;organisation</h2>
+        <p>Invitez une deuxième personne à modérer, clôturer et exporter ce LivreDor. Elle doit ouvrir le lien du projet et se connecter avec le code envoyé à cette adresse. Aucun email d&apos;invitation n&apos;est envoyé automatiquement.</p>
+        {!data.sharingReady && <p className="notice">Appliquez la migration Supabase 0005 pour activer ce partage.</p>}
+        {data.invitation && <p role="status">{data.invitation.accepted_by ? "Deuxième organisateur : " : "Invitation en attente : "}{data.invitation.email}</p>}
+        <form className="stack" onSubmit={(event) => { event.preventDefault(); void act({ action: "invite-organizer", email: organizerEmail }); }}>
+          <label>Email du deuxième organisateur<input type="email" required maxLength={254} value={organizerEmail} onChange={(event) => setOrganizerEmail(event.target.value)} disabled={busy || !data.sharingReady || !!data.invitation?.accepted_by} /></label>
+          <div className="actions"><button type="submit" className="button secondary" disabled={busy || !data.sharingReady || !!data.invitation?.accepted_by}>Inviter le deuxième organisateur</button>
+            {data.invitation && !data.invitation.accepted_by && <button type="button" className="button secondary" disabled={busy} onClick={() => void act({ action: "cancel-invitation" })}>Annuler l&apos;invitation</button>}
+          </div>
+          <p className="muted">Une nouvelle adresse remplace l&apos;invitation encore en attente. L&apos;adresse reste privée, hors du mur et de l&apos;archive exportée. Les deux organisateurs disposent des mêmes droits.</p>
+        </form>
+        <p className="message">Lien à transmettre : /p/{data.project.slug}</p>
+      </section>
       <section className="card stack"><h2>Collecte et archivage</h2><p>État : {data.project.status}. Clôturer bloque les contributions mais conserve la consultation et la modération.</p>
         <div className="year-fields"><label>Ouverture (UTC, facultative)<input type="datetime-local" value={opensAt} onChange={(e) => setOpensAt(e.target.value)} /></label><label>Clôture (UTC, facultative)<input type="datetime-local" value={closesAt} onChange={(e) => setClosesAt(e.target.value)} /></label></div>
         <div className="actions">

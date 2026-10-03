@@ -38,3 +38,15 @@ Pour un bucket privé, utiliser une URL GET pré-signée à durée limitée. Ne 
 
 ## Modération
 Prévoir un bouton de masquage immédiat. Le masquage doit conserver la donnée pour permettre une restauration par l'organisateur.
+
+## Création et partage d'organisation
+
+Le rôle initial est attribué atomiquement au créateur authentifié, seulement sur
+un nouveau projet. Les ID/roles/creator ne sont pas acceptés comme paramètres
+client. Une invitation requiert un organisateur ; l'acceptation compare l'email
+confirmé en base avec l'adresse privée enregistrée. Deux organisateurs maximum,
+sans auto-promotion par email déclaré ni accès aux invitations d'autres projets.
+L'adresse d'invitation est exclue de la consultation publique et de l'archive.
+Elle est conservée dans le projet pour identifier le partage des droits.
+La création n'a pas encore de quota anti-abus global ; une ouverture publique
+à grande échelle exige une protection supplémentaire.

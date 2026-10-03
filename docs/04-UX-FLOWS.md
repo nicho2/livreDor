@@ -70,3 +70,22 @@ Doit tolérer les dates approximatives sans donner une fausse précision.
 
 ## Administration
 Priorité à une liste claire avec filtres par statut et actions rapides publier/masquer.
+
+## Démarrage organisateur
+
+Accueil → Créer un LivreDor → email/OTP si nécessaire → titre et nom affiché,
+présentation/date facultatives, choix du lien stable → création → Organisation.
+Le retour OTP accepte explicitement `/nouveau`, sans élargir les redirections
+aux chemins arbitraires. La collecte commence ouverte ; les informations du
+projet sont publiques, comme indiqué dans le formulaire.
+
+Organisation permet de modifier les informations sans changer le lien partagé.
+La date d'événement apparaît sur la page projet et le site statique final.
+
+## Deuxième organisateur
+
+Organisation → saisir l'adresse email exacte → invitation en attente → transmettre
+le lien du projet → connexion OTP de l'invité → droits organisateur attribués
+uniquement si son adresse est confirmée et correspond à l'invitation.
+L'email apparaît seulement dans Organisation, jamais sur le mur ou dans le ZIP.
+Une invitation en attente peut être annulée ou remplacée, pas une acceptation.

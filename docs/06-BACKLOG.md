@@ -49,6 +49,7 @@ de production. Les preuves et limites de validation sont dans
 - [x] Publier/masquer.
 - [x] Gestion média.
 - [x] Clôture et fenêtres de contribution.
+- [x] Paramètres du projet, création guidée et partage avec un deuxième organisateur (migrations 0004/0005 à appliquer pour activation distante).
 
 ## Phase 7 — Export
 - [x] Export JSON privé.
@@ -62,7 +63,7 @@ de production. Les preuves et limites de validation sont dans
 - [x] Tests d'intégration API avec R2 réel et données métier isolées.
 - [x] Upload, publication, persistance et lecture d'une image dans le navigateur local.
 - [x] Gestion des erreurs et contrôle des accès organisateur.
-- [ ] Recette finale avec une session organisateur réelle : modération, clôture intentionnelle et téléchargement du ZIP.
+- [x] Recette organisateur du socle : filtres, modération, clôture, ZIP et réouverture confirmés par l'utilisateur.
 - [ ] Contrôle complémentaire RLS sur Supabase de développement.
 - [ ] Recette de fichiers audio/vidéo représentatifs et de leurs codecs.
 - [ ] Audit complet d'accessibilité et mesure de performance sur téléphone réel.

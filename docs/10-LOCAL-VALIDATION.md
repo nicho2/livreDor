@@ -204,3 +204,51 @@ et contenu, et recette mobile avec des fichiers représentatifs.
 Voir `13-V1-OPERATIONS.md` pour utilisation, conservation et limites.
 
 Sauvegarde par commits locaux ; aucun push et aucune publication réalisés.
+
+## Création et organisation partagée — 3 octobre 2026
+
+L'utilisateur confirme avoir terminé les cinq étapes de recette du socle :
+filtres, masquage/republication, clôture, ouverture du ZIP et réouverture. Cette
+confirmation complète la recette organisateur qui restait à faire ci-dessus.
+
+Évolution : création authentifiée du projet et de son organisateur atomique
+(0004), informations modifiables, invitation privée d'une deuxième adresse avec
+acceptation par son compte à email confirmé (0005). Pas de date de naissance.
+
+Vérifications réalisées :
+
+- `npm run check` réussit : lint sans erreur/avertissement, typecheck, **23 tests
+  unitaires**, build Webpack. Une relance a été nécessaire après un verrou EBUSY
+  Windows ; aucun fichier utilisateur supprimé.
+- **46 assertions SQL** passent sur PostgreSQL 18 isolé : les 21 du socle et
+  25 nouvelles couvrant création, rôle initial, collision/identité immuable,
+  non-auto-promotion, email privé, mauvaise adresse, adresse non confirmée,
+  acceptation idempotente, deuxième organisateur, limite de deux et annulation
+  en attente. Fixtures rollbackées et instance arrêtée.
+- **55 contrôles d'intégration** passent sur les API compilées, Auth/PostgREST
+  locaux et R2 réel : 33 contrôles du socle + 22 de création/paramètres/partage,
+  incluant modération des paramètres, clôture/export par le deuxième compte et
+  absence de son email dans l'archive. Objets R2 synthétiques nettoyés.
+- Dans le navigateur avec la session organisateur réelle : affichage des nouvelles
+  rubriques ; modification synthétique titre/nom/présentation, rechargement et
+  consultation de la page ; valeurs originales restaurées. Un test de date a
+  révélé une lecture d'état React obsolète après saisie native. Le formulaire lit
+  désormais les contrôles via FormData à la soumission, avec test de régression.
+  Après accord explicite de l'utilisateur, date du 3 octobre persistante au
+  rechargement et affichée sur le projet ; ancienne date vide restaurée ensuite.
+- `/nouveau` affiche les champs et le message d'activation manquante lors de la
+  soumission : aucun projet Supabase créé. À 375 px, contenu 360 px, aucun
+  débordement horizontal ; viewport restauré.
+- En l'absence de migration 0005 distante, Organisation conserve les fonctions
+  existantes et désactive le partage avec une explication.
+
+Une nouvelle tentative SQL avec capture globale de sortie s'est bloquée sur les
+handles Windows du serveur temporaire. Cette seule instance a été arrêtée,
+puis le script relancé directement : les 46 contrôles ont réussi. Les journaux
+temporaires sont conservés pour diagnostic, sans accès à la base utilisateur.
+
+Activation distante encore nécessaire : exécuter 0004 puis 0005 dans Supabase.
+Les tests HTTP ne remplacent pas la RLS distante ; la création réelle et le
+partage entre deux sessions OTP restent à recetter après cette activation.
+La CI est configurée mais pas exécutée sur GitHub (aucun push demandé).
+Voir `14-ONBOARDING-REGRESSION.md` pour activation et contrôles répétables.

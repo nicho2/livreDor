@@ -39,6 +39,14 @@ Rôles V1 :
 - `organizer`
 - `contributor`
 
+## Invitations organisateur (migration 0005)
+
+`project_organizer_invites` conserve une invitation par projet : `project_id`,
+email normalisé privé, `invited_by`, `accepted_by` facultatif et `created_at`.
+Lecture réservée aux organisateurs, écritures uniquement par RPC contrôlée.
+Cette donnée technique est exclue des archives, même privées. Elle n'est pas un
+contenu éditorial et n'introduit aucun nouveau statut de publication.
+
 ## profiles
 Profil public minimal séparé de l'email Supabase.
 

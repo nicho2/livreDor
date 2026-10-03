@@ -80,6 +80,12 @@ type Update<T> = Partial<Omit<T, "id" | "created_at">>;
 export interface Database {
   public: {
     Tables: {
+      project_organizer_invites: {
+        Row: { project_id: string; email: string; invited_by: string; accepted_by: string | null; created_at: string };
+        Insert: { project_id: string; email: string; invited_by: string; accepted_by?: string | null; created_at?: string };
+        Update: { email?: string; accepted_by?: string | null };
+        Relationships: [];
+      };
       profiles: {
         Row: { id: string; display_name: string | null; created_at: string; updated_at: string };
         Insert: { id: string; display_name?: string | null; created_at?: string; updated_at?: string };
@@ -119,6 +125,13 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      invite_project_organizer: { Args: { p_project_id: string; p_email: string }; Returns: undefined };
+      accept_project_organizer_invite: { Args: { p_project_id: string }; Returns: boolean };
+      cancel_project_organizer_invite: { Args: { p_project_id: string }; Returns: undefined };
+      create_project: {
+        Args: { p_slug: string; p_title: string; p_subject_name: string; p_description: string | null; p_event_date: string | null };
+        Returns: Project[];
+      };
       is_project_member: {
         Args: { p_project_id: string; p_user_id?: string };
         Returns: boolean;

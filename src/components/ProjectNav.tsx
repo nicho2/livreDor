@@ -12,6 +12,8 @@ export function ProjectNav({ slug, projectId }: { slug: string; projectId: strin
     let active = true;
     async function load() {
       if (!user) { if (active) setOrganizer(false); return; }
+      // Only a database invitation matching this user's verified email can grant rights.
+      await getSupabaseBrowser().rpc("accept_project_organizer_invite", { p_project_id: projectId });
       const { data } = await getSupabaseBrowser().from("project_members").select("role").eq("project_id", projectId).eq("user_id", user.id).maybeSingle();
       if (active) setOrganizer(data?.role === "organizer");
     }

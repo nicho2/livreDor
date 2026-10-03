@@ -15,8 +15,11 @@ const tables = {
     { id: ids.otherMemory, project_id: ids.project, author_id: ids.b, display_name: "TEST B", title: "SECRET BROUILLON", body: "SECRET BROUILLON", status: "draft", occurred_on: null, year_from: null, year_to: null, created_at: timestamp }],
   guestbook_entries: [{ id: randomUUID(), project_id: ids.project, author_id: ids.a, display_name: "TEST A", message: "Bonjour <script>evil()</script>", formatting: { font: "serif", size: "md", align: "center", color: "blue", bold: true, italic: false }, status: "published", created_at: timestamp }],
   media_assets: [],
+  project_organizer_invites: [],
 };
 const tokens = { "test-a": ids.a, "test-b": ids.b, "test-organizer": ids.organizer };
+const emails = { "test-a": "a@example.test", "test-b": "b@example.test", "test-organizer": "organizer@example.test" };
+let creationUnavailable = false;
 let assertions = 0;
 const check = (condition, message) => { assert.ok(condition, message); assertions++; console.log(`OK ${assertions} — ${message}`); };
 
@@ -30,6 +33,42 @@ const fixture = createServer(async (request, response) => {
       response.statusCode = id ? 200 : 401;
       response.end(JSON.stringify(id ? { id, aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: timestamp } : { message: "invalid token" }));
       return;
+    }
+    if (url.pathname.startsWith("/rest/v1/rpc/")) {
+      const chunks = []; for await (const chunk of request) chunks.push(chunk);
+      const body = JSON.parse(Buffer.concat(chunks).toString());
+      const rpc = url.pathname.split("/").pop(), user = tokens[token];
+      const fail = (code) => { response.statusCode = 400; response.end(JSON.stringify({ code, message: "Fixture refusal" })); };
+      if (!user) { fail("42501"); return; }
+      if (rpc === "create_project") {
+        if (creationUnavailable) { fail("PGRST202"); return; }
+        if (tables.projects.some((p) => p.slug === body.p_slug)) { fail("23505"); return; }
+        const project = { id: randomUUID(), slug: body.p_slug, title: body.p_title, subject_name: body.p_subject_name, description: body.p_description, event_date: body.p_event_date, status: "open", created_by: user, opens_at: null, closes_at: null, created_at: timestamp };
+        tables.projects.push(project); tables.project_members.push({ project_id: project.id, user_id: user, role: "organizer" });
+        response.end(JSON.stringify([project])); return;
+      }
+      const invitation = tables.project_organizer_invites.find((i) => i.project_id === body.p_project_id);
+      const organizers = tables.project_members.filter((m) => m.project_id === body.p_project_id && m.role === "organizer");
+      if (rpc === "accept_project_organizer_invite") {
+        if (!invitation || invitation.email !== emails[token]) { response.end("false"); return; }
+        if (!invitation.accepted_by) {
+          if (organizers.length >= 2) { fail("23514"); return; }
+          const member = tables.project_members.find((m) => m.project_id === body.p_project_id && m.user_id === user);
+          if (member) member.role = "organizer"; else tables.project_members.push({ project_id: body.p_project_id, user_id: user, role: "organizer" });
+          invitation.accepted_by = user;
+        }
+        response.end("true"); return;
+      }
+      if (!organizers.some((m) => m.user_id === user)) { fail("42501"); return; }
+      if (rpc === "invite_project_organizer") {
+        if (organizers.length >= 2 || body.p_email === emails[token]) { fail("23514"); return; }
+        const next = { project_id: body.p_project_id, email: body.p_email, accepted_by: null };
+        if (invitation) Object.assign(invitation, next); else tables.project_organizer_invites.push(next);
+      } else if (rpc === "cancel_project_organizer_invite") {
+        if (invitation?.accepted_by) { fail("23514"); return; }
+        tables.project_organizer_invites = tables.project_organizer_invites.filter((i) => i.project_id !== body.p_project_id);
+      } else { fail("PGRST202"); return; }
+      response.end("null"); return;
     }
     const table = url.pathname.replace("/rest/v1/", "");
     if (!tables[table]) { response.statusCode = 404; response.end("{}"); return; }
@@ -96,6 +135,39 @@ try {
     if (i === 59) throw new Error("Test server failed to start");
   }
   const input = { projectId: ids.project, memoryId: ids.memory, filename: "test-pixel.png", mimeType: "image/png", sizeBytes: 68 };
+  const newDetails = { title: "TEST Nouveau LivreDor", subjectName: "TEST Marie Martin", description: "Présentation de test", eventDate: "2026-10-03", slug: `test-${randomUUID()}` };
+  check((await call("/api/projects", { method: "POST", token: null, body: newDetails })).status === 401, "création sans session refusée");
+  check((await call("/api/projects", { method: "POST", body: { ...newDetails, created_by: ids.b } })).status === 400, "créateur forgé refusé");
+  check((await call("/api/projects", { method: "POST", body: { ...newDetails, eventDate: "2026-02-30" } })).status === 400, "création avec date invalide refusée");
+  creationUnavailable = true;
+  check((await call("/api/projects", { method: "POST", body: newDetails })).status === 503, "migration absente signalée explicitement");
+  creationUnavailable = false;
+  const created = await call("/api/projects", { method: "POST", body: newDetails });
+  check(created.status === 201, "création authentifiée réussie");
+  const createdProject = await created.json();
+  const newAdmin = `/api/projects/${createdProject.id}/admin`;
+  check(tables.project_members.some((m) => m.project_id === createdProject.id && m.user_id === ids.a && m.role === "organizer"), "créateur devient organisateur de son nouveau projet");
+  check((await call("/api/projects", { method: "POST", token: "test-b", body: newDetails })).status === 409, "collision de lien ne donne aucun droit");
+  check((await call(newAdmin, { token: "test-b" })).status === 403, "nouveau projet non administrable par un autre compte");
+  const change = { action: "details", title: "TEST titre modifié", subjectName: "TEST Jean Dupont", description: "Présentation modifiée", eventDate: "" };
+  check((await call(newAdmin, { token: "test-b", method: "PATCH", body: change })).status === 403, "modification des informations refusée à un tiers");
+  check((await call(newAdmin, { method: "PATCH", body: { ...change, slug: "new-link" } })).status === 400, "changement du lien par API refusé");
+  check((await call(newAdmin, { method: "PATCH", body: change })).status === 200, "informations modifiables par leur organisateur");
+  const loaded = await (await call(newAdmin)).json();
+  check(loaded.project.subject_name === change.subjectName && loaded.project.event_date === null && loaded.project.slug === newDetails.slug, "informations persistantes et date facultative effacée");
+  const invite = { action: "invite-organizer", email: " B@example.test " };
+  check((await call(newAdmin, { token: "test-b", method: "PATCH", body: invite })).status === 403, "invitation par tiers refusée");
+  check((await call(newAdmin, { method: "PATCH", body: { ...invite, email: "invalide" } })).status === 400, "email d'invitation invalide refusé");
+  check((await call(newAdmin, { method: "PATCH", body: invite })).status === 200, "invitation du deuxième organisateur enregistrée");
+  check((await call(newAdmin, { token: "test-organizer" })).status === 403, "organisateur d'un autre projet ne peut accepter");
+  check((await call(newAdmin, { token: "test-b" })).status === 200, "compte invité accède à l'organisation après acceptation");
+  check((await call(newAdmin, { token: "test-b", method: "PATCH", body: { ...change, title: "TEST co-organisé" } })).status === 200, "deuxième organisateur peut modifier les informations");
+  check((await call(newAdmin, { method: "PATCH", body: { ...invite, email: "third@example.test" } })).status === 409, "troisième organisateur refusé");
+  check((await call(newAdmin, { token: "test-b", method: "PATCH", body: { action: "project", status: "closed", opensAt: null, closesAt: null } })).status === 200, "deuxième organisateur peut clôturer");
+  const sharedExport = await call(`/api/projects/${createdProject.id}/export`, { token: "test-b", method: "POST" });
+  check(sharedExport.status === 200, "deuxième organisateur peut exporter");
+  const sharedFiles = unzip(Buffer.from(await sharedExport.arrayBuffer()));
+  check(sharedFiles.get("site/index.html").toString().includes("TEST co-organisé") && ![...sharedFiles.values()].some((b) => b.toString().includes("b@example.test")), "informations modifiées exportées sans email d'invitation");
   const bytes = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=", "base64");
   input.sizeBytes = bytes.length;
   check((await call("/api/media/presign", { method: "POST", token: null, body: input })).status === 401, "authentification obligatoire");

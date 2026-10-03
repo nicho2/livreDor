@@ -31,3 +31,10 @@ test("site autonome sans brouillons, contenus masqués, liens externes ni HTML u
   assert.equal(archiveMediaPath(media[0]), "media/image/media1.png");
   assert.equal(escapeHtml('"<&'), "&quot;&lt;&amp;");
 });
+test("informations du projet et date d'événement incluses dans la restitution", () => {
+  const project = { title: "Nouveau titre", subject_name: "Marie & Jean", description: "Présentation modifiée", event_date: "2026-10-03" };
+  const html = renderStaticSite({ project, entries: [], memories: [], media: [] }, new Set());
+  assert.ok(html.includes("Nouveau titre") && html.includes("Marie &amp; Jean") && html.includes("Présentation modifiée"));
+  assert.ok(html.includes("Date de l'événement : 3 octobre 2026"));
+  assert.ok(!renderStaticSite({ project: { ...project, event_date: null }, entries: [], memories: [], media: [] }, new Set()).includes("Date de l'événement"));
+});
