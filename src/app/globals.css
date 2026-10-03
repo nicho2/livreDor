@@ -31,7 +31,7 @@ label { display: grid; gap: .45rem; font-weight: 600; }
 .stack { display: grid; gap: 16px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; }
 .button { display: inline-flex; width: fit-content; align-items: center; justify-content: center; border: 0; border-radius: 999px; padding: .82rem 1.15rem; background: var(--accent); color: var(--accent-ink); font-weight: 700; cursor: pointer; text-decoration: none; }
-.button:disabled { opacity: .55; cursor: wait; }
+.button:disabled { opacity: .55; cursor: default; }
 .secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
 .link-button { border: 0; background: none; padding: 0; text-decoration: underline; cursor: pointer; color: var(--muted); }
 .muted { color: var(--muted); }
@@ -95,7 +95,7 @@ h1, h2, h3, .card { overflow-wrap: anywhere; }
   --radius-small: 10px; --radius-large: 28px; --radius-paper: 5px;
   --space-small: 8px; --space-medium: 16px; --space-large: 32px;
   --shadow-photo: 0 8px 18px #30231d18; --shadow-book: 0 20px 45px #30231d20;
-  --motion-fast: 180ms; --motion-page: 280ms;
+  --motion-fast: 180ms; --motion-page: 600ms;
   --focus: #23548b; --success-bg: #e3f3e8; --success-ink: #285c38;
   --danger: #8a2d2d; --notice-bg: #f1ece5;
   --blue: #23548b; --green: #28613b; --burgundy: #832d43; --gold: #775314;
@@ -123,8 +123,8 @@ input, select, textarea, .toggle { background: var(--paper); }
 .book-page { padding: 32px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-paper); box-shadow: var(--shadow-photo); align-content: start; }
 .book-page .message { min-height: 120px; margin: 0; }
 .book-page footer { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 16px; }
-.open-book { display: grid; grid-template-columns: 1fr 1fr; border: 8px solid var(--accent); border-radius: 12px; box-shadow: var(--shadow-book); }
-.open-book .book-page { min-height: 420px; border-radius: 0; animation: page-appear var(--motion-page) ease-out; }
+.open-book { position: relative; perspective: 1800px; display: grid; grid-template-columns: 1fr 1fr; border: 8px solid var(--accent); border-radius: 12px; box-shadow: var(--shadow-book); }
+.open-book .book-page { min-height: 420px; border-radius: 0; }
 .open-book .book-page:first-child { background: linear-gradient(to left, #30231d0c, transparent 10%), var(--paper); }
 .book-controls { align-items: center; justify-content: space-between; }
 .editor-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -158,7 +158,7 @@ input, select, textarea, .toggle { background: var(--paper); }
 .image-thumbnails button[aria-pressed="true"] { border-color: var(--accent); }
 .image-thumbnails img { width: 60px; height: 60px; object-fit: cover; }
 @keyframes page-appear { from { opacity: .4; transform: translateX(6px); } to { opacity: 1; transform: none; } }
-@media (hover: hover) { .button:hover, .memory-card:hover { box-shadow: var(--shadow-photo); transform: translateY(-2px); } }
+@media (hover: hover) { .button:not(:disabled):hover, .memory-card:hover { box-shadow: var(--shadow-photo); transform: translateY(-2px); } }
 @media (min-width: 768px) and (max-width: 1200px) { .shell { width: calc(100% - 48px); } .book-page { padding: 24px; } }
 @media (max-width: 767px) {
   .shell { padding-bottom: 150px; } .hero { padding: 32px 22px; } .hero h1 { font-size: 2.7rem; }
@@ -196,3 +196,14 @@ input, select, textarea, .toggle { background: var(--paper); }
 @media (max-width: 767px) { .album-cover { float: none; width: 220px; height: 260px; margin: 0 auto 30px; } .cover-back { width: 180px; height: 200px; } .cover-photo { width: 205px; } .hero-album h1 { font-size: 2.5rem; } }
 
 @media (max-width: 767px) { .hero-album { display: flex; flex-direction: column; } .hero-album .actions { order: 1; } .hero-album .album-cover { order: 2; margin-top: 30px; flex-shrink: 0; } }
+
+/* A two-sided paper leaf turns around the spine, above the incoming spread. */
+.turning-sheet { position: absolute; top: 0; bottom: 0; width: 50%; transform-style: preserve-3d; pointer-events: none; z-index: 1; animation-duration: var(--motion-page); animation-timing-function: cubic-bezier(.4, .05, .25, 1); animation-fill-mode: forwards; }
+.turn-next { right: 0; transform-origin: left center; animation-name: leaf-next; }
+.turn-previous { left: 0; transform-origin: right center; animation-name: leaf-previous; }
+.sheet-face { position: absolute; inset: 0; backface-visibility: hidden; background: var(--paper); overflow: hidden; box-shadow: var(--shadow-book); }
+.sheet-face .book-page { min-height: 100%; height: 100%; }
+.sheet-back { transform: rotateY(180deg); }
+@keyframes leaf-next { from { transform: rotateY(0); } to { transform: rotateY(-180deg); } }
+@keyframes leaf-previous { from { transform: rotateY(0); } to { transform: rotateY(180deg); } }
+@media (max-width: 767px) { .turning-sheet { width: 100%; } }

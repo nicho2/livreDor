@@ -94,10 +94,41 @@ export async function testThemeAndAccess(tab) {
   await tab.goto("http://localhost:3100/p/album-test/guestbook");
   await tab.playwright.getByRole("button", { name: "Feuilleter le livre" }).click();
   await tab.playwright.locator(".open-book").press("ArrowRight");
+  await tab.playwright.locator(".turning-sheet").waitFor({ state: "hidden" });
   assert.equal(await tab.playwright.getByRole("button", { name: "← Précédent" }).isEnabled(), true);
   await tab.playwright.getByRole("button", { name: "Se déconnecter", exact: true }).click();
   await tab.playwright.getByText("Connectez-vous pour consulter les projets et souvenirs").waitFor({ state: "visible" });
   assert.equal(await tab.playwright.locator(".book-page").count(), 0);
   assert.equal(await tab.playwright.locator(".project-nav").count(), 0);
   return "Thèmes persistants, clavier et retrait des contenus à la déconnexion OK";
+}
+
+export async function testPageTurn(tab, viewport, width) {
+  await viewport.set({ width, height: 900 });
+  await tab.goto("http://localhost:3100/p/album-test/guestbook");
+  await tab.playwright.getByRole("button", { name: "Feuilleter le livre" }).click();
+  const previous = tab.playwright.getByRole("button", { name: "← Précédent" });
+  const next = tab.playwright.getByRole("button", { name: "Suivant →", exact: true });
+  assert.equal(await previous.evaluate(el => getComputedStyle(el).cursor), "default");
+  await next.click();
+  const reduced = await tab.playwright.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches);
+  if (!reduced) {
+    await tab.playwright.locator(".turn-next").waitFor({ state: "visible" });
+    assert.notEqual(await tab.playwright.locator(".turn-next").evaluate(el => getComputedStyle(el).transform), "none");
+    assert.equal(await next.isEnabled(), false);
+  }
+  await tab.playwright.locator(".turning-sheet").waitFor({ state: "hidden" });
+  await previous.click();
+  if (!reduced) await tab.playwright.locator(".turn-previous").waitFor({ state: "visible" });
+  await tab.playwright.locator(".turning-sheet").waitFor({ state: "hidden" });
+  assert.match(await tab.playwright.locator(".book-controls").innerText(), /Page 1/);
+  while (await next.isEnabled()) {
+    await next.click();
+    await tab.playwright.locator(".turning-sheet").waitFor({ state: "hidden" });
+  }
+  const lastPage = await tab.playwright.locator(".book-controls").innerText();
+  await tab.playwright.locator(".open-book").press("ArrowRight");
+  assert.equal(await tab.playwright.locator(".book-controls").innerText(), lastPage);
+  assert.equal(await next.evaluate(el => getComputedStyle(el).cursor), "default");
+  return `Livre ${width}px : feuille tournée dans les deux sens, limites et curseurs OK`;
 }

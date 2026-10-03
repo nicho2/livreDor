@@ -44,6 +44,7 @@ const suite = await import('file:///CHEMIN_ABSOLU/tests/album-browser.mjs');
 await suite.loginFixture(tab);
 for (const width of [1440, 900, 375]) {
   await suite.testBook(tab, viewport, width);
+  await suite.testPageTurn(tab, viewport, width);
   await suite.testEditor(tab, viewport, width);
   await suite.testWall(tab, viewport, width);
   await suite.testTimeline(tab, viewport, width);
@@ -63,6 +64,16 @@ ni stockage de session n'est nécessaire dans les tests. Les migrations, API et
 règles RLS existantes demeurent couvertes par les suites du socle.
 
 ## Limites volontaires
+
+Le feuilletage utilise une feuille recto/verso en rotation 3D pendant 600 ms,
+dans les deux sens, sur ordinateur et mobile. Les commandes restent bloquées
+pendant ce mouvement et aux extrémités, avec un curseur neutre. La préférence
+`prefers-reduced-motion` supprime la transition ; un délai de secours libère
+les commandes si le navigateur annule l'animation. Les duplications visuelles
+de la feuille sont cachées aux lecteurs d'écran.
+
+Les deux ambiances actuelles (Album chaleureux et Classique) sont la première
+collection ; les variantes par événement pourront enrichir les tokens existants.
 
 Le thème est une préférence locale ; la personnalisation organisateur persistée
 par projet est ultérieure. Pas de photos associées aux messages principaux,

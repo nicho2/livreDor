@@ -401,3 +401,13 @@ Test Node ajouté : aucune redirection hors recette, aucun rebouclage du proxy.
 Les 39 tests Node, lint, typecheck et build de recette passent. Playwright vérifie
 le parcours réel `3101/auth` → `3100/auth` → OTP fictif → livre, puis le mur et
 sa galerie. Le serveur de recette est laissé disponible pour l'essai utilisateur.
+
+### Feuilletage animé et boutons aux extrémités
+
+La rotation recto/verso dure 600 ms et respecte la réduction des animations.
+Playwright vérifie à 1440, 900 et 375 px la présence d'une transformation
+intermédiaire, les deux directions, la remise à disposition des commandes,
+les curseurs neutres et la dernière page inchangée après une flèche droite.
+Les trois scénarios existants de consultation du livre passent également.
+Les 39 tests Node, lint, typecheck et build de recette passent.
+Capture visuelle : [feuille en rotation](screenshots/livre-page-tournee.jpg).
