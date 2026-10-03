@@ -27,6 +27,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - name: Compilation dédiée Sites
+        run: npm run build:sites
+      - run: npm run typecheck
       - name: Migrations et droits RLS sur PostgreSQL isolé
         run: psql -X -h 127.0.0.1 -U postgres -d postgres -v ON_ERROR_STOP=1 -f tests/sql/local-bootstrap.sql
         env:

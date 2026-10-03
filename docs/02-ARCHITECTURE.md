@@ -59,5 +59,7 @@ Le client envoie ensuite directement le fichier vers R2.
 ## Déploiement
 Le code vise un déploiement Next.js avec runtime serveur : les signatures R2,
 contrôles organisateur et exports ne peuvent pas fonctionner dans un simple
-hébergement statique. Aucun hébergeur n'est choisi ou déployé à ce stade.
+hébergement statique. OpenAI Sites est choisi : compilation dédiée Vinext/Workers,
+sans remplacement du développement Next.js local (ADR-016). La réussite d'une
+compilation n'atteste pas d'un déploiement ; voir `17-SITES-DEPLOYMENT.md`.
 Seul le dossier `site/` de l'export final est autonome et statique.

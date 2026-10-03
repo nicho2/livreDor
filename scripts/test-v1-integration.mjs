@@ -99,7 +99,8 @@ await new Promise((resolve) => fixture.listen(0, "127.0.0.1", resolve));
 const fixturePort = fixture.address().port;
 const portProbe = createServer(); await new Promise((resolve) => portProbe.listen(0, "127.0.0.1", resolve));
 const appPort = portProbe.address().port; await new Promise((resolve) => portProbe.close(resolve));
-const child = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", String(appPort)], {
+const sitesRuntime = process.argv.includes("--sites");
+const child = spawn(process.execPath, sitesRuntime ? ["scripts/test-sites-server.mjs", String(appPort)] : ["node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", String(appPort)], {
   windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
   env: { ...process.env, LIVREDOR_MAX_PROJECTS: "3", SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon", SUPABASE_SERVICE_ROLE_KEY: "test-service" },
 });

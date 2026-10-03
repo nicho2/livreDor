@@ -10,3 +10,7 @@ coverage
 *.tsbuildinfo
 .pnpm-store
 .seed-runs/
+dist/
+.wrangler/
+.sites-runtime/
+*.tar.gz

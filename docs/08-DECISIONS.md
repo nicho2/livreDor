@@ -173,3 +173,16 @@ pas des courses ni d'un appel direct Supabase. Ce plafond n'est pas un quota
 d'octets ni un dispositif anti-abus complet : quelques projets peuvent encore
 accumuler de nombreux médias. Tous les serveurs d'une même base doivent utiliser
 la même valeur ; une base distincte a son propre plafond.
+
+## ADR-016 — Hébergement Sites et compilation dédiée Workers
+
+**Décision :** l'utilisateur choisit OpenAI Sites et autorise l'accès par lien
+sans connexion ChatGPT. Conserver Next.js/Webpack pour le développement local ;
+ajouter une compilation Vinext/Cloudflare Workers dédiée à l'hébergement.
+Supabase OTP/RLS, les API de contrôle et le bucket R2 privé existant restent
+inchangés. Aucun remplacement par D1, aucun rôle issu des en-têtes Sites.
+Les secrets sont configurés dans Sites, jamais dans le manifeste de source.
+
+**Raison :** Sites attend un Worker ESM, pas un serveur `next start` ni un simple
+export statique. Cette adaptation doit être validée avant de présenter la V1
+hébergée comme exploitable ; particulièrement ZIP en flux et SDK R2.

@@ -12,6 +12,7 @@ versionnés avec le code, pas publiés sur le site applicatif.
 - [Exploitation, export et limites de la V1](13-V1-OPERATIONS.md)
 - [Preuves de validation et recette restante](10-LOCAL-VALIDATION.md)
 - [Dépannage du navigateur](11-BROWSER-TROUBLESHOOTING.md)
+- [Déploiement Sites et recette en ligne](17-SITES-DEPLOYMENT.md)
 
 ## Produit et architecture
 
@@ -29,9 +30,8 @@ versionnés avec le code, pas publiés sur le site applicatif.
 ## Disponibilité en ligne
 
 Contrôle du 3 octobre 2026 : `origin` pointe vers
-`https://github.com/nicho2/livreDor.git`, mais `git ls-remote` n'annonce aucune
-référence HEAD/main/master. La documentation à jour reste locale et sauvegardée
-dans les commits ; aucune publication de documentation ni du site n'est attestée.
-Un push doit être demandé explicitement. Après ce push, vérifier le README et
-ce dossier sur la branche effectivement publiée ; un dépôt privé nécessite une
-connexion GitHub autorisée. Cela ne déploie pas le site applicatif.
+`https://github.com/nicho2/livreDor.git`. Le push de l'utilisateur est vérifié :
+HEAD/main correspond au commit `f350301` et sa CI GitHub a réussi. La documentation
+de ce commit est disponible sur GitHub. Les ajouts de déploiement Sites doivent
+être poussés séparément sur GitHub sur demande ; le dépôt source Sites est distinct.
+Un push GitHub ne déploie pas automatiquement le site applicatif.
