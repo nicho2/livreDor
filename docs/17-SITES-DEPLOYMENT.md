@@ -26,15 +26,22 @@ les projets de développement si la même base Supabase est utilisée.
 
 ## Préparation des intégrations
 
-Origine prévue, obtenue lors de l'enregistrement Sites :
-`https://livredor.nicho2.chatgpt.site`. Ce n'est pas une preuve de mise en ligne.
+Utiliser l'origine HTTPS renvoyée par Sites lors de l'enregistrement ou du
+déploiement. L'adresse réelle de cette instance ne doit pas être inscrite dans
+les fichiers suivis par Git, même si le site est accessible publiquement.
+Les notes propres à l'instance sont conservées dans
+`.sites-runtime/deployment-local.md`, ignoré par Git ; ce fichier n'est pas une
+sauvegarde partagée et doit être préservé séparément si nécessaire.
 
 1. Dans Supabase Authentication → URL Configuration, ajouter les retours du site
    HTTPS (notamment `/auth`) ; définir Site URL selon l'environnement principal.
    Conserver localhost pour la recette locale. Ne pas rejouer les migrations 0001–0006.
 2. Dans Cloudflare R2 → bucket → Settings → CORS, ajouter cette origine à la règle
    existante en conservant les origines locales et les éventuelles autres règles.
-   Exemple dans `../config/r2-cors.sites.json`. Ne pas rendre le bucket public.
+   Exemple dans `../config/r2-cors.sites.json` : remplacer l'origine fictive
+   `https://votre-site.example.invalid` par l'adresse réelle uniquement dans
+   Cloudflare ou une copie locale ignorée, jamais dans le modèle suivi par Git.
+   Ne pas rendre le bucket public.
    La clé applicative Object Read & Write ne permet pas de lire/modifier CORS :
    c'est normal, ne pas élargir ses droits.
 3. Vérifier modèles OTP/SMTP Resend, consentement et conservation avant partage
@@ -70,7 +77,7 @@ Pas de seed sur le projet `test-recette` déjà enrichi de contenus utilisateur.
 ## État
 
 Première publication confirmée par Sites le 3 octobre 2026 à 17 h 12 (Paris), statut
-`succeeded`, URL `https://livredor.nicho2.chatgpt.site`, version 1, configuration
+`succeeded`, version 1, configuration
 d'environnement révision 6, source `e4770b108a91c85d809fb10dfb479b5b6c5d48a7`.
 Déploiement : `appgdep_6ac11b5f81b48191b29502a59e11ead3`.
 

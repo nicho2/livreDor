@@ -1,6 +1,6 @@
 [
   {
-    "AllowedOrigins": ["http://localhost:3000", "https://livredor.nicho2.chatgpt.site"],
+    "AllowedOrigins": ["http://localhost:3000", "https://votre-site.example.invalid"],
     "AllowedMethods": ["PUT", "GET", "HEAD"],
     "AllowedHeaders": ["Content-Type"],
     "ExposeHeaders": ["ETag"],
