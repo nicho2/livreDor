@@ -2,7 +2,7 @@
 
 ## Démarrer et vérifier
 
-Prérequis : Node 24, `.env.local` configuré, migrations 0001 à 0007 appliquées,
+Prérequis : Node 24, `.env.local` configuré, migrations 0001 à 0009 appliquées,
 modèles OTP Supabase et bucket R2 privé/CORS configurés.
 
 La création exige aussi la migration 0006. `LIVREDOR_MAX_PROJECTS=3` (par défaut)
@@ -31,12 +31,13 @@ Pour le contrôle du navigateur Codex, voir `11-BROWSER-TROUBLESHOOTING.md`.
 - « Mes contributions » affiche ses propres messages/souvenirs et brouillons.
 - Le nom affiché reprend celui de la dernière contribution, sans écraser une saisie.
 - Un message principal par compte et projet ; plusieurs souvenirs possibles.
-- Enregistrer le souvenir, puis utiliser son champ d'ajout de média.
+- Sélectionner les médias dans le formulaire, puis enregistrer en brouillon ou publier. Un envoi échoué conserve le brouillon et permet de réessayer dans la page ; les fichiers non envoyés doivent être resélectionnés après rechargement.
+- Un brouillon dispose d'un bouton « Publier » sur sa carte ; « Modifier » amène directement au formulaire.
 - Photo 15 Mo, vidéo 200 Mo, audio 50 Mo, PDF 25 Mo ; 20 fichiers par souvenir.
 - HTML et SVG refusés. HEIC/HEIF sont téléchargeables, sans aperçu garanti.
 - « Voir tous les souvenirs » affiche les contenus publiés de tous les auteurs.
 - Cliquer le titre d'un souvenir ouvre son détail avec ses médias.
-- La chronologie trie dates exactes et périodes ensemble ; les non datés suivent.
+- La chronologie trie dates exactes et périodes ensemble ; les non datés restent sur le mur.
 - Si une URL média expire, utiliser « Actualiser les médias ».
 
 Les erreurs réseau sont affichées, sans annoncer une réussite après échec.
@@ -45,9 +46,11 @@ protègent également les écritures, même si une page ouverte devient obsolèt
 
 ## Organiser
 
-Depuis l'accueil, « Créer un LivreDor » permet au compte connecté de créer son
-projet et d'en devenir organisateur sans configuration manuelle. Les informations
-du projet sont modifiables dans Organisation. Le partage avec un deuxième compte
+Depuis `/all`, « Créer un LivreDor » permet au gestionnaire connecté et autorisé
+par `LIVREDOR_SITE_MANAGERS` de créer son projet et d'en devenir organisateur.
+Il peut désigner une autre personne par email dès la création (migration 0009).
+Les informations et le thème du projet sont modifiables dans Organisation.
+Voir `20-GESTION-THEMES-SUPPRESSION.md` ; le partage avec un deuxième compte
 par email vérifié est décrit dans `14-ONBOARDING-REGRESSION.md`.
 
 Le lien « Organisation » apparaît seulement pour un membre `organizer`.

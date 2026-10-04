@@ -7,6 +7,10 @@ const projectId = "10000000-0000-4000-8000-000000000001";
 const userId = "20000000-0000-4000-8000-000000000001";
 const timestamp = "2026-10-03T12:00:00Z";
 const organizer = process.argv.includes("--organizer");
+const proxyPort = Number(process.env.LIVREDOR_UI_FIXTURE_PORT ?? 3100);
+const appPort = proxyPort + 1;
+const backendPort = process.env.LIVREDOR_UI_FIXTURE_PORT ? proxyPort + 2 : 54329;
+if (!Number.isInteger(proxyPort) || proxyPort < 1024 || proxyPort > 65533) throw new Error("Invalid fixture port");
 const user = { id: userId, aud: "authenticated", email: "recette@example.test", email_confirmed_at: timestamp, app_metadata: {}, user_metadata: {}, created_at: timestamp };
 const token = `${Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url")}.${Buffer.from(JSON.stringify({ sub: userId, exp: Math.floor(Date.now() / 1000) + 86400, role: "authenticated" })).toString("base64url")}.fixture`;
 const formatting = { font: "serif", size: "md", align: "left", color: "ink", bold: false, italic: false };
@@ -32,7 +36,7 @@ if (largeAlbum) {
 }
 async function body(req) { const chunks = []; for await (const chunk of req) chunks.push(chunk); return JSON.parse(Buffer.concat(chunks).toString() || "{}"); }
 const fixture = createServer(async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3100");
+  res.setHeader("Access-Control-Allow-Origin", `http://localhost:${proxyPort}`);
   res.setHeader("Access-Control-Allow-Headers", "authorization, apikey, content-type, x-client-info, prefer");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
   res.setHeader("Content-Type", "application/json");
@@ -63,10 +67,10 @@ const fixture = createServer(async (req, res) => {
   });
   let rows = (tables[name] ?? []).filter(matches).slice(0, 1000);
   if (req.method === "PATCH") { const values = await body(req); rows.forEach(row => { Object.assign(row, values); if (name === "projects" && values.theme) { row.archive_exported_at = null; row.content_revision++; } }); }
-  if (req.method === "POST") { const values = await body(req); const row = { ...values, id: "new-entry", created_at: timestamp }; tables[name]?.push(row); rows = [row]; }
+  if (req.method === "POST") { const values = await body(req); const row = { ...values, id: randomUUID(), created_at: timestamp }; tables[name]?.push(row); rows = [row]; }
   res.end(JSON.stringify(req.headers.accept?.includes("application/vnd.pgrst.object+json") ? rows[0] ?? null : rows));
 });
-await new Promise(resolve => fixture.listen(54329, "127.0.0.1", resolve));
+await new Promise(resolve => fixture.listen(backendPort, "127.0.0.1", resolve));
 const proxy = createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
   const projectRoute = url.pathname.match(/^\/api\/projects\/([0-9a-f-]{36})(\/export)?$/);
@@ -100,15 +104,55 @@ const proxy = createServer(async (req, res) => {
     project.archive_exported_at = new Date().toISOString();
     res.setHeader("Content-Type", "application/zip"); res.end("FICTITIOUS UI ARCHIVE — NOT A REAL EXPORT"); return;
   }
-  if (url.pathname.startsWith("/api/media/")) { res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify({ url: `/fixture-assets/${url.pathname.endsWith("3") ? "signal.wav" : url.pathname.endsWith("2") ? "sortie.png" : "cafe.png"}` })); return; }
-  if (url.pathname.startsWith("/fixture-assets/")) { const name = url.pathname.split("/").pop(); if (!["cafe.png", "sortie.png", "signal.wav"].includes(name)) { res.writeHead(404); res.end(); return; } res.setHeader("Content-Type", name.endsWith("wav") ? "audio/wav" : "image/png"); res.end(readFileSync(new URL(`../fixtures/seed-v1/assets/${name}`, import.meta.url))); return; }
-  const upstream = httpRequest({ hostname: "127.0.0.1", port: url.pathname.startsWith("/auth/v1/") || url.pathname.startsWith("/rest/v1/") ? 54329 : 3101, path: req.url, method: req.method, headers: req.headers }, response => { res.writeHead(response.statusCode, response.headers); response.pipe(res); });
+  // Simulated upload lifecycle for editor regression tests; no real storage is contacted.
+  if (url.pathname === "/api/media/presign" && req.method === "POST") {
+    const input = await body(req);
+    const mediaId = randomUUID();
+    const kind = ["image", "audio", "video"].find(type => input.mimeType.startsWith(`${type}/`)) ?? "document";
+    tables.media_assets.push({ id: mediaId, project_id: input.projectId, memory_id: input.memoryId, owner_id: userId, kind, object_key: "fixture", original_filename: input.filename, mime_type: input.mimeType, size_bytes: input.sizeBytes, status: "draft", created_at: timestamp });
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ mediaId, uploadUrl: `http://localhost:${proxyPort}/fixture-upload/${mediaId}` })); return;
+  }
+  if (url.pathname.startsWith("/fixture-upload/") && req.method === "PUT") {
+    const media = tables.media_assets.find(row => row.id === url.pathname.split("/").pop());
+    for await (const chunk of req) { void chunk; }
+    res.writeHead(media?.original_filename === "refuse.png" ? 503 : 200); res.end(); return;
+  }
+  if (url.pathname.startsWith("/api/media/")) {
+    const id = url.pathname.split("/").pop();
+    const media = tables.media_assets.find(row => row.id === id);
+    res.setHeader("Content-Type", "application/json");
+    if (req.method === "DELETE") { tables.media_assets = tables.media_assets.filter(row => row.id !== id); res.end("{}"); return; }
+    if (req.method === "POST" && media) { media.status = "published"; res.end("{}"); return; }
+    res.end(JSON.stringify({ url: `/fixture-assets/${media?.kind === "audio" ? "signal.wav" : media?.kind === "video" ? "animation.mp4" : media?.kind === "image" ? "cafe.png" : url.pathname.endsWith("3") ? "signal.wav" : url.pathname.endsWith("2") ? "sortie.png" : "cafe.png"}` })); return;
+  }
+  if (url.pathname.startsWith("/fixture-assets/")) { const name = url.pathname.split("/").pop(); if (!["cafe.png", "sortie.png", "signal.wav", "animation.mp4"].includes(name)) { res.writeHead(404); res.end(); return; } res.setHeader("Content-Type", name.endsWith("wav") ? "audio/wav" : name.endsWith("mp4") ? "video/mp4" : "image/png"); res.end(readFileSync(new URL(`../fixtures/seed-v1/assets/${name}`, import.meta.url))); return; }
+  const upstream = httpRequest({ hostname: "127.0.0.1", port: url.pathname.startsWith("/auth/v1/") || url.pathname.startsWith("/rest/v1/") ? backendPort : appPort, path: req.url, method: req.method, headers: req.headers }, response => { res.writeHead(response.statusCode, response.headers); response.pipe(res); });
   upstream.on("error", () => { res.writeHead(503); res.end("Fixture starting"); }); req.pipe(upstream);
 });
-await new Promise(resolve => proxy.listen(3100, "127.0.0.1", resolve));
-const app = spawn(process.execPath, ["node_modules/next/dist/bin/next", ...(process.argv.includes("--production") ? ["start"] : ["dev", "--webpack"]), "--port", "3101"], { stdio: "inherit", env: { ...process.env, LIVREDOR_UI_FIXTURE: "1", LIVREDOR_SITE_MANAGERS: organizer ? "recette@example.test" : "", NEXT_PUBLIC_SUPABASE_URL: "http://localhost:3100", NEXT_PUBLIC_SUPABASE_ANON_KEY: "fixture-only", SUPABASE_SERVICE_ROLE_KEY: "fixture-service", R2_ACCESS_KEY_ID: "", R2_SECRET_ACCESS_KEY: "" } });
-function close() { app.kill(); fixture.close(); proxy.close(); }
-process.on("SIGINT", close); process.on("SIGTERM", close);
-console.log("RECETTE À OUVRIR : http://localhost:3100/auth?next=/p/album-test/guestbook");
+await new Promise(resolve => proxy.listen(proxyPort, "127.0.0.1", resolve));
+const app = spawn(process.execPath, ["node_modules/next/dist/bin/next", ...(process.argv.includes("--production") ? ["start"] : ["dev", "--webpack"]), "--port", String(appPort)], { stdio: "inherit", env: { ...process.env, LIVREDOR_UI_FIXTURE: "1", LIVREDOR_SITE_MANAGERS: organizer ? "recette@example.test" : "", NEXT_PUBLIC_SUPABASE_URL: `http://localhost:${proxyPort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "fixture-only", SUPABASE_SERVICE_ROLE_KEY: "fixture-service", R2_ACCESS_KEY_ID: "", R2_SECRET_ACCESS_KEY: "" } });
+let closing = false;
+async function close(code = 0) {
+  if (closing) return;
+  closing = true;
+  if (app.pid && app.exitCode === null && app.signalCode === null) {
+    if (process.platform === "win32") {
+      // Next dev can spawn children: terminating only its parent leaves ports open.
+      await new Promise(resolve => {
+        const stop = spawn("taskkill.exe", ["/PID", String(app.pid), "/T", "/F"], { windowsHide: true, stdio: "ignore" });
+        stop.once("error", resolve); stop.once("exit", resolve);
+      });
+    } else { app.kill("SIGTERM"); }
+  }
+  fixture.closeAllConnections(); proxy.closeAllConnections();
+  await Promise.all([fixture, proxy].map(server => new Promise(resolve => server.close(resolve))));
+  process.exitCode = code;
+}
+process.once("SIGINT", () => void close());
+process.once("SIGTERM", () => void close());
+app.once("error", () => { console.error("Impossible de démarrer le serveur de recette."); void close(1); });
+app.once("exit", code => void close(code ?? 1));
+console.log(`RECETTE À OUVRIR : http://localhost:${proxyPort}/auth?next=/p/album-test/guestbook`);
 console.log("Email fictif : recette@example.test — code : 123456 (aucun email envoyé)");
-console.log("Le port Next 3101 est interne : les accès directs sont redirigés vers 3100.");
+console.log(`Le port Next ${appPort} est interne : les accès directs sont redirigés vers ${proxyPort}.`);

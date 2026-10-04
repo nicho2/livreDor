@@ -2,6 +2,8 @@
 
 Application de collecte et de restitution de souvenirs, développée et testable localement.
 
+Version 0.1.2 : [nouveau parcours des souvenirs et recette de livraison](docs/21-RELEASE-0.1.2.md).
+
 La version apparaît en pied de page. La création des projets est réservée aux
 gestionnaires du site depuis `/all` : voir [configuration et gestion des thèmes](docs/20-GESTION-THEMES-SUPPRESSION.md).
 
@@ -153,15 +155,16 @@ peuvent lire les projets non brouillons. Voir ADR-017.
 La contribution OTP, les souvenirs multiples, les médias R2 privés, le mur,
 la chronologie et le détail sont implémentés. L'espace organisateur permet
 modération, clôture et export ZIP avec site autonome et sauvegarde privée.
-Les paramètres du projet sont modifiables dans Organisation. La création depuis
-l'accueil et l'invitation d'un deuxième organisateur nécessitent respectivement
-les migrations 0004 et 0005, après les trois migrations du socle.
+Les paramètres et le thème partagé sont modifiables dans Organisation.
+La création est réservée aux gestionnaires du site depuis `/all`, avec possibilité
+de désigner un organisateur par email. L'installation actuelle nécessite toutes
+les migrations 0001 à 0009 et la variable serveur `LIVREDOR_SITE_MANAGERS`.
 Voir `docs/13-V1-OPERATIONS.md` pour démarrage, tests, exploitation et limites.
 Le registre `docs/10-LOCAL-VALIDATION.md` distingue vérifications réalisées et
 recette manuelle restant à faire avant une publication.
 
 ### État initial du socle (historique)
-Ce dépôt est volontairement un **starter**, pas une application finalisée. Il contient :
+À sa création, ce dépôt était un **starter**. Le socle initial contenait :
 - une architecture exploitable ;
 - le modèle de données initial ;
 - les politiques RLS de base ;

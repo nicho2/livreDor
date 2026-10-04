@@ -498,3 +498,63 @@ confirmé, acceptation après confirmation et RPC inaccessible aux clients.
 Playwright : champ email, création, invitation privée persistante et doublon de
 lien vérifiés. Migration 0009 préparée pour le déploiement ; aucune base réelle
 modifiée pendant ces tests.
+
+## Mise à jour après publication et audit — 4 octobre 2026
+
+Les mentions « à appliquer » ci-dessus décrivent la recette avant publication.
+Le registre `17-SITES-DEPLOYMENT.md` confirme ensuite l'application de 0008/0009,
+la configuration du gestionnaire et la publication de 0.1.1. Lors de l'audit,
+Sites confirme à nouveau le statut `succeeded` du déploiement de version 6.
+GitHub/main et HEAD avant corrections de documentation correspondent à `105b27a`.
+Lint, typecheck et 47 tests Node sont relancés avec succès. Les contrôles API,
+RLS et navigateur antérieurs ne sont pas relancés ; la recette réelle en ligne
+de 0.1.1 reste ouverte.
+
+## Contribution souvenir simplifiée — changements locaux après 0.1.1
+
+Ajout de fichiers dès le formulaire, envoi après sauvegarde automatique en
+brouillon et publication seulement après finalisation. Publication directe
+d'un brouillon depuis sa carte. « Modifier » défile vers le titre du formulaire
+et y place le focus, avec respect de la réduction des animations.
+
+Lint, typecheck, 49 tests Node et build Next de recette réussis. Les tests d'envoi
+vérifient progression, refus avant réservation et nettoyage lors d'un échec PUT
+ou de finalisation. La recette navigateur isolée vérifie photo à la création,
+brouillon, publication directe, texte prérempli et focus visible ; scénarios
+réussis sur ordinateur puis à 375 px. Échec du deuxième fichier après un premier
+envoi réussi : brouillon et sélection restante conservés, premier fichier présent,
+puis publication sans doublon après retrait du fichier refusé.
+
+Les scénarios sont dans `tests/memory-editor-browser.mjs`. La fixture simule les
+fichiers en mémoire ; aucun Supabase/R2 réel n'est contacté. Une seconde recette
+peut être lancée avec `LIVREDOR_UI_FIXTURE_PORT=3200` sans remplacer celle de 3100 ;
+le build correspondant utilise également cette variable et les clés publiques
+fictives du port choisi. Ces changements ne sont pas encore déployés.
+
+![Formulaire mobile après Modifier](screenshots/souvenir-edition-mobile.png)
+
+## Nettoyage des serveurs de recette
+
+Les serveurs de test sont arrêtés à la fin des vérifications, sauf demande
+explicite de les conserver. Arrêt des processus LivreDor et de leurs enfants
+confirmé le 4 octobre : ports 3000, 3100, 3101, 3200, 3201, 3202 et 54329 libres.
+Le lanceur de recette ferme aussi ses serveurs HTTP quand Next s'arrête ou
+échoue ; sous Windows, son arrêt vise l'arbre de son propre processus Next.
+
+## Livraison 0.1.2 — 4 octobre 2026
+
+Lint, typecheck, 49 tests Node, compilation Next et compilation Sites réussis.
+Les 105 contrôles API passent pour Next et pour Sites ; les 27 contrôles HTML
+Sites passent. Les objets R2 synthétiques sont nettoyés après recette.
+Les migrations 0001–0009 et tests RLS/quota passent sur PostgreSQL jetable.
+Le script audit-supabase-rls.mjs confirme en lecture seule sur le Supabase
+configuré : RLS sur les sept tables, quatre tables sans lecture anonyme et
+cinq fonctions d'administration interdites aux clients. Cela complète la
+recette isolée sans écrire dans la base hébergée.
+Le script check-client-secrets.mjs contrôle 30 fichiers client compilés sans
+identifiant serveur ni email gestionnaire détecté.
+Préparation d'information et de conservation : document 22 ; décisions de
+l'organisateur et recette sur téléphone réel encore attendues.
+Les médias synthétiques WAV (3 s) et MP4 (6 s) sont décodés dans le navigateur
+avec commandes de lecture et readyState 4. Cela ne valide pas tous les codecs
+ni les performances d'un téléphone réel.

@@ -5,6 +5,7 @@ versionnés avec le code, pas publiés sur le site applicatif.
 
 ## Installer, tester, exploiter
 
+- [Release 0.1.2 et parcours de recette](21-RELEASE-0.1.2.md)
 - [Version, thèmes et gestion du site (0.1.1)](20-GESTION-THEMES-SUPPRESSION.md)
 - [Présentation de l'application en images, ordinateur et mobile](19-PRESENTATION-VISUELLE.md)
 - [Interface Album chaleureux et recette locale](18-ALBUM-UI.md)
@@ -32,9 +33,14 @@ versionnés avec le code, pas publiés sur le site applicatif.
 
 ## Disponibilité en ligne
 
-Contrôle du 3 octobre 2026 : `origin` pointe vers
-`https://github.com/nicho2/livreDor.git`. Le push de l'utilisateur est vérifié :
-HEAD/main correspond au commit `f350301` et sa CI GitHub a réussi. La documentation
-de ce commit est disponible sur GitHub. Les ajouts de déploiement Sites doivent
-être poussés séparément sur GitHub sur demande ; le dépôt source Sites est distinct.
-Un push GitHub ne déploie pas automatiquement le site applicatif.
+Contrôle du 4 octobre 2026 : `git ls-remote origin` confirme que GitHub/main et
+le dépôt local avant cet audit correspondent au commit `105b27a`, qui inclut
+le compte rendu du déploiement 0.1.1. La documentation de ce commit est donc
+disponible sur [GitHub](https://github.com/nicho2/livreDor/tree/main/docs).
+Les corrections de documentation de cet audit restent locales jusqu'à leur push.
+Le dépôt source Sites est distinct : un push GitHub ne déploie pas
+automatiquement le site applicatif. Sites confirme la publication réussie de
+la version 6 (application 0.1.1), issue du commit de release `ca426a9` ;
+voir [le registre de déploiement](17-SITES-DEPLOYMENT.md).
+
+Préparation de la livraison 0.1.2 : voir [la release](21-RELEASE-0.1.2.md) et [la préparation confidentialité](22-OUVERTURE-CONFIDENTIALITE.md). Les résultats actuels complètent l'audit historique ci-dessus.

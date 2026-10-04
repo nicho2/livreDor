@@ -1,42 +1,25 @@
-# Manifest du kit LivreDor
+# Manifest LivreDor — état au 4 octobre 2026
 
-## Documentation incluse
-- `AGENTS.md` : règles prioritaires pour Codex/agents.
-- `CODEX-START-HERE.md` : point d'entrée opérationnel.
-- `docs/00-VISION.md` : intention produit.
-- `docs/01-PRODUCT-SPEC.md` : spécification fonctionnelle V1.
-- `docs/02-ARCHITECTURE.md` : architecture Supabase + R2 + Next.js.
-- `docs/03-DATA-MODEL.md` : modèle métier.
-- `docs/04-UX-FLOWS.md` : parcours utilisateur.
-- `docs/05-SECURITY-PRIVACY.md` : sécurité et vie privée.
-- `docs/06-BACKLOG.md` : ordre recommandé de développement.
-- `docs/07-EXPORT-ARCHIVE.md` : restitution finale.
-- `docs/08-DECISIONS.md` : décisions architecturales figées.
-- `docs/09-CODEX-PROMPT.md` : prompt de reprise conseillé.
+La V1 est implémentée et la release 0.1.2 préparée pour publication. Ce manifeste remplace celui du kit initial.
 
-## Code inclus
-- Next.js / TypeScript minimal.
-- Authentification Supabase OTP.
-- Page projet, contribution, mur, chronologie et squelette admin.
-- Validation de médias.
-- Endpoint de pré-signature Cloudflare R2.
-- Schéma PostgreSQL complet de départ.
-- RLS de base.
-- RPC d'adhésion à un projet ouvert.
-- Script SQL de création d'un projet de démonstration.
-- Squelette d'export final.
+## Documentation
 
-## À terminer par l'agent
-- CRUD complet des souvenirs.
-- Upload R2 côté UI + enregistrement de `media_assets`.
-- URL GET signée pour lecture des médias privés.
-- Administration avec contrôle serveur du rôle organisateur.
-- Export JSON + médias + site statique.
-- Tests automatiques et tests RLS.
-- Validation finale sur l'environnement de déploiement OpenAI Site.
+Lire `README.md`, `docs/README.md` et `CODEX-START-HERE.md`. Les décisions sont dans `docs/08-DECISIONS.md`, les preuves dans `docs/10-LOCAL-VALIDATION.md`, les publications dans `docs/17-SITES-DEPLOYMENT.md` et les fonctionnalités 0.1.1 dans `docs/20-GESTION-THEMES-SUPPRESSION.md`.
 
-## État de vérification
-- Structure du repository : vérifiée.
-- `package.json` : JSON valide.
-- Présence des fichiers critiques : vérifiée.
-- `npm install` / compilation complète : non validés dans l'environnement de génération, l'installation npm ayant dépassé la fenêtre d'exécution disponible. À exécuter en première étape sur le PC cible.
+## Fonctionnalités implémentées
+
+- Next.js, React et TypeScript ; build Sites dédié Vinext/Workers.
+- Supabase OTP, PostgreSQL et RLS ; consultation authentifiée.
+- Message principal distinct des souvenirs multiples ; brouillon/publication/masquage.
+- Médias privés R2 : upload contrôlé, finalisation, lecture signée et suppression.
+- Livre feuilletable, mur, détail et chronologie responsive.
+- Modération, paramètres et huit thèmes partagés par projet.
+- Création réservée aux gestionnaires, quota atomique et organisateur désigné par email.
+- Clôture, ZIP autonome et sauvegarde privée, archivage et suppression protégée.
+- Tests unitaires, intégration API, navigateur et migrations/RLS PostgreSQL isolés.
+
+## Vérification et prochaines étapes
+
+Audit du 4 octobre : GitHub/main et HEAD avant corrections documentaires correspondent à `105b27a`. Sites confirme la publication réussie de la version 6, issue de `v0.1.1` (`ca426a9`). Lint, typecheck et 47 tests Node relancés avec succès. Les contrôles d'intégration et RLS antérieurs restent consignés dans les registres ; ils n'ont pas été relancés dans cet audit.
+
+Restent la recette réelle en ligne de 0.1.1, le contrôle RLS complémentaire sur Supabase de développement, les codecs audio/vidéo représentatifs, l'accessibilité et la performance sur téléphone réel, ainsi que consentement et conservation avant partage de données réelles. Voir `docs/06-BACKLOG.md`.

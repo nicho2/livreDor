@@ -5,22 +5,9 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { authenticatedFetch } from "@/lib/api-client";
 import { validateMediaFile } from "@/lib/media";
 import type { MediaAsset } from "@/types/database";
+import { MEDIA_ACCEPT, uploadMemoryMedia } from "@/lib/media-upload";
 
-function uploadFile(url: string, file: File, progress: (value: number) => void) {
-  return new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("PUT", url);
-    xhr.setRequestHeader("Content-Type", file.type);
-    xhr.timeout = 15 * 60 * 1000;
-    xhr.upload.onprogress = (event) => { if (event.lengthComputable) progress(Math.round(event.loaded / event.total * 100)); };
-    xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("Envoi refusé par le stockage. Réessayez."));
-    xhr.onerror = () => reject(new Error("Envoi interrompu. Vérifiez votre connexion."));
-    xhr.ontimeout = () => reject(new Error("L'envoi a pris trop longtemps. Réessayez."));
-    xhr.send(file);
-  });
-}
-
-export function MediaGallery({ memoryId, projectId, editable = false }: { memoryId: string; projectId: string; editable?: boolean }) {
+export function MediaGallery({ memoryId, projectId, editable = false, disabled = false }: { memoryId: string; projectId: string; editable?: boolean; disabled?: boolean }) {
   const [imageIndex, setImageIndex] = useState(0);
   const [zoom, setZoom] = useState(false);
   const swipeStart = useRef<number | null>(null);
@@ -52,20 +39,11 @@ export function MediaGallery({ memoryId, projectId, editable = false }: { memory
     const valid = validateMediaFile(file.name, file.type, file.size);
     if (!valid.ok) { setFeedback(valid.error); return; }
     setBusy(true); setProgress(0);
-    let mediaId: string | undefined;
     try {
-      const prepared = await authenticatedFetch("/api/media/presign", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, memoryId, filename: file.name, mimeType: file.type, sizeBytes: file.size }),
-      });
-      const reservation = await prepared.json();
-      mediaId = reservation.mediaId;
-      await uploadFile(reservation.uploadUrl, file, setProgress);
-      await authenticatedFetch(`/api/media/${mediaId}`, { method: "POST" });
+      await uploadMemoryMedia(projectId, memoryId, file, setProgress);
       setFeedback("Média ajouté. Il suit la visibilité de ce souvenir.");
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Envoi impossible.");
-      if (mediaId) await authenticatedFetch(`/api/media/${mediaId}`, { method: "DELETE" }).catch(() => {});
     } finally { setBusy(false); await load(); }
   }
 
@@ -98,11 +76,11 @@ export function MediaGallery({ memoryId, projectId, editable = false }: { memory
         {item.kind === "audio" && <audio src={urls[item.id]} controls preload="metadata" />}
         <figcaption><a href={urls[item.id]} target="_blank" rel="noreferrer">{item.original_filename}</a> · {(item.size_bytes / 1024 / 1024).toFixed(1)} Mo</figcaption>
       </> : <figcaption>{item.original_filename} — {item.status === "draft" ? "Envoi non terminé" : "Aperçu indisponible"}</figcaption>}
-      {editable && <button type="button" className="link-button danger" disabled={busy} onClick={() => void remove(item.id)}>Supprimer le fichier</button>}
+      {editable && <button type="button" className="link-button danger" disabled={busy || disabled} onClick={() => void remove(item.id)}>Supprimer le fichier</button>}
     </figure>)}
     {media.length > 0 && <button type="button" className="link-button" onClick={() => void load()} disabled={busy}>Actualiser les médias</button>}
     {editable && <label>Ajouter une photo, vidéo, audio ou PDF
-      <input type="file" disabled={busy} accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/webm,video/quicktime,audio/mpeg,audio/mp4,audio/wav,audio/webm,audio/ogg,application/pdf" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void add(file); }} />
+      <input type="file" disabled={busy || disabled} accept={MEDIA_ACCEPT} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void add(file); }} />
       <span className="muted">Photos : 15 Mo · vidéos : 200 Mo · audio : 50 Mo · PDF : 25 Mo. 20 fichiers maximum.</span>
     </label>}
     {busy && <div role="status">Envoi : {progress} %<progress max={100} value={progress} /></div>}

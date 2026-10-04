@@ -1,6 +1,7 @@
 node_modules
 .next
 .next-ui
+.next-ui-*
 out
 .env
 .env.local

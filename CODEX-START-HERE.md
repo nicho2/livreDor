@@ -14,16 +14,18 @@ Lis dans cet ordre :
 
 ## État actuel et reprise
 
-La V1 locale est implémentée ; ne pas recommencer la mise en route sur la base
-existante. Lire `README.md`, `docs/README.md` et `docs/10-LOCAL-VALIDATION.md` pour
-les preuves et contrôles restants. Les migrations 0001–0007 sont appliquées sur
-le Supabase de développement. OTP et deuxième organisateur sont validés.
+La V1 est implémentée et la release 0.1.2 est préparée ; la dernière publication confirmée est 0.1.1 (version Sites 6).
+Ne pas recommencer la mise en route sur la base existante. Lire `README.md`,
+`docs/README.md`, `docs/10-LOCAL-VALIDATION.md` et `docs/20-GESTION-THEMES-SUPPRESSION.md`
+pour les preuves et contrôles restants. Les migrations 0001–0009 sont appliquées
+sur le Supabase configuré, selon le registre de déploiement. OTP et deuxième
+organisateur sont validés localement ; la recette réelle en ligne de 0.1.1 reste à faire.
 Installation avec Resend : `docs/15-INSTALLATION-RESEND.md`.
 Alimentation d'un projet TEST dédié : `docs/16-SYNTHETIC-SEED.md`.
 Déploiement Sites public effectué ; voir `docs/17-SITES-DEPLOYMENT.md` pour
 les preuves, CORS R2 validé et recette OTP/upload en ligne restant à valider.
 Aucun push, déploiement ou seed distant sans demande explicite.
-Correction ADR-017 appliquée à Supabase et publiée sur Sites (version 3) :
+Correction ADR-017 appliquée à Supabase, conservée dans la release actuelle :
 consultation réservée aux sessions OTP, lectures anonymes directes vérifiées
 sur les quatre tables. Recette navigateur avec un vrai OTP restant à confirmer.
 
@@ -37,7 +39,11 @@ sur les quatre tables. Recette navigateur avec un vrai OTP restant à confirmer.
 7. Corriger les défauts du starter sans modifier les décisions produit.
 
 ## Ensuite
-Implémenter les phases du backlog dans l'ordre, en commençant par le CRUD des souvenirs puis l'upload R2 complet.
+Terminer les contrôles ouverts du backlog : recette réelle de 0.1.2 en ligne,
+RLS sur Supabase de développement, codecs audio/vidéo, accessibilité et performance
+mobile, consentement et conservation. CRUD souvenirs, upload, administration et
+export sont déjà implémentés ; ne pas les recréer.
 
 ## Important
-Le code fourni est un **socle**, pas une preuve que chaque intégration externe fonctionne sans configuration. Ne contourne pas RLS ou l'authentification pour faire marcher une démo.
+Les validations locales ne prouvent pas à elles seules chaque parcours sur
+l'hébergement. Ne contourne pas RLS ou l'authentification pour faire marcher une démo.

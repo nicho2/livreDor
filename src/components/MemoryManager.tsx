@@ -1,12 +1,14 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { memorySchema } from "@/lib/validators";
 import type { Memory, PublicationStatus } from "@/types/database";
 import { useContributionName } from "@/components/ContributionNameProvider";
 import { resolveDisplayName } from "@/lib/display-name";
 import { MediaGallery } from "@/components/MediaGallery";
+import { validateMediaFile } from "@/lib/media";
+import { MEDIA_ACCEPT, uploadMemoryMedia } from "@/lib/media-upload";
 
 type DateMode = "none" | "exact" | "period";
 
@@ -28,6 +30,11 @@ export function MemoryManager({ projectId }: { projectId: string }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
+  const editorHeading = useRef<HTMLHeadingElement>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState("");
+  const [mediaRevision, setMediaRevision] = useState(0);
+  const submitting = useRef(false);
   const displayName = resolveDisplayName(form.displayName, nameEdited, suggestedName);
 
   const loadMemories = useCallback(async () => {
@@ -79,9 +86,14 @@ export function MemoryManager({ projectId }: { projectId: string }) {
     setNameEdited(false);
     setDateMode("none");
     setEditingId(null);
+    setPendingFiles([]);
+    setUploadProgress("");
   }
 
   function editMemory(memory: Memory) {
+    if (busy) return;
+    if (pendingFiles.length && !window.confirm("Les fichiers sélectionnés ne sont pas encore envoyés. Abandonner cette sélection ?")) return;
+    setPendingFiles([]);
     setNameEdited(true);
     setEditingId(memory.id);
     setForm({
@@ -94,10 +106,22 @@ export function MemoryManager({ projectId }: { projectId: string }) {
     });
     setDateMode(memory.occurred_on ? "exact" : memory.year_from || memory.year_to ? "period" : "none");
     setFeedback("");
+    // Wait for the populated editor to render, including repeated edits of the same memory.
+    requestAnimationFrame(() => {
+      const heading = editorHeading.current;
+      if (!heading) return;
+      heading.focus({ preventScroll: true });
+      heading.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        block: "start",
+      });
+    });
   }
 
   async function saveMemory(event: FormEvent, status: Extract<PublicationStatus, "draft" | "published">) {
     event.preventDefault();
+    if (submitting.current) return;
+    submitting.current = true;
     setBusy(true);
     setFeedback("");
     try {
@@ -138,10 +162,11 @@ export function MemoryManager({ projectId }: { projectId: string }) {
       occurred_on: parsed.data.occurredOn || null,
       year_from: parsed.data.yearFrom,
       year_to: parsed.data.yearTo,
-      status,
+      // Keep the memory private until all selected media have been finalized.
+      status: pendingFiles.length ? "draft" : status,
     };
 
-    const { error } = editingId
+    const { data, error } = editingId
       ? await supabase.from("memories").update(values).eq("id", editingId).eq("project_id", projectId).eq("author_id", auth.user.id).select("id").single()
       : await supabase.from("memories").insert({
           ...values,
@@ -149,18 +174,65 @@ export function MemoryManager({ projectId }: { projectId: string }) {
           author_id: auth.user.id,
         }).select("id").single();
 
-    setBusy(false);
     if (error) {
       setFeedback(error.message);
       return;
     }
 
     rememberName(parsed.data.displayName);
+    setEditingId(data.id);
+    if (pendingFiles.length) {
+      try {
+        for (const file of pendingFiles) {
+          await uploadMemoryMedia(projectId, data.id, file, percent => setUploadProgress(`${file.name} : ${percent} %`));
+          setPendingFiles(files => files.filter(candidate => candidate !== file));
+          setMediaRevision(revision => revision + 1);
+        }
+        if (status === "published") {
+          const { error: publishError } = await supabase.from("memories").update({ status: "published" })
+            .eq("id", data.id).eq("project_id", projectId).eq("author_id", auth.user.id).select("id").single();
+          if (publishError) throw new Error(publishError.message);
+        }
+      } catch (error) {
+        setFeedback(`Souvenir conservé en brouillon. ${error instanceof Error ? error.message : "Envoi impossible."} Les fichiers déjà envoyés sont conservés ; réessayez pour terminer.`);
+        await loadMemories();
+        return;
+      } finally { setUploadProgress(""); }
+    }
     resetForm();
     setFeedback(status === "published" ? "Souvenir publié." : "Souvenir enregistré en brouillon.");
     await loadMemories();
     } catch { setFeedback("Enregistrement impossible. Vérifiez votre connexion puis réessayez."); }
-    finally { setBusy(false); }
+    finally { setBusy(false); submitting.current = false; }
+  }
+
+  async function publishMemory(memory: Memory) {
+    if (submitting.current) return;
+    submitting.current = true;
+    setBusy(true);
+    setFeedback("");
+    try {
+      const supabase = getSupabaseBrowser();
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) throw new Error("Connectez-vous avant de publier un souvenir.");
+      const { error } = await supabase.from("memories").update({ status: "published" })
+        .eq("id", memory.id).eq("project_id", projectId).eq("author_id", auth.user.id).eq("status", "draft").select("id").single();
+      if (error) throw new Error(error.message);
+      setFeedback("Souvenir publié.");
+      await loadMemories();
+    } catch (error) { setFeedback(error instanceof Error ? error.message : "Publication impossible. Réessayez."); }
+    finally { setBusy(false); submitting.current = false; }
+  }
+
+  function selectFiles(files: FileList | null) {
+    const selected = Array.from(files ?? []);
+    if (pendingFiles.length + selected.length > 20) { setFeedback("20 fichiers maximum par souvenir, en comptant les fichiers déjà ajoutés."); return; }
+    for (const file of selected) {
+      const valid = validateMediaFile(file.name, file.type, file.size);
+      if (!valid.ok) { setFeedback(`${file.name} : ${valid.error}`); return; }
+    }
+    setPendingFiles(current => [...current, ...selected]);
+    setFeedback("");
   }
 
   async function hideMemory(id: string) {
@@ -200,17 +272,19 @@ export function MemoryManager({ projectId }: { projectId: string }) {
                 <p>{memory.body}</p>
               </div>
               <div className="actions">
-                <button className="button secondary" type="button" onClick={() => editMemory(memory)}>Modifier</button>
+                {memory.status === "draft" && <button className="button" type="button" disabled={busy || editingId === memory.id} onClick={() => void publishMemory(memory)}>Publier</button>}
+                <button className="button secondary" type="button" disabled={busy} onClick={() => editMemory(memory)}>Modifier</button>
                 <button className="link-button danger" type="button" disabled={busy} onClick={() => void hideMemory(memory.id)}>Masquer</button>
               </div>
-              <MediaGallery memoryId={memory.id} projectId={projectId} editable />
+              {editingId !== memory.id && <MediaGallery key={`${memory.id}-${mediaRevision}`} memoryId={memory.id} projectId={projectId} editable disabled={busy} />}
             </article>
           ))}
         </div>
       )}
 
       <form className="card stack" onSubmit={(event) => saveMemory(event, "published")}>
-        <h3>{editingId ? "Modifier le souvenir" : "Nouveau souvenir"}</h3>
+        <h3 ref={editorHeading} tabIndex={-1} style={{ scrollMarginTop: "24px" }}>{editingId ? "Modifier le souvenir" : "Nouveau souvenir"}</h3>
+        <fieldset disabled={busy} className="stack memory-editor-fields">
         <label>Nom affiché<input value={displayName} onChange={(event) => { setNameEdited(true); setForm({ ...form, displayName: event.target.value }); }} maxLength={80} required /></label>
         <label>Titre (facultatif)<input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} maxLength={120} /></label>
         <label>Anecdote<textarea value={form.body} onChange={(event) => setForm({ ...form, body: event.target.value })} rows={6} maxLength={8000} required /></label>
@@ -228,12 +302,21 @@ export function MemoryManager({ projectId }: { projectId: string }) {
             <label>À (année, facultatif)<input type="number" min={1900} max={2200} value={form.yearTo} onChange={(event) => setForm({ ...form, yearTo: event.target.value })} /></label>
           </div>
         )}
+        {editingId && <MediaGallery key={`${editingId}-${mediaRevision}`} memoryId={editingId} projectId={projectId} />}
+        <label>Ajouter une photo, vidéo, audio ou PDF
+          <input type="file" multiple accept={MEDIA_ACCEPT} onChange={event => { selectFiles(event.target.files); event.target.value = ""; }} />
+          <span className="muted">Photos : 15 Mo · vidéos : 200 Mo · audio : 50 Mo · PDF : 25 Mo. 20 fichiers maximum par souvenir.</span>
+        </label>
+        {pendingFiles.length > 0 && <ul>{pendingFiles.map((file, index) => <li key={index}>{file.name} <button className="link-button" type="button" onClick={() => setPendingFiles(files => files.filter((_, i) => i !== index))}>Retirer</button></li>)}</ul>}
+        <p className="muted small">Les fichiers sélectionnés seront envoyés à l’enregistrement. Un brouillon reste visible uniquement par vous et les organisateurs.</p>
+        </fieldset>
         <div className="actions">
           <button className="button" disabled={busy}>{busy ? "Enregistrement…" : editingId ? "Mettre à jour et publier" : "Publier ce souvenir"}</button>
           <button className="button secondary" type="button" disabled={busy} onClick={(event) => void saveMemory(event as unknown as FormEvent, "draft")}>Enregistrer en brouillon</button>
-          {editingId && <button className="link-button" type="button" onClick={resetForm}>Annuler</button>}
+          {editingId && <button className="link-button" type="button" disabled={busy} onClick={() => { if (!pendingFiles.length || window.confirm("Abandonner les fichiers sélectionnés non envoyés ?")) resetForm(); }}>Annuler</button>}
         </div>
-        {feedback && <p className="notice">{feedback}</p>}
+        {uploadProgress && <p role="status">Envoi : {uploadProgress}</p>}
+        {feedback && <p className="notice" role="status">{feedback}</p>}
       </form>
     </section>
   );

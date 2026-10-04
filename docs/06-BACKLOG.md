@@ -1,4 +1,4 @@
-# Backlog V1 — état au 3 octobre 2026
+# Backlog V1 — état au 4 octobre 2026
 
 Les cases cochées indiquent une fonctionnalité implémentée, pas une certification
 de production. Les preuves et limites de validation sont dans
@@ -68,7 +68,9 @@ de production. Les preuves et limites de validation sont dans
 - [ ] Contrôle complémentaire RLS sur Supabase de développement.
 - [ ] Recette de fichiers audio/vidéo représentatifs et de leurs codecs.
 - [ ] Audit complet d'accessibilité et mesure de performance sur téléphone réel.
-- [ ] Avant publication : hébergement, consentement, durée de conservation et validation des URL publiques du bucket.
+- [x] Hébergement Sites : release 0.1.1 publiée, migrations 0008/0009 appliquées et gestionnaire configuré (voir `17-SITES-DEPLOYMENT.md`).
+- [ ] Recette réelle en ligne de 0.1.1 : OTP, droits contributeur/organisateur, thème, média, clôture et ZIP autonome.
+- [ ] Avant partage de données réelles : consentement et durée de conservation. Le bucket R2 reste privé ; toute diffusion du site statique exporté est une décision séparée.
 
 ## Prochaine version après v0.1.0
 
@@ -81,3 +83,10 @@ de production. Les preuves et limites de validation sont dans
 - [x] Choix partagé du thème par l'organisateur et huit skins prédéfinis.
 - [x] Création réservée aux gestionnaires du site, accessible depuis `/all`.
 - [x] Zone de danger : suppression d'un projet archivé après export et nettoyage R2.
+
+## Changements locaux après 0.1.1 — non encore publiés
+
+- [x] Sélection de médias dès la création du souvenir, sauvegarde en brouillon pendant l'envoi et reprise après échec.
+- [x] Publication d'un brouillon directement depuis sa carte.
+- [x] Défilement et focus du formulaire rempli après « Modifier ».
+- [ ] Livraison et recette de ces changements sur l'hébergement.

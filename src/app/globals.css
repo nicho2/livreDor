@@ -21,6 +21,7 @@ label { display: grid; gap: .45rem; font-weight: 600; }
 
 .shell { width: min(1100px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 64px; }
 .header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+.memory-editor-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
 .brand { font-weight: 800; font-size: 1.25rem; text-decoration: none; }
 .nav { display: flex; flex-wrap: wrap; gap: 12px; }
 .nav a { text-decoration: none; color: var(--muted); }

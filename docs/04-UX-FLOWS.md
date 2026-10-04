@@ -60,6 +60,15 @@ modifiable et n'est jamais déduit de l'email. Un nom enregistré dans le messag
 ou un souvenir est proposé pour les souvenirs suivants sur la même page.
 Une modification manuelle, même l'effacement du champ, n'est pas écrasée par
 l'arrivée d'une suggestion. Modifier un souvenir conserve son propre nom.
+Le bouton « Modifier » remplit le formulaire, fait défiler la page vers son titre
+et y place le focus clavier. Le défilement est immédiat si la réduction des
+animations est activée, pour rendre le passage en édition visible et accessible.
+Les médias peuvent être sélectionnés dès le formulaire de création. À
+l'enregistrement, le souvenir est conservé en brouillon pendant l'envoi ;
+« Publier » ne le rend visible qu'après finalisation de tous les fichiers.
+En cas d'échec, le formulaire et les fichiers restant à envoyer sont conservés
+dans la page ; les fichiers déjà envoyés restent attachés au brouillon.
+Un brouillon enregistré peut aussi être publié directement depuis sa carte.
 
 ## Livre d'or
 La navigation et l'accueil du projet donnent accès à `/p/[slug]/guestbook`.
