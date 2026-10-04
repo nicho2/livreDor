@@ -14,20 +14,23 @@ Lis dans cet ordre :
 
 ## État actuel et reprise
 
-La V1 est implémentée et la release 0.1.2 est préparée ; la dernière publication confirmée est 0.1.1 (version Sites 6).
+La V1 est implémentée et la release 0.1.2 est publiée (version Sites 7).
 Ne pas recommencer la mise en route sur la base existante. Lire `README.md`,
 `docs/README.md`, `docs/10-LOCAL-VALIDATION.md` et `docs/20-GESTION-THEMES-SUPPRESSION.md`
 pour les preuves et contrôles restants. Les migrations 0001–0009 sont appliquées
 sur le Supabase configuré, selon le registre de déploiement. OTP et deuxième
-organisateur sont validés localement ; la recette réelle en ligne de 0.1.1 reste à faire.
+organisateur sont validés localement. Le parcours souvenir 0.1.2 est aussi validé
+en ligne sur TEST : création avec photo/audio/vidéo, publication directe et focus
+mobile. Voir `docs/21-RELEASE-0.1.2.md`.
 Installation avec Resend : `docs/15-INSTALLATION-RESEND.md`.
 Alimentation d'un projet TEST dédié : `docs/16-SYNTHETIC-SEED.md`.
 Déploiement Sites public effectué ; voir `docs/17-SITES-DEPLOYMENT.md` pour
-les preuves, CORS R2 validé et recette OTP/upload en ligne restant à valider.
+les preuves, CORS R2 validé, upload en ligne vérifié et nouveau cycle OTP à valider.
 Aucun push, déploiement ou seed distant sans demande explicite.
 Correction ADR-017 appliquée à Supabase, conservée dans la release actuelle :
 consultation réservée aux sessions OTP, lectures anonymes directes vérifiées
-sur les quatre tables. Recette navigateur avec un vrai OTP restant à confirmer.
+sur les quatre tables. Recette navigateur avec session réelle confirmée pour
+le parcours souvenir ; nouveau cycle OTP et deuxième compte encore à vérifier.
 
 ## Première mission du socle (historique / nouvelle instance)
 1. Vérifier que le projet compile.
@@ -39,9 +42,10 @@ sur les quatre tables. Recette navigateur avec un vrai OTP restant à confirmer.
 7. Corriger les défauts du starter sans modifier les décisions produit.
 
 ## Ensuite
-Terminer les contrôles ouverts du backlog : recette réelle de 0.1.2 en ligne,
-RLS sur Supabase de développement, codecs audio/vidéo, accessibilité et performance
-mobile, consentement et conservation. CRUD souvenirs, upload, administration et
+Terminer les contrôles ouverts du backlog : recette complémentaire à deux comptes,
+codecs représentatifs, accessibilité et performance sur téléphone réel,
+information des participants et conservation. Le contrôle Supabase en lecture
+seule et les tests RLS isolés passent. CRUD souvenirs, upload, administration et
 export sont déjà implémentés ; ne pas les recréer.
 
 ## Important

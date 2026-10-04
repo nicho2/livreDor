@@ -558,3 +558,12 @@ l'organisateur et recette sur téléphone réel encore attendues.
 Les médias synthétiques WAV (3 s) et MP4 (6 s) sont décodés dans le navigateur
 avec commandes de lecture et readyState 4. Cela ne valide pas tous les codecs
 ni les performances d'un téléphone réel.
+
+## Recette en ligne 0.1.2
+
+Version Sites 7 publiée au commit 175548d, deux CI GitHub réussies. Sur le projet
+TEST uniquement : création avec PNG/WAV/MP4, brouillon et publication directe,
+édition préremplie, focus/défilement à 24 px du haut en format 375 × 812 px.
+Photos chargées et médias décodés depuis R2. Voir le registre 17 pour les limites.
+
+![Édition mobile en production](screenshots/souvenir-edition-online-mobile.png)

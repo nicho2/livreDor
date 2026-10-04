@@ -1,5 +1,9 @@
 # Release 0.1.2 — contribution souvenir simplifiée
 
+Publiée le 4 octobre 2026, version Sites 7, commit `175548d`, tag `v0.1.2`.
+Les deux CI GitHub passent. Les trois corrections ont été vérifiées en ligne
+sur le projet TEST avec PNG/WAV/MP4, aussi à 375 px. Voir le registre 17.
+
 ## Changements
 
 - Sélection de photos, vidéos, audio et PDF dès le formulaire de création.

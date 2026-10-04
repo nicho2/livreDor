@@ -33,14 +33,8 @@ versionnés avec le code, pas publiés sur le site applicatif.
 
 ## Disponibilité en ligne
 
-Contrôle du 4 octobre 2026 : `git ls-remote origin` confirme que GitHub/main et
-le dépôt local avant cet audit correspondent au commit `105b27a`, qui inclut
-le compte rendu du déploiement 0.1.1. La documentation de ce commit est donc
-disponible sur [GitHub](https://github.com/nicho2/livreDor/tree/main/docs).
-Les corrections de documentation de cet audit restent locales jusqu'à leur push.
-Le dépôt source Sites est distinct : un push GitHub ne déploie pas
-automatiquement le site applicatif. Sites confirme la publication réussie de
-la version 6 (application 0.1.1), issue du commit de release `ca426a9` ;
-voir [le registre de déploiement](17-SITES-DEPLOYMENT.md).
+La version 0.1.2 et sa documentation sont disponibles sur [GitHub](https://github.com/nicho2/livreDor/tree/main/docs). Le commit de release 175548d et son tag ont deux CI réussies.
 
-Préparation de la livraison 0.1.2 : voir [la release](21-RELEASE-0.1.2.md) et [la préparation confidentialité](22-OUVERTURE-CONFIDENTIALITE.md). Les résultats actuels complètent l'audit historique ci-dessus.
+Le dépôt source Sites est distinct : pousser GitHub ne déploie pas automatiquement l'application. Sites confirme la publication réussie de la version 7 (application 0.1.2), au même commit ; voir [le registre](17-SITES-DEPLOYMENT.md). Les comptes rendus ajoutés après publication sont des mises à jour documentaires.
+
+Avant ouverture : [information et conservation](22-OUVERTURE-CONFIDENTIALITE.md).

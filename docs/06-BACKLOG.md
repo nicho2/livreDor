@@ -65,11 +65,12 @@ de production. Les preuves et limites de validation sont dans
 - [x] Upload, publication, persistance et lecture d'une image dans le navigateur local.
 - [x] Gestion des erreurs et contrôle des accès organisateur.
 - [x] Recette organisateur du socle : filtres, modération, clôture, ZIP et réouverture confirmés par l'utilisateur.
-- [ ] Contrôle complémentaire RLS sur Supabase de développement.
+- [x] Contrôle complémentaire RLS sur le Supabase configuré, en lecture seule ; migrations/RLS/quota vérifiés séparément sur PostgreSQL jetable.
 - [ ] Recette de fichiers audio/vidéo représentatifs et de leurs codecs.
 - [ ] Audit complet d'accessibilité et mesure de performance sur téléphone réel.
-- [x] Hébergement Sites : release 0.1.1 publiée, migrations 0008/0009 appliquées et gestionnaire configuré (voir `17-SITES-DEPLOYMENT.md`).
-- [ ] Recette réelle en ligne de 0.1.1 : OTP, droits contributeur/organisateur, thème, média, clôture et ZIP autonome.
+- [x] Hébergement Sites : release 0.1.2 publiée, sans migration nouvelle (voir `17-SITES-DEPLOYMENT.md`).
+- [x] Recette souvenir 0.1.2 en ligne sur TEST : médias réels R2 synthétiques, brouillon, publication directe et focus mobile.
+- [ ] Recette complémentaire en ligne : nouveau cycle OTP, deuxième compte, thème, clôture et ZIP autonome sur la version actuelle.
 - [ ] Avant partage de données réelles : consentement et durée de conservation. Le bucket R2 reste privé ; toute diffusion du site statique exporté est une décision séparée.
 
 ## Prochaine version après v0.1.0
@@ -84,9 +85,9 @@ de production. Les preuves et limites de validation sont dans
 - [x] Création réservée aux gestionnaires du site, accessible depuis `/all`.
 - [x] Zone de danger : suppression d'un projet archivé après export et nettoyage R2.
 
-## Changements locaux après 0.1.1 — non encore publiés
+## Release 0.1.2 — publiée
 
 - [x] Sélection de médias dès la création du souvenir, sauvegarde en brouillon pendant l'envoi et reprise après échec.
 - [x] Publication d'un brouillon directement depuis sa carte.
 - [x] Défilement et focus du formulaire rempli après « Modifier ».
-- [ ] Livraison et recette de ces changements sur l'hébergement.
+- [x] Livraison et recette des trois corrections sur l'hébergement, à 375 px également.

@@ -210,3 +210,28 @@ avec l'adresse autorisée par l'utilisateur. Audience publique par lien et
 connexion OTP LivreDor conservées. Aucune suppression ni changement de CORS/R2
 pendant la publication. Aucun nouvel OTP réel envoyé pendant ce déploiement.
 La recette réelle en ligne de 0.1.1 reste à effectuer par l'utilisateur.
+
+### Release v0.1.2 — Souvenirs et médias
+
+Publiée le 4 octobre 2026 à 21 h 15 (Paris), statut `succeeded`, version Sites 7,
+configuration d'environnement révision 7. Source du tag annoté `v0.1.2` :
+`175548da40b4949f951a49149cc25c717da185b4`.
+Déploiement : `appgdep_6ac2a5abd924819195896765748919cf`.
+Version : `appgprj_6ac110ead3c88191bdbce19b3645d3eb~appgver_eebbd9b652908191958354bff6757051`.
+
+GitHub/main et tag poussés, deux CI réussies (branche et tag). Publication depuis
+le checkout isolé `.sites-runtime/release-v0.1.2`, au même commit : compilation
+Workers et contrôle des 30 fichiers navigateur sans secrets serveur ni email
+Gestionnaire. Aucun changement de schéma, d'environnement, d'audience ou de CORS.
+
+Recette en ligne avec session OTP existante, sur le seul projet TEST - Recette :
+nouveau souvenir synthétique avec photo PNG, audio WAV et vidéo MP4 sélectionnés
+avant enregistrement. Brouillon enregistré, trois médias finalisés sur R2,
+publication directe depuis la carte, puis édition préremplie. Focus sur le titre
+et défilement jusqu'à 24 px du haut, aussi à 375 × 812 px ; aucun débordement.
+Photos chargées, audio 3 s et vidéo 6 s décodés avec readyState 4. Le souvenir
+synthétique publié reste dans TEST comme preuve de recette. Aucun projet réel
+n'a été clôturé ou supprimé. Un premier chargement des aperçus a nécessité
+Actualiser les médias ; les aperçus se sont ensuite chargés correctement.
+Un nouveau cycle OTP, un deuxième compte, les codecs de téléphones réels et
+une recette complète clôture/ZIP restent des contrôles distincts.
