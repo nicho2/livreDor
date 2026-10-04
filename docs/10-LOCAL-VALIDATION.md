@@ -490,3 +490,11 @@ Création isolée : `testCreateFixture` vérifie le formulaire, l'accès organis
 la persistance après rechargement et le refus d'un lien existant sans écrasement.
 Clôture, ZIP fictif, archivage et suppression du nouveau projet également vérifiés
 dans le navigateur ; le projet synthétique initial reste disponible.
+
+Désignation de l'organisateur à la création : 47 tests Node et 105 contrôles API
+réussis, lint/typecheck/build Next réussis. PostgreSQL jetable : invitation
+normalisée sans compte préalable, refus d'une autre adresse ou d'un compte non
+confirmé, acceptation après confirmation et RPC inaccessible aux clients.
+Playwright : champ email, création, invitation privée persistante et doublon de
+lien vérifiés. Migration 0009 préparée pour le déploiement ; aucune base réelle
+modifiée pendant ces tests.

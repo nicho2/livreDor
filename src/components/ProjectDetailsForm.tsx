@@ -4,7 +4,7 @@ import { createProjectSchema, projectDetailsFromForm, projectDetailsSchema, type
 
 export function ProjectDetailsForm({ initial, creating = false, disabled = false, onSave }: {
   initial?: ProjectDetails; creating?: boolean; disabled?: boolean;
-  onSave: (details: ProjectDetails & { slug?: string }) => Promise<void>;
+  onSave: (details: ProjectDetails & { slug?: string; organizerEmail?: string }) => Promise<void>;
 }) {
   const [details, setDetails] = useState(initial ?? { title: "", subjectName: "", description: "", eventDate: "" });
   const [slug, setSlug] = useState("");
@@ -15,7 +15,7 @@ export function ProjectDetailsForm({ initial, creating = false, disabled = false
     event.preventDefault(); setFeedback("");
     const form = new FormData(event.currentTarget);
     const values = projectDetailsFromForm(form);
-    const parsed = creating ? createProjectSchema.safeParse({ ...values, slug: form.get("slug") }) : projectDetailsSchema.safeParse(values);
+    const parsed = creating ? createProjectSchema.safeParse({ ...values, slug: form.get("slug"), organizerEmail: form.get("organizerEmail") ?? "" }) : projectDetailsSchema.safeParse(values);
     if (!parsed.success) { setFeedback(parsed.error.issues[0]?.message ?? "Informations invalides."); return; }
     setDetails(values); setBusy(true);
     try { await onSave(parsed.data); setFeedback(creating ? "Projet créé. Ouverture de votre espace organisateur…" : "Informations enregistrées."); }
@@ -30,7 +30,7 @@ export function ProjectDetailsForm({ initial, creating = false, disabled = false
       <label>Date de l&apos;événement (facultative)<input name="eventDate" type="date" value={details.eventDate} onChange={(e) => change("eventDate", e.target.value)} /></label>
       {creating && <><label>Lien du projet<input name="slug" required minLength={3} maxLength={80} pattern={"[a-z0-9][a-z0-9\\-]{2,79}"} placeholder="depart-marie-2026" value={slug} onChange={(e) => { setFeedback(""); setSlug(e.target.value); }} aria-describedby="project-slug-help" /></label><p id="project-slug-help" className="muted">3 à 80 lettres minuscules, chiffres ou tirets. Ce lien ne pourra pas être changé.</p></>}
       <p className="muted">Ces informations seront visibles aux personnes connectées à LivreDor et dans la restitution exportée. Ne saisissez pas d&apos;adresse email ni d&apos;information confidentielle.</p>
-      {creating && <p>Vous devenez organisateur de ce nouveau projet. La collecte sera ouverte ; aucun droit sur les autres projets n&apos;est accordé.</p>}
+      {creating && <><label>Email de l&apos;organisateur (facultatif)<input name="organizerEmail" type="email" maxLength={254} autoComplete="off" aria-describedby="organizer-email-help" /></label><p id="organizer-email-help">Cette personne deviendra organisatrice de ce projet en ouvrant son lien et en se connectant par OTP avec cette adresse, même si elle n&apos;a pas encore de compte. Transmettez-lui le lien : aucun email d&apos;invitation n&apos;est envoyé automatiquement. L&apos;adresse reste privée.</p><p>Vous conservez également les droits organisateur sur ce nouveau projet. Sans adresse supplémentaire, vous serez son seul organisateur. La collecte sera ouverte ; aucun droit sur les autres projets n&apos;est accordé.</p></>}
       <button type="submit" className="button">{busy ? "Enregistrement…" : creating ? "Créer mon LivreDor" : "Enregistrer les informations"}</button>
     </fieldset>
     {feedback && <p role="status" className="notice">{feedback}</p>}

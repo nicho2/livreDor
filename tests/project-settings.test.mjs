@@ -19,6 +19,14 @@ test("email d'invitation normalisé et invalide refusé", () => {
   assert.equal(organizerEmailSchema.parse(" SECOND@example.test "), "second@example.test");
   for (const email of ["", "nobody", "a@b", "a b@example.test", "a".repeat(255) + "@example.test"]) assert.equal(organizerEmailSchema.safeParse(email).success, false);
 });
+
+test("création avec organisateur : email normalisé, optionnel et strict", () => {
+  const values = { ...details, slug: "nouveau-projet" };
+  assert.equal(createProjectSchema.parse({ ...values, organizerEmail: " Organisateur@EXAMPLE.test " }).organizerEmail, "organisateur@example.test");
+  assert.equal(createProjectSchema.safeParse({ ...values, organizerEmail: "" }).success, true);
+  assert.equal(createProjectSchema.safeParse({ ...values, organizerEmail: "invalide" }).success, false);
+  assert.equal(projectDetailsSchema.safeParse({ ...details, organizerEmail: "organisateur@example.test" }).success, false);
+});
 test("régression : la date native soumise est lue même sans événement React préalable", () => {
   const form = new FormData();
   for (const [key, value] of Object.entries(details)) form.set(key, value);

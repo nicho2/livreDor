@@ -1,14 +1,16 @@
 import assert from "node:assert/strict";
-export async function testCreateFixture(tab, slug) {
+export async function testCreateFixture(tab, slug, organizerEmail = "") {
   await tab.goto("http://localhost:3100/nouveau");
   await tab.playwright.getByLabel("Titre du LivreDor", { exact: true }).fill("Projet de recette création");
   await tab.playwright.getByLabel("Prénom et nom, ou nom de l'événement", { exact: true }).fill("Événement fictif");
   await tab.playwright.getByLabel("Lien du projet", { exact: true }).fill(slug);
+  if (organizerEmail) await tab.playwright.getByLabel("Email de l'organisateur (facultatif)", { exact: true }).fill(organizerEmail);
   await tab.playwright.getByRole("button", { name: "Créer mon LivreDor", exact: true }).click();
   await tab.playwright.getByRole("heading", { name: "Projet de recette création", exact: true }).waitFor({ state: "visible" });
   assert.equal(await tab.url(), `http://localhost:3100/p/${slug}/admin`);
   await tab.reload();
   await tab.playwright.getByRole("heading", { name: "Collecte et sauvegarde", exact: true }).waitFor({ state: "visible" });
+  if (organizerEmail) await tab.playwright.getByText(`Invitation en attente : ${organizerEmail.toLowerCase()}`, { exact: true }).waitFor({ state: "visible" });
   await tab.goto("http://localhost:3100/nouveau");
   await tab.playwright.getByLabel("Titre du LivreDor", { exact: true }).fill("Ne doit pas remplacer le projet");
   await tab.playwright.getByLabel("Prénom et nom, ou nom de l'événement", { exact: true }).fill("Autre événement fictif");

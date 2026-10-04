@@ -17,14 +17,19 @@ export async function POST(request: Request) {
     catch { throw new ApiError(503, "La limite de projets est mal configurée. Contactez l'administrateur du site."); }
     // Neither actor nor limit comes from the browser; the service-only RPC
     // performs count+creation atomically after this verified session check.
-    const { data, error } = await getSupabaseServiceClient().rpc("create_project_limited", {
+    const organizerEmail = parsed.data.organizerEmail;
+    const args = {
       p_actor: user.id, p_limit: limit,
       p_slug: parsed.data.slug, p_title: details.title, p_subject_name: details.subject_name,
       p_description: details.description, p_event_date: details.event_date,
-    });
+    };
+    const db = getSupabaseServiceClient();
+    const { data, error } = organizerEmail
+      ? await db.rpc("create_project_with_organizer", { ...args, p_organizer_email: organizerEmail })
+      : await db.rpc("create_project_limited", args);
     if (error?.code === "23505") throw new ApiError(409, "Ce lien existe déjà. Choisissez un autre lien ; aucun projet existant n'a été modifié.");
     if (error?.code === "P0001" && error.message === "PROJECT_LIMIT_REACHED") throw new ApiError(409, "La capacité de projets du site est atteinte. Aucun nouveau projet ne peut être créé pour le moment.");
-    if (error?.code === "PGRST202" || error?.code === "42883") throw new ApiError(503, "La création n'est pas encore activée. Appliquez la migration Supabase 0006_project_quota.sql.");
+    if (error?.code === "PGRST202" || error?.code === "42883") throw new ApiError(503, organizerEmail ? "La désignation d'un organisateur à la création nécessite la migration Supabase 0009_creation_organizer.sql." : "La création n'est pas encore activée. Appliquez la migration Supabase 0006_project_quota.sql.");
     if (error) throw new Error("Database unavailable");
     // PostgREST returns composite rows as an array; tolerate a single-row object too.
     const project = Array.isArray(data) ? data[0] : data;

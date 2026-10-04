@@ -42,7 +42,7 @@ const fixture = createServer(async (req, res) => {
   if (url.pathname === "/auth/v1/verify") { await body(req); res.end(JSON.stringify({ access_token: token, token_type: "bearer", expires_in: 86400, refresh_token: "fixture-refresh", user })); return; }
   if (url.pathname === "/auth/v1/user") { res.end(JSON.stringify(user)); return; }
   if (url.pathname === "/auth/v1/logout") { res.end("{}"); return; }
-  if (url.pathname === "/rest/v1/rpc/create_project_limited") {
+  if (["/rest/v1/rpc/create_project_limited", "/rest/v1/rpc/create_project_with_organizer"].includes(url.pathname)) {
     const input = await body(req);
     if (!organizer || req.headers.authorization !== "Bearer fixture-service" || input.p_actor !== userId) { res.writeHead(403); res.end(JSON.stringify({ code: "42501", message: "Access denied" })); return; }
     if (tables.projects.some(row => row.slug === input.p_slug)) { res.writeHead(409); res.end(JSON.stringify({ code: "23505", message: "Duplicate slug" })); return; }
@@ -50,6 +50,7 @@ const fixture = createServer(async (req, res) => {
     const project = { id: randomUUID(), slug: input.p_slug, title: input.p_title, subject_name: input.p_subject_name, description: input.p_description, event_date: input.p_event_date, status: "open", created_by: userId, created_at: new Date().toISOString(), opens_at: null, closes_at: null, theme: "album", content_revision: 0, archive_exported_at: null, deletion_started_at: null };
     tables.projects.push(project);
     tables.project_members.push({ project_id: project.id, user_id: userId, role: "organizer" });
+    if (input.p_organizer_email && input.p_organizer_email !== user.email) tables.project_organizer_invites.push({ project_id: project.id, email: input.p_organizer_email, invited_by: userId, accepted_by: null, created_at: timestamp });
     res.end(JSON.stringify([project])); return;
   }
   if (url.pathname.startsWith("/rest/v1/rpc/")) { res.end("false"); return; }

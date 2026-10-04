@@ -61,13 +61,14 @@ const fixture = createServer(async (request, response) => {
         for (const name of ["project_members", "guestbook_entries", "memories", "media_assets", "project_organizer_invites"]) tables[name] = tables[name].filter(row => row.project_id !== p.id);
         response.end("true"); return;
       }
-      if (rpc === "create_project_limited") {
+      if (["create_project_limited", "create_project_with_organizer"].includes(rpc)) {
         if (token !== "test-service") { fail("42501"); return; }
         if (creationUnavailable) { fail("PGRST202"); return; }
         if (tables.projects.some((p) => p.slug === body.p_slug)) { fail("23505"); return; }
         if (tables.projects.length >= body.p_limit) { response.statusCode = 400; response.end(JSON.stringify({ code: "P0001", message: "PROJECT_LIMIT_REACHED" })); return; }
         const project = { id: randomUUID(), slug: body.p_slug, title: body.p_title, subject_name: body.p_subject_name, description: body.p_description, event_date: body.p_event_date, status: "open", created_by: body.p_actor, opens_at: null, closes_at: null, created_at: timestamp };
         tables.projects.push(project); tables.project_members.push({ project_id: project.id, user_id: body.p_actor, role: "organizer" });
+        if (body.p_organizer_email) tables.project_organizer_invites.push({ project_id: project.id, email: body.p_organizer_email, invited_by: body.p_actor, accepted_by: null, created_at: timestamp });
         response.end(JSON.stringify([project])); return;
       }
       const invitation = tables.project_organizer_invites.find((i) => i.project_id === body.p_project_id);
@@ -183,9 +184,10 @@ try {
   creationUnavailable = true;
   check((await call("/api/projects", { method: "POST", body: newDetails })).status === 503, "migration absente signalée explicitement");
   creationUnavailable = false;
-  const created = await call("/api/projects", { method: "POST", body: newDetails });
+  const created = await call("/api/projects", { method: "POST", body: { ...newDetails, organizerEmail: " Designee@example.test " } });
   check(created.status === 201, "création authentifiée réussie");
   const createdProject = await created.json();
+  check(tables.project_organizer_invites.some(i => i.project_id === createdProject.id && i.email === "designee@example.test"), "organisateur désigné à la création sans compte existant, adresse privée normalisée");
   check((await call("/api/projects", { method: "POST", body: { ...newDetails, slug: `test-${randomUUID()}` } })).status === 201, "troisième projet global autorisé");
   const quotaBlocked = await call("/api/projects", { method: "POST", body: { ...newDetails, slug: `test-${randomUUID()}` } });
   check(quotaBlocked.status === 409 && (await quotaBlocked.json()).error.includes("capacité"), "quatrième projet refusé avec message explicite");

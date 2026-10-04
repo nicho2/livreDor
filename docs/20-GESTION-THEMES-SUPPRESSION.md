@@ -18,6 +18,14 @@ confirmés de Supabase Auth, pas les noms affichés. Valeur vide : aucune créat
 Ne pas préfixer cette variable par `NEXT_PUBLIC_`. Aucun changement des rôles
 organisateur/contributeur des projets existants.
 
+À la création, **Email de l'organisateur** permet de désigner une autre personne.
+Elle obtient les droits de ce seul projet lors de sa connexion OTP avec l'adresse
+confirmée, y compris si son compte n'existait pas encore. Le gestionnaire conserve
+aussi les droits organisateur. Champ vide : il reste seul organisateur.
+Transmettre le lien du projet à la personne ; aucun email d'invitation automatique.
+L'adresse est privée et exclue des exports. Migration 0009 nécessaire : projet
+et invitation sont enregistrés ensemble, sans création partielle en cas d'erreur.
+
 ## Version et ambiances
 
 La version apparaît en pied de page sur ordinateur et mobile et vient uniquement

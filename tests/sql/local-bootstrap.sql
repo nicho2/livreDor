@@ -22,3 +22,5 @@ alter default privileges in schema public grant select, insert, update, delete o
 \ir project-quota.sql
 \ir ../../supabase/migrations/0008_project_themes_archive_deletion.sql
 \ir project-lifecycle.sql
+\ir ../../supabase/migrations/0009_creation_organizer.sql
+\ir creation-organizer.sql

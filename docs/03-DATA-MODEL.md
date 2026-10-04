@@ -58,6 +58,10 @@ Lecture réservée aux organisateurs, écritures uniquement par RPC contrôlée.
 Cette donnée technique est exclue des archives, même privées. Elle n'est pas un
 contenu éditorial et n'introduit aucun nouveau statut de publication.
 
+La migration 0009 ajoute la RPC serveur `create_project_with_organizer`, qui
+réutilise le quota de création et enregistre une invitation privée dans la même
+transaction. L'acceptation reste celle de 0005 et exige l'email OTP confirmé.
+
 ## profiles
 Profil public minimal séparé de l'email Supabase.
 

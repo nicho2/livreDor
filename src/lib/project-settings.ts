@@ -7,11 +7,12 @@ export const projectDetailsSchema = z.object({
   eventDate: z.union([z.iso.date({ error: "La date de l'événement est invalide." }), z.literal("")]),
 }).strict();
 
+export const organizerEmailSchema = z.string().trim().toLowerCase().pipe(z.email({ error: "Indiquez une adresse email valide." }).max(254));
 export const createProjectSchema = projectDetailsSchema.extend({
   slug: z.string().trim().min(3).max(80).regex(/^[a-z0-9][a-z0-9-]{2,79}$/, "Le lien doit contenir 3 à 80 lettres minuscules, chiffres ou tirets."),
+  organizerEmail: z.union([organizerEmailSchema, z.literal("")]).optional(),
 });
 export type ProjectDetails = z.infer<typeof projectDetailsSchema>;
-export const organizerEmailSchema = z.string().trim().toLowerCase().pipe(z.email({ error: "Indiquez une adresse email valide." }).max(254));
 
 // Read native controls at submission (not a potentially stale React event snapshot).
 export function projectDetailsFromForm(form: FormData): ProjectDetails {

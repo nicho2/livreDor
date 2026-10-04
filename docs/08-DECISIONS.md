@@ -307,3 +307,15 @@ Les URL GET déjà délivrées expirent sous cinq minutes ; les copies de ZIP d�
 enregistrées par les organisateurs restent sur leurs propres supports. Les
 clients sont invités à vérifier le ZIP : le serveur atteste sa génération,
 pas son enregistrement sur le disque de l'utilisateur.
+
+## ADR-022 — Organisateur désigné dès la création
+
+Le gestionnaire peut renseigner une adresse organisateur dans le formulaire de
+création. La RPC serveur 0009 crée le projet sous le quota existant et son
+invitation privée dans une transaction. L'acceptation réutilise ADR-013 : email
+confirmé par OTP, compte pouvant être créé plus tard, droits limités au projet,
+deux organisateurs maximum et aucun email d'invitation automatique.
+Le gestionnaire conserve les droits organisateur du projet qu'il crée ; le
+champ est facultatif. Sa propre adresse ne produit pas une invitation inutile.
+Cette évolution facilite la remise du projet à son organisateur sans ajouter
+un rôle global, une recherche de compte par email ou une nouvelle table.
