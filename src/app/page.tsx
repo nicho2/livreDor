@@ -12,7 +12,6 @@ export default function HomePage() {
         <h1>Construire ensemble une histoire à transmettre.</h1>
         <p>LivreDor rassemble messages, anecdotes, photos, vidéos et souvenirs dans un espace collectif, puis permet de restituer l&apos;ensemble sous une forme durable.</p>
         <div className="actions">
-          <Link className="button" href="/nouveau">Créer un LivreDor</Link>
           <Link className="button" href="/auth">Se connecter</Link>
         </div>
       </section>

@@ -7,9 +7,10 @@ import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { inflateRawSync } from "node:zlib";
-import { S3Client, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 const ids = { project: randomUUID(), a: randomUUID(), b: randomUUID(), organizer: randomUUID(), memory: randomUUID(), otherMemory: randomUUID() };
 const timestamp = new Date().toISOString();
+const extraCleanupKeys = [];
 const tables = {
   projects: [{ id: ids.project, slug: "integration-test", title: "TEST V1", subject_name: "Test", description: "Fixture locale", status: "open", opens_at: null, closes_at: null, created_by: ids.organizer, created_at: timestamp }],
   project_members: [ids.a, ids.b, ids.organizer].map((user_id) => ({ project_id: ids.project, user_id, role: user_id === ids.organizer ? "organizer" : "contributor" })),
@@ -33,7 +34,7 @@ const fixture = createServer(async (request, response) => {
     if (url.pathname === "/auth/v1/user") {
       const id = tokens[token];
       response.statusCode = id ? 200 : 401;
-      response.end(JSON.stringify(id ? { id, aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: timestamp } : { message: "invalid token" }));
+      response.end(JSON.stringify(id ? { id, email: emails[token], email_confirmed_at: timestamp, aud: "authenticated", app_metadata: {}, user_metadata: {}, created_at: timestamp } : { message: "invalid token" }));
       return;
     }
     if (url.pathname.startsWith("/rest/v1/rpc/")) {
@@ -42,6 +43,24 @@ const fixture = createServer(async (request, response) => {
       const rpc = url.pathname.split("/").pop(), user = tokens[token];
       const fail = (code) => { response.statusCode = 400; response.end(JSON.stringify({ code, message: "Fixture refusal" })); };
       if (!user && token !== "test-service") { fail("42501"); return; }
+      if (["confirm_project_export", "begin_project_deletion", "finish_project_deletion"].includes(rpc)) {
+        if (token !== "test-service") { fail("42501"); return; }
+        const p = tables.projects.find(project => project.id === body.p_project_id);
+        if (rpc === "confirm_project_export") {
+          const valid = p && ["closed", "archived"].includes(p.status) && !p.deletion_started_at && (p.content_revision ?? 0) === body.p_revision;
+          if (valid) p.archive_exported_at = timestamp;
+          response.end(JSON.stringify(!!valid)); return;
+        }
+        const organizer = tables.project_members.some(m => m.project_id === p?.id && m.user_id === body.p_actor && m.role === "organizer");
+        if (!organizer || p.status !== "archived" || !p.archive_exported_at) { fail("23514"); return; }
+        if (rpc === "begin_project_deletion") {
+          if (p.slug !== body.p_slug) { fail("23514"); return; }
+          p.deletion_started_at ??= timestamp; response.end(JSON.stringify(p)); return;
+        }
+        tables.projects = tables.projects.filter(project => project.id !== p.id);
+        for (const name of ["project_members", "guestbook_entries", "memories", "media_assets", "project_organizer_invites"]) tables[name] = tables[name].filter(row => row.project_id !== p.id);
+        response.end("true"); return;
+      }
       if (rpc === "create_project_limited") {
         if (token !== "test-service") { fail("42501"); return; }
         if (creationUnavailable) { fail("PGRST202"); return; }
@@ -106,7 +125,7 @@ const sitesRuntime = process.argv.includes("--sites");
 const htmlOnly = process.argv.includes("--html-only");
 const child = spawn(process.execPath, sitesRuntime ? ["scripts/test-sites-server.mjs", String(appPort)] : ["node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", String(appPort)], {
   windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
-  env: { ...process.env, LIVREDOR_MAX_PROJECTS: "3", SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon", SUPABASE_SERVICE_ROLE_KEY: "test-service" },
+  env: { ...process.env, LIVREDOR_SITE_MANAGERS: "a@example.test", LIVREDOR_MAX_PROJECTS: "3", SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon", SUPABASE_SERVICE_ROLE_KEY: "test-service" },
 });
 child.stdout.on("data", () => {}); child.stderr.on("data", () => {});
 const base = `http://127.0.0.1:${appPort}`;
@@ -145,7 +164,7 @@ try {
   const input = { projectId: ids.project, memoryId: ids.memory, filename: "test-pixel.png", mimeType: "image/png", sizeBytes: 68 };
   // API-only checks miss SSR module imports. Exercise HTML routes before any
   // writes, using the same isolated fixture on Next.js and on Workers.
-  for (const path of ["/", "/auth", "/nouveau", "/p/integration-test", "/p/integration-test/guestbook", "/p/integration-test/wall", "/p/integration-test/timeline", `/p/integration-test/memories/${ids.memory}`]) {
+  for (const path of ["/", "/auth", "/all", "/nouveau", "/p/integration-test", "/p/integration-test/guestbook", "/p/integration-test/wall", "/p/integration-test/timeline", `/p/integration-test/memories/${ids.memory}`]) {
     const response = await call(path, { token: null });
     check(response.status === 200 && response.headers.get("content-type")?.includes("text/html"), `rendu HTML ${path} disponible`);
     const html = await response.text();
@@ -173,9 +192,13 @@ try {
   check(tables.projects.length === 3, "refus sans création partielle");
   const newAdmin = `/api/projects/${createdProject.id}/admin`;
   check(tables.project_members.some((m) => m.project_id === createdProject.id && m.user_id === ids.a && m.role === "organizer"), "créateur devient organisateur de son nouveau projet");
-  check((await call("/api/projects", { method: "POST", token: "test-b", body: newDetails })).status === 409, "collision de lien ne donne aucun droit");
+  check((await call("/api/projects", { method: "POST", token: "test-b", body: newDetails })).status === 403, "compte connecté non gestionnaire ne peut créer aucun projet");
+  check((await call("/api/site-manager", { token: "test-b" })).status === 200 && !(await (await call("/api/site-manager", { token: "test-b" })).json()).manager, "droits gestionnaire non attribués au contributeur");
   check((await call(newAdmin, { token: "test-b" })).status === 403, "nouveau projet non administrable par un autre compte");
   const change = { action: "details", title: "TEST titre modifié", subjectName: "TEST Jean Dupont", description: "Présentation modifiée", eventDate: "" };
+  check((await call(newAdmin, { token: "test-b", method: "PATCH", body: { action: "theme", theme: "wedding" } })).status === 403, "thème réservé à l'organisateur");
+  check((await call(newAdmin, { method: "PATCH", body: { action: "theme", theme: "custom" } })).status === 400, "skin arbitraire refusé");
+  check((await call(newAdmin, { method: "PATCH", body: { action: "theme", theme: "wedding" } })).status === 200, "thème partagé enregistré par l'organisateur");
   check((await call(newAdmin, { token: "test-b", method: "PATCH", body: change })).status === 403, "modification des informations refusée à un tiers");
   check((await call(newAdmin, { method: "PATCH", body: { ...change, slug: "new-link" } })).status === 400, "changement du lien par API refusé");
   check((await call(newAdmin, { method: "PATCH", body: change })).status === 200, "informations modifiables par leur organisateur");
@@ -260,10 +283,35 @@ try {
   tables.memories[0].status = "published";
   row.status = "published"; row.object_key = "another-project/private-secret.png";
   check((await call(`/api/media/${mediaId}`)).status === 409, "clé objet forgée refusée avant accès stockage");
+  const deletePath = `/api/projects/${createdProject.id}`, deleteBody = { confirmation: createdProject.slug, archiveSaved: true };
+  // The earlier shared-organizer scenario closed/exported this local fixture.
+  // Start the deletion scenario afresh; no real Supabase data is involved.
+  Object.assign(tables.projects.find(p => p.id === createdProject.id), { status: "open", archive_exported_at: null });
+  check((await call(deletePath, { method: "DELETE", token: null, body: deleteBody })).status === 401, "suppression anonyme refusée");
+  check((await call(deletePath, { method: "DELETE", token: "test-organizer", body: deleteBody })).status === 403, "organisateur d'un autre projet ne peut supprimer celui-ci");
+  check((await call(deletePath, { method: "DELETE", body: deleteBody })).status === 409, "suppression d'un projet ouvert refusée");
+  check((await call(newAdmin, { method: "PATCH", body: { action: "project", status: "archived", opensAt: null, closesAt: null } })).status === 409, "archivage sans clôture refusé");
+  await call(newAdmin, { method: "PATCH", body: { action: "project", status: "closed", opensAt: null, closesAt: null } });
+  check((await call(newAdmin, { method: "PATCH", body: { action: "project", status: "archived", opensAt: null, closesAt: null } })).status === 409, "archivage sans ZIP refusé");
+  const emptyExport = await call(`/api/projects/${createdProject.id}/export`, { method: "POST" });
+  const emptyFiles = unzip(Buffer.from(await emptyExport.arrayBuffer()));
+  check(emptyFiles.get("site/index.html").toString().includes('data-theme="wedding"'), "archive autonome conserve le skin choisi");
+  check((await call(newAdmin, { method: "PATCH", body: { action: "project", status: "archived", opensAt: null, closesAt: null } })).status === 200, "archivage après clôture et export réussi");
+  check((await call(deletePath, { method: "DELETE", body: { ...deleteBody, confirmation: "wrong-slug" } })).status === 400, "suppression avec mauvaise confirmation refusée");
+  check((await call(deletePath, { method: "DELETE", body: { ...deleteBody, archiveSaved: false } })).status === 400, "suppression sans confirmation de sauvegarde refusée");
+  for (const suffix of ["orphan.bin", "uploads/staging.bin"]) {
+    const key = `${createdProject.id}/${suffix}`; extraCleanupKeys.push(key);
+    await storage.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: "TEST isolated cleanup" }));
+  }
+  check((await call(deletePath, { method: "DELETE", body: deleteBody })).status === 200, "suppression définitive du seul projet synthétique autorisée");
+  check(!tables.projects.some(p => p.id === createdProject.id) && !tables.project_members.some(m => m.project_id === createdProject.id), "projet et appartenances supprimés");
+  const remaining = await storage.send(new ListObjectsV2Command({ Bucket: bucket, Prefix: `${createdProject.id}/` }));
+  check(!remaining.Contents?.length && tables.projects.some(p => p.id === ids.project), "R2 nettoyé, temporaires et orphelins compris, autre projet conservé");
   console.log(`PASS : ${assertions} contrôles ; Auth/données fictives locales, R2 réel.`);
 } finally {
   // Delete only keys derived from this run's UUIDs, never enumerating user objects.
   try {
+    for (const key of extraCleanupKeys) await storage.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
     for (const row of tables.media_assets) {
       const staging = `${ids.project}/${row.owner_id}/uploads/${row.id}`;
       const final = `${ids.project}/${row.owner_id}/${row.id}-test-pixel.png`;

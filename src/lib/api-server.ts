@@ -34,6 +34,7 @@ export async function projectAccess(projectId: string, userId: string, organizer
 
 export async function contributionAccess(projectId: string, userId: string) {
   const { project } = await projectAccess(projectId, userId);
+  if (project.deletion_started_at) throw new ApiError(403, "La suppression du projet est en cours.");
   const now = Date.now();
   if (project.status !== "open" || (project.opens_at && Date.parse(project.opens_at) > now) ||
     (project.closes_at && Date.parse(project.closes_at) <= now)) throw new ApiError(403, "La collecte est fermée. Vos contributions restent consultables.");

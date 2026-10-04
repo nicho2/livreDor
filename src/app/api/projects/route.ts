@@ -3,10 +3,12 @@ import { ApiError, apiError, jsonBody, requestUser } from "@/lib/api-server";
 import { getSupabaseServiceClient } from "@/lib/supabase-server";
 import { projectLimit } from "@/lib/project-quota";
 import { createProjectSchema, projectDetailsRow } from "@/lib/project-settings";
+import { isSiteManager } from "@/lib/site-manager";
 
 export async function POST(request: Request) {
   try {
     const user = (await requestUser(request))!;
+    if (!isSiteManager(user, process.env.LIVREDOR_SITE_MANAGERS)) throw new ApiError(403, "La création est réservée aux gestionnaires du site.");
     const parsed = createProjectSchema.safeParse(await jsonBody(request));
     if (!parsed.success) throw new ApiError(400, parsed.error.issues[0]?.message ?? "Informations invalides.");
     const details = projectDetailsRow(parsed.data);

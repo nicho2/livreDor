@@ -159,3 +159,27 @@ Après publication, accueil, connexion, projet, mur et chronologie répondent
 HTTP 200 sans erreur de rendu. L'API média répond HTTP 401 sans URL signée
 pour une requête anonyme comme pour un jeton invalide.
 La recette avec un vrai OTP sur cette version reste à confirmer par l'utilisateur.
+
+### Release v0.1.0 — Album chaleureux
+
+Publiée le 3 octobre 2026 à 22 h 46 (Paris), statut `succeeded`, version Sites 5,
+configuration d'environnement révision 6, source du tag annoté `v0.1.0` :
+`f79f8b2fb35d04776c78c6347f42e82c1301d906`.
+Déploiement : `appgdep_6ac16995fa088191b60709135d9c0a9d`.
+
+Compilation et publication depuis une copie isolée de la release sous
+`.sites-runtime/release-v0.1.0` ; les modifications locales pour la prochaine
+version sont préservées. Build Workers réussi, 24 contrôles HTML avec données
+fictives réussis (dont absence de données projet dans les réponses anonymes),
+27 assets navigateur inspectés sans secret serveur. Le commit publié dispose
+aussi d'une CI GitHub réussie et des validations locales de l'album.
+
+L'archive validée a été sauvegardée puis déployée par Sites. Accès public par
+lien, OTP LivreDor et environnement existant conservés ; aucune migration,
+modification de données métier ou modification de CORS pour cette publication.
+Le statut de publication est confirmé par l'hébergeur ; la recette OTP réelle
+de l'album a été effectuée en local et reste à refaire sur cette publication.
+
+Sous Windows, placer `C:\\Program Files\\Git\\bin` en tête du PATH du workflow
+pour sélectionner Git Bash, en plus de `TAR_OPTIONS=--force-local` ; le shell
+`bash` de WSL peut être présent sans distribution installée.

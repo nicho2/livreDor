@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { RequireAuth } from "@/components/RequireAuth";
 import { ProjectNav } from "@/components/ProjectNav";
+import { ProjectTheme } from "@/components/ThemeProvider";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { projectWindow } from "@/lib/presentation";
 import type { Project } from "@/types/database";
@@ -46,10 +47,12 @@ function AuthenticatedProject({ slug, children }: { slug: string; children: Reac
   if (!project) return <p role="status" className="notice">Chargement du projet…</p>;
   const { closed, future } = projectWindow(project);
   return <ProjectUpdateContext.Provider value={setProject}><ProjectContext.Provider value={project}>
+    <ProjectTheme theme={project.theme} global>
     <ProjectNav slug={slug} projectId={project.id} />
     {closed && <p className="notice">La collecte est clôturée. Les souvenirs restent consultables après connexion ; les contributions ne peuvent plus être modifiées.</p>}
     {!closed && future && <p className="notice">La collecte n&apos;est pas encore ouverte.</p>}
     {children}
+    </ProjectTheme>
   </ProjectContext.Provider></ProjectUpdateContext.Provider>;
 }
 

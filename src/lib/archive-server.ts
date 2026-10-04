@@ -47,8 +47,8 @@ export async function projectArchive(project: Project, signal: AbortSignal) {
   signal.addEventListener("abort", () => { archive.abort(); output.destroy(); }, { once: true });
   const json = (name: string, value: unknown) => archive.append(JSON.stringify(value, null, 2), { name: `archive-privee/data/${name}.json` });
   // Explicit field selection: no profile/auth data or signed URLs enter an archive.
-  const { id, slug, title, subject_name, description, event_date, opens_at, closes_at, status, created_at } = project;
-  json("project", { id, slug, title, subject_name, description, event_date, opens_at, closes_at, status, created_at });
+  const { id, slug, title, subject_name, description, event_date, opens_at, closes_at, status, created_at, theme } = project;
+  json("project", { id, slug, title, subject_name, description, event_date, opens_at, closes_at, status, created_at, theme: theme ?? "album" });
   json("guestbook", entries); json("memories", memories); json("media", media); json("media-manifest", manifest);
   const participants = new Map<string, string>();
   for (const entry of [...entries, ...memories]) participants.set(entry.author_id, entry.display_name);

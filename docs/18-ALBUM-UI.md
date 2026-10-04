@@ -2,6 +2,10 @@
 
 L'identité et les composants de consultation sont décrits dans ADR-018.
 
+Depuis 0.1.1, le choix local d'apparence est remplacé par un thème de projet
+commun aux participants et choisi par l'organisateur (ADR-019).
+Voir [gestion, thèmes et suppression](20-GESTION-THEMES-SUPPRESSION.md).
+
 ## Démarrage de la recette isolée
 
 `npm run test:ui:fixture` démarre Next sur 3101, un proxy sur 3100 et des services

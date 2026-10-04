@@ -5,6 +5,7 @@ import { getSupabaseServiceClient } from "@/lib/supabase-server";
 import { getSupabaseAnonClient } from "@/lib/supabase-server";
 import { checkedObject, deleteMedia } from "@/lib/media-server";
 import { organizerEmailSchema, projectDetailsSchema, projectDetailsRow } from "@/lib/project-settings";
+import { themeSchema } from "@/lib/themes";
 type Context = { params: Promise<{ id: string }> };
 async function access(request: Request, context: Context) {
   const user = (await requestUser(request))!;
@@ -37,6 +38,7 @@ export async function GET(request: Request, context: Context) {
   } catch (error) { return apiError(error); }
 }
 const actionSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("theme"), theme: themeSchema }).strict(),
   projectDetailsSchema.extend({ action: z.literal("details") }),
   z.object({ action: z.literal("invite-organizer"), email: organizerEmailSchema }).strict(),
   z.object({ action: z.literal("cancel-invitation") }).strict(),
@@ -50,6 +52,7 @@ export async function PATCH(request: Request, context: Context) {
     const parsed = actionSchema.safeParse(await jsonBody(request));
     if (!parsed.success) throw new ApiError(400, parsed.error.issues[0]?.message ?? "Requête invalide.");
     const action = parsed.data, db = getSupabaseServiceClient();
+    if (project.deletion_started_at) throw new ApiError(409, "La suppression de ce projet est en cours. Reprenez-la depuis la zone de danger.");
     if (action.action === "invite-organizer" || action.action === "cancel-invitation") {
       const caller = getSupabaseAnonClient(request.headers.get("authorization")!.slice(7));
       const { error } = action.action === "invite-organizer"
@@ -58,10 +61,15 @@ export async function PATCH(request: Request, context: Context) {
       if (error?.code === "23514") throw new ApiError(409, "Invitation impossible : vérifiez l'adresse. Deux organisateurs maximum ; une invitation acceptée ne peut pas être remplacée ou annulée ici.");
       if (error?.code === "PGRST202") throw new ApiError(503, "Appliquez la migration Supabase 0005_shared_organization.sql pour activer le partage.");
       if (error) throw new Error("Database unavailable");
+    } else if (action.action === "theme") {
+      const { error } = await db.from("projects").update({ theme: action.theme }).eq("id", project.id).select("id").single();
+      if (error) throw new Error("Database unavailable");
     } else if (action.action === "details") {
       const { error } = await db.from("projects").update(projectDetailsRow(action)).eq("id", project.id).select("id").single();
       if (error) throw new Error("Database unavailable");
     } else if (action.action === "project") {
+      if (action.status === "archived" && !["closed", "archived"].includes(project.status)) throw new ApiError(409, "Clôturez la collecte avant l'archivage.");
+      if (action.status === "archived" && !project.archive_exported_at) throw new ApiError(409, "Préparez et conservez l'archive ZIP avant l'archivage.");
       const { error } = await db.from("projects").update({ status: action.status, opens_at: action.opensAt, closes_at: action.closesAt }).eq("id", project.id).select("id").single();
       if (error) throw new Error("Database unavailable");
     } else if (action.action === "delete-media") {

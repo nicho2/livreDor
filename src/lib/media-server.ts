@@ -73,6 +73,9 @@ export async function finalizeMedia(media: MediaAsset, userId: string) {
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: uploadKey(media) }));
 }
 export async function mediaReadUrl(media: MediaAsset) {
+  const { data: project, error } = await getSupabaseServiceClient().from("projects").select("deletion_started_at").eq("id", media.project_id).maybeSingle();
+  if (error) throw new Error("Database unavailable");
+  if (!project || project.deletion_started_at) throw new ApiError(409, "Le projet est en cours de suppression.");
   await checkedObject(media);
   return getSignedUrl(getR2Client(), new GetObjectCommand({ Bucket: mediaBucket(), Key: media.object_key,
     ResponseContentType: media.mime_type,
@@ -80,7 +83,8 @@ export async function mediaReadUrl(media: MediaAsset) {
   }), { expiresIn: 300 });
 }
 export async function deleteMedia(media: MediaAsset, userId: string) {
-  const { role } = await projectAccess(media.project_id, userId);
+  const { role, project } = await projectAccess(media.project_id, userId);
+  if (project.deletion_started_at) throw new ApiError(409, "La suppression du projet est en cours.");
   if (role !== "organizer") {
     if (media.owner_id !== userId) throw new ApiError(403, "Accès au média refusé.");
     await contributionAccess(media.project_id, userId);

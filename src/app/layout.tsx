@@ -4,6 +4,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { AuthNav } from "@/components/AuthNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
+import packageInfo from "../../package.json";
 
 export const metadata: Metadata = {
   title: "LivreDor",
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <AuthNav />
             </header>
             {children}
+            <footer className="app-version" aria-label="Version de l'application">LivreDor · v{packageInfo.version}</footer>
           </div>
         </AuthProvider></ThemeProvider>
       </body>

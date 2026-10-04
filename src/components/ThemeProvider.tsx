@@ -1,10 +1,21 @@
 "use client";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type CSSProperties } from "react";
+import { resolveTheme, themeVariables, type ThemeId } from "@/lib/themes";
+
+const ThemeContext = createContext<((theme: ThemeId) => void) | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState("album");
+  const [theme, setTheme] = useState<ThemeId>("album");
+  return <ThemeContext.Provider value={setTheme}><div data-theme={theme} className="theme-root" style={themeVariables(theme) as CSSProperties}>{children}</div></ThemeContext.Provider>;
+}
+
+export function ProjectTheme({ theme, global = false, children }: { theme: unknown; global?: boolean; children: React.ReactNode }) {
+  const id = resolveTheme(theme);
+  const setTheme = useContext(ThemeContext);
   useEffect(() => {
-    void Promise.resolve().then(() => { try { const saved = localStorage.getItem("livredor-theme"); if (saved === "classic") setTheme(saved); } catch { /* Storage is optional. */ } });
-  }, []);
-  return <div data-theme={theme} className="theme-root"><div className="theme-selector"><label>Ambiance<select aria-label="Ambiance" value={theme} onChange={e => { setTheme(e.target.value); try { localStorage.setItem("livredor-theme", e.target.value); } catch { /* Storage is optional. */ } }}><option value="album">Album chaleureux</option><option value="classic">Classique</option></select></label></div>{children}</div>;
+    if (!global || !setTheme) return;
+    setTheme(id);
+    return () => setTheme("album");
+  }, [global, id, setTheme]);
+  return <div data-theme={id} className="project-theme" style={themeVariables(id) as CSSProperties}>{children}</div>;
 }

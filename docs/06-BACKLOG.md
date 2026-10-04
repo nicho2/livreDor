@@ -69,3 +69,15 @@ de production. Les preuves et limites de validation sont dans
 - [ ] Recette de fichiers audio/vidéo représentatifs et de leurs codecs.
 - [ ] Audit complet d'accessibilité et mesure de performance sur téléphone réel.
 - [ ] Avant publication : hébergement, consentement, durée de conservation et validation des URL publiques du bucket.
+
+## Prochaine version après v0.1.0
+
+- [x] Afficher discrètement le numéro de version de l'application sur les pages
+  web, sur ordinateur et mobile (par exemple dans le pied de page), afin de
+  pouvoir identifier la version consultée lors de la recette et du support.
+  Utiliser une source unique cohérente avec la version publiée ; éviter une
+  valeur copiée manuellement dans chaque page. Demande utilisateur du 3 octobre
+  2026, réalisée pour 0.1.1.
+- [x] Choix partagé du thème par l'organisateur et huit skins prédéfinis.
+- [x] Création réservée aux gestionnaires du site, accessible depuis `/all`.
+- [x] Zone de danger : suppression d'un projet archivé après export et nettoyage R2.

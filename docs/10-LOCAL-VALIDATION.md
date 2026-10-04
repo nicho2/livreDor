@@ -458,3 +458,23 @@ Captures : [souvenir réel](screenshots/recette-reelle-souvenir.jpg),
 Validation finale : lint, typecheck, 41 tests Node, `git diff --check` et build
 Next de recette réussis. Le livre avec message long passe également à 375,
 900 et 1440 px, y compris pendant la transition, sans débordement horizontal.
+
+## Gestion, thèmes et suppression — 0.1.1 (4 octobre 2026)
+
+Branche `feat/project-themes-site-management`. 46 tests Node, lint et typecheck ;
+builds Next de recette et Sites. Intégration API : 104 contrôles sur chacun des
+runtimes, Auth/PostgREST fictifs et objets R2 jetables. Nettoyage des temporaires
+et orphelins, conservation des autres projets, refus d'accès et thème de l'archive.
+PostgreSQL isolé : RLS, quota concurrent, preuve d'export périmée, archivage,
+verrou de suppression, délai des uploads, interdiction de modifier leur date et
+cascades conservant les comptes. Instance de test arrêtée.
+
+Playwright : huit thèmes enregistrés et persistants à 1440 et 375 px, version
+visible, bouton absent de l'accueil, accès gestionnaire et double confirmation
+de la zone de danger. Régressions livre, animation, mur, galerie, chronologie et
+éditeur vérifiées. Le téléchargement de la fixture organisateur est un blob UX
+fictif ; les vrais ZIP sont vérifiés séparément par l'intégration.
+
+La migration 0008 et la configuration gestionnaire de l'hébergement restent à
+appliquer lors du déploiement coordonné de 0.1.1. Aucun projet réel n'a été supprimé
+et la base de production n'a pas reçu cette migration pendant la recette locale.

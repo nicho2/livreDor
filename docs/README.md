@@ -5,6 +5,7 @@ versionnés avec le code, pas publiés sur le site applicatif.
 
 ## Installer, tester, exploiter
 
+- [Version, thèmes et gestion du site (0.1.1)](20-GESTION-THEMES-SUPPRESSION.md)
 - [Présentation de l'application en images, ordinateur et mobile](19-PRESENTATION-VISUELLE.md)
 - [Interface Album chaleureux et recette locale](18-ALBUM-UI.md)
 - [Installation, Supabase et Resend](15-INSTALLATION-RESEND.md)

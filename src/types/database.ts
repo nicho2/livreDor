@@ -16,6 +16,10 @@ export interface Project {
   status: ProjectStatus;
   created_by: string;
   created_at: string;
+  theme?: import("@/lib/themes").ThemeId;
+  content_revision?: number;
+  archive_exported_at?: string | null;
+  deletion_started_at?: string | null;
 }
 
 export interface GuestbookFormatting {
@@ -125,6 +129,9 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      confirm_project_export: { Args: { p_project_id: string; p_revision: number }; Returns: boolean };
+      begin_project_deletion: { Args: { p_project_id: string; p_actor: string; p_slug: string }; Returns: Project };
+      finish_project_deletion: { Args: { p_project_id: string; p_actor: string }; Returns: boolean };
       create_project_limited: {
         Args: { p_actor: string; p_limit: number; p_slug: string; p_title: string; p_subject_name: string; p_description: string | null; p_event_date: string | null };
         Returns: Project[];

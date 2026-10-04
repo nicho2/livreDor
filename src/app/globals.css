@@ -208,3 +208,22 @@ input, select, textarea, .toggle { background: var(--paper); }
 @keyframes leaf-next { from { transform: rotateY(0); } to { transform: rotateY(-180deg); } }
 @keyframes leaf-previous { from { transform: rotateY(0); } to { transform: rotateY(180deg); } }
 @media (max-width: 767px) { .turning-sheet { width: 100%; } }
+
+.app-version { margin-top: 48px; padding: 16px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
+.project-theme { background: var(--bg); color: var(--ink); padding: 20px; border-radius: var(--radius-large); }
+.project-theme .card { background: var(--paper); }
+.theme-preview { padding: 12px; background: radial-gradient(ellipse at top right, var(--secondary), transparent 80%); }
+.theme-preview h3 { font: 1.7rem var(--font-title); }
+[data-theme="birthday"] .hero::after { content: "✧"; }
+[data-theme="birth"] .hero::after { content: "☆"; }
+[data-theme="wedding"] { --font-title: Georgia, "Times New Roman", serif; }
+[data-theme="wedding"] .hero::after { content: "♡"; }
+[data-theme="retirement"] .cover-back { transform: rotate(5deg); }
+[data-theme="departure"] .wall-item { transform: none; }
+[data-theme="memory"] .hero::after { content: "❧"; }
+.danger-zone { --danger: #8b2020; margin-top: 32px; border: 2px solid var(--danger); border-radius: 16px; padding: 24px; color: #601919; background: #fff3f2; }
+.danger-zone h2 { color: var(--danger); margin: 0; }
+.destructive { background: #8b2020; color: #fff; }
+.checkbox-label { display: flex; align-items: flex-start; gap: 12px; }
+.checkbox-label input { width: 24px; height: 24px; flex-shrink: 0; accent-color: #8b2020; }
+@media (max-width: 767px) { .project-theme { padding: 12px 0; } .danger-zone { padding: 18px; } }

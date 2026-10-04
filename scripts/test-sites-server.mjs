@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { readdirSync } from "node:fs";
 const port = Number(process.argv[2]);
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("Invalid local test port");
-const keys = ["SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "LIVREDOR_MAX_PROJECTS", "R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET_NAME"];
+const keys = ["SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "LIVREDOR_MAX_PROJECTS", "LIVREDOR_SITE_MANAGERS", "R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET_NAME"];
 const root = resolve("dist/server");
 // Register emitted chunks explicitly: Vinext uses computed dynamic imports.
 const chunks = readdirSync(root, { recursive: true }).filter(f => /\.(mjs|js)$/.test(f) && !["index.js", "index.mjs"].includes(f));

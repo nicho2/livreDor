@@ -56,6 +56,13 @@ La confirmation indique que l'archive est prête : seul le navigateur peut
 confirmer l'enregistrement effectif sur disque. Le fichier préparé est libéré
 quand l'utilisateur quitte la page ou prépare une nouvelle archive.
 
+Depuis 0.1.1, le thème du projet est conservé dans le JSON privé et le site
+autonome. Une génération complète du ZIP enregistre une preuve d'export pour la
+révision courante. Clôture → export → archivage permet ensuite une suppression
+définitive avec confirmation de sauvegarde et nettoyage R2. Toute modification
+des contenus ou du thème invalide cette preuve ; un nouvel export est nécessaire.
+Voir [la procédure](20-GESTION-THEMES-SUPPRESSION.md).
+
 ## PDF / livre
 
 Le PDF imprimable est une évolution post-V1. L'architecture doit néanmoins conserver suffisamment de structure pour générer ultérieurement une maquette : auteur, date, texte, média principal, ordre chronologique.

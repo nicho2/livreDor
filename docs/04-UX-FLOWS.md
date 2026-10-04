@@ -82,7 +82,7 @@ Priorité à une liste claire avec filtres par statut et actions rapides publier
 
 ## Démarrage organisateur
 
-Accueil → Créer un LivreDor → email/OTP si nécessaire → titre et nom affiché,
+/all → email/OTP si nécessaire → accès gestionnaire → Créer un LivreDor → titre et nom affiché,
 présentation/date facultatives, choix du lien stable → création → Organisation.
 Le retour OTP accepte explicitement `/nouveau`, sans élargir les redirections
 aux chemins arbitraires. La collecte commence ouverte ; les informations du

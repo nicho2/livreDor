@@ -2,6 +2,9 @@
 
 Application de collecte et de restitution de souvenirs, développée et testable localement.
 
+La version apparaît en pied de page. La création des projets est réservée aux
+gestionnaires du site depuis `/all` : voir [configuration et gestion des thèmes](docs/20-GESTION-THEMES-SUPPRESSION.md).
+
 [Recette Album chaleureux](docs/18-ALBUM-UI.md) ·
 [Index de documentation](docs/README.md) ·
 [Installation avec Resend](docs/15-INSTALLATION-RESEND.md) ·

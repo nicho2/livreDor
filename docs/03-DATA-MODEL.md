@@ -37,6 +37,12 @@ Principaux champs :
 - `status text`
 - `created_by uuid`
 
+La migration 0008 ajoute `theme` (huit valeurs prédéfinies),
+`content_revision`, `archive_exported_at` et `deletion_started_at`.
+La révision invalide la preuve d'export après modification. Les RPC de preuve
+et de suppression sont réservées au serveur ; les triggers protègent également
+les écritures directes. Voir [la procédure](20-GESTION-THEMES-SUPPRESSION.md).
+
 ## project_members
 Relie les comptes à un projet.
 

@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authenticatedFetch } from "@/lib/api-client";
 import { ProjectDetailsForm } from "@/components/ProjectDetailsForm";
+import { ThemeSelector } from "@/components/ThemeSelector";
+import { ProjectDangerZone } from "@/components/ProjectDangerZone";
 import { useProjectUpdate } from "@/components/ProjectAccess";
 import type { Project, GuestbookEntry, Memory, MediaAsset, PublicationStatus } from "@/types/database";
 type Data = { project: Project; entries: GuestbookEntry[]; memories: Memory[]; media: MediaAsset[]; invitation: { email: string; accepted_by: string | null } | null; sharingReady: boolean };
@@ -14,6 +16,7 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
   const [filter, setFilter] = useState<PublicationStatus | "all">("all");
   const [busy, setBusy] = useState(false);
   const [archiveUrl, setArchiveUrl] = useState("");
+  const [pendingStatus, setPendingStatus] = useState<"open" | "closed" | "archived" | null>(null);
   useEffect(() => {
     if (!archiveUrl) return;
     return () => URL.revokeObjectURL(archiveUrl);
@@ -21,6 +24,7 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
   const [opensAt, setOpensAt] = useState("");
   const [closesAt, setClosesAt] = useState("");
   const [organizerEmail, setOrganizerEmail] = useState("");
+  const blocked = busy || !!data?.project.deletion_started_at;
   const router = useRouter();
   const url = `/api/projects/${projectId}/admin`;
   const load = useCallback(async () => {
@@ -54,6 +58,7 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
       setArchiveUrl(objectUrl);
       const link = document.createElement("a"); link.href = objectUrl; link.download = `LivreDor-${data?.project.slug ?? projectId}.zip`; link.click();
       setFeedback("Archive prête. Si le téléchargement ne démarre pas, utilisez le lien ci-dessous. Décompressez-la, puis ouvrez site/index.html. Le dossier archive-privee ne doit pas être publié.");
+      await load();
     } catch (error) { setFeedback(error instanceof Error ? error.message : "Export impossible."); }
     finally { setBusy(false); }
   }
@@ -61,7 +66,8 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
     {feedback && <p role="status" className="notice">{feedback}</p>}
     {!data && <button type="button" className="button secondary" onClick={() => void load()}>Charger l&apos;espace organisateur</button>}
     {data && <>
-      <ProjectDetailsForm disabled={busy} initial={{ title: data.project.title, subjectName: data.project.subject_name, description: data.project.description ?? "", eventDate: data.project.event_date ?? "" }} onSave={async (details) => {
+      <ThemeSelector key={data.project.theme ?? "album"} current={data.project.theme} disabled={blocked || !!data.project.deletion_started_at} onSave={theme => act({ action: "theme", theme })} />
+      <ProjectDetailsForm disabled={blocked} initial={{ title: data.project.title, subjectName: data.project.subject_name, description: data.project.description ?? "", eventDate: data.project.event_date ?? "" }} onSave={async (details) => {
         // Unlike moderation, propagate errors so the form cannot report a false success.
         setBusy(true); setFeedback("");
         try {
@@ -74,24 +80,23 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
         {!data.sharingReady && <p className="notice">Appliquez la migration Supabase 0005 pour activer ce partage.</p>}
         {data.invitation && <p role="status">{data.invitation.accepted_by ? "Deuxième organisateur : " : "Invitation en attente : "}{data.invitation.email}</p>}
         <form className="stack" onSubmit={(event) => { event.preventDefault(); void act({ action: "invite-organizer", email: organizerEmail }); }}>
-          <label>Email du deuxième organisateur<input type="email" required maxLength={254} value={organizerEmail} onChange={(event) => setOrganizerEmail(event.target.value)} disabled={busy || !data.sharingReady || !!data.invitation?.accepted_by} /></label>
-          <div className="actions"><button type="submit" className="button secondary" disabled={busy || !data.sharingReady || !!data.invitation?.accepted_by}>Inviter le deuxième organisateur</button>
-            {data.invitation && !data.invitation.accepted_by && <button type="button" className="button secondary" disabled={busy} onClick={() => void act({ action: "cancel-invitation" })}>Annuler l&apos;invitation</button>}
+          <label>Email du deuxième organisateur<input type="email" required maxLength={254} value={organizerEmail} onChange={(event) => setOrganizerEmail(event.target.value)} disabled={blocked || !data.sharingReady || !!data.invitation?.accepted_by} /></label>
+          <div className="actions"><button type="submit" className="button secondary" disabled={blocked || !data.sharingReady || !!data.invitation?.accepted_by}>Inviter le deuxième organisateur</button>
+            {data.invitation && !data.invitation.accepted_by && <button type="button" className="button secondary" disabled={blocked} onClick={() => void act({ action: "cancel-invitation" })}>Annuler l&apos;invitation</button>}
           </div>
           <p className="muted">Une nouvelle adresse remplace l&apos;invitation encore en attente. L&apos;adresse reste privée, hors du mur et de l&apos;archive exportée. Les deux organisateurs disposent des mêmes droits.</p>
         </form>
         <p className="message">Lien à transmettre : /p/{data.project.slug}</p>
       </section>
       <section className="card stack"><h2>Collecte et archivage</h2><p>État : {data.project.status}. Clôturer bloque les contributions mais conserve la consultation et la modération.</p>
-        <div className="year-fields"><label>Ouverture (UTC, facultative)<input type="datetime-local" value={opensAt} onChange={(e) => setOpensAt(e.target.value)} /></label><label>Clôture (UTC, facultative)<input type="datetime-local" value={closesAt} onChange={(e) => setClosesAt(e.target.value)} /></label></div>
+        <div className="year-fields"><label>Ouverture (UTC, facultative)<input type="datetime-local" disabled={blocked} value={opensAt} onChange={(e) => setOpensAt(e.target.value)} /></label><label>Clôture (UTC, facultative)<input type="datetime-local" disabled={blocked} value={closesAt} onChange={(e) => setClosesAt(e.target.value)} /></label></div>
         <div className="actions">
-          {(["open", "closed", "archived"] as const).map((status) => <button className="button secondary" disabled={busy} key={status} onClick={() => {
-            if (!window.confirm(`${status === "open" ? "Ouvrir" : status === "closed" ? "Clôturer" : "Archiver"} la collecte avec ces dates ?`)) return;
-            void act({ action: "project", status, opensAt: opensAt ? `${opensAt}:00Z` : null, closesAt: closesAt ? `${closesAt}:00Z` : null });
-          }}>{status === "open" ? "Ouvrir / enregistrer les dates" : status === "closed" ? "Clôturer" : "Archiver"}</button>)}
-          <button className="button" disabled={busy || !["closed", "archived"].includes(data.project.status)} onClick={() => void exportArchive()}>Télécharger l&apos;archive ZIP</button>
+          {(["open", "closed", "archived"] as const).map((status) => <button className="button secondary" disabled={blocked || !!data.project.deletion_started_at || (status === "archived" && (!data.project.archive_exported_at || !["closed", "archived"].includes(data.project.status)))} key={status} onClick={() => setPendingStatus(status)}>{status === "open" ? "Ouvrir / enregistrer les dates" : status === "closed" ? "Clôturer" : "Archiver"}</button>)}
+          <button className="button" disabled={blocked || !!data.project.deletion_started_at || !["closed", "archived"].includes(data.project.status)} onClick={() => void exportArchive()}>Télécharger l&apos;archive ZIP</button>
           {archiveUrl && <a className="button secondary" href={archiveUrl} download={`LivreDor-${data.project.slug}.zip`}>Enregistrer le ZIP préparé</a>}
-        </div><p className="muted">Clôturez avant l&apos;export final. L&apos;archive contient un site autonome avec les seuls contenus publiés et une sauvegarde privée des autres contenus, sans adresses e-mail. L&apos;export ne clôture pas automatiquement le projet.</p>
+        </div>
+        {pendingStatus && <div className="notice stack" role="group" aria-label="Confirmer le changement de collecte"><p>{pendingStatus === "open" ? "Ouvrir la collecte avec ces dates ?" : pendingStatus === "closed" ? "Clôturer la collecte avec ces dates ?" : "Avez-vous enregistré et vérifié le ZIP ? Confirmez l'archivage."}</p><div className="actions"><button className="button" disabled={blocked} onClick={() => { const status = pendingStatus; setPendingStatus(null); void act({ action: "project", status, opensAt: opensAt ? `${opensAt}:00Z` : null, closesAt: closesAt ? `${closesAt}:00Z` : null }); }}>Confirmer</button><button className="button secondary" disabled={blocked} onClick={() => setPendingStatus(null)}>Annuler</button></div></div>}
+        <p className="muted">Clôturez, téléchargez et vérifiez le ZIP, puis archivez le projet. L&apos;archive contient un site autonome avec les seuls contenus publiés et une sauvegarde privée des autres contenus, sans adresses e-mail. Toute modification des contenus ou du thème nécessite un nouvel export avant suppression.</p>
       </section>
       <label>Filtrer les contenus<select value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)}><option value="all">Tous</option>{Object.entries(labels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
       {([{ table: "guestbook_entries", title: "Livre d'or", rows: data.entries }, { table: "memories", title: "Souvenirs", rows: data.memories }, { table: "media_assets", title: "Médias", rows: data.media }] as const).map(({ table, title, rows }) => <section className="stack" key={table}><h2>{title} ({rows.length})</h2>
@@ -99,11 +104,12 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
           <strong>{"display_name" in row ? String(row.display_name) : String(row.original_filename)}</strong>
           <p className="message">{"message" in row ? String(row.message) : "body" in row ? `${row.title ?? "Souvenir"}\n${row.body}` : `${row.kind} · ${row.size_bytes} octets`}</p>
           <span className={`status status-${row.status}`}>{labels[row.status]}</span>
-          <div className="actions">{Object.entries(labels).map(([status, label]) => <button type="button" className="button secondary" key={status} disabled={busy || row.status === status} onClick={() => void act({ action: "moderate", table, contentId: row.id, status })}>{label}</button>)}
-            {table === "media_assets" && <button className="link-button danger" disabled={busy} onClick={() => { if (window.confirm("Supprimer définitivement le fichier du stockage ? Irréversible.")) void act({ action: "delete-media", contentId: row.id }); }}>Supprimer le fichier</button>}
+          <div className="actions">{Object.entries(labels).map(([status, label]) => <button type="button" className="button secondary" key={status} disabled={blocked || row.status === status} onClick={() => void act({ action: "moderate", table, contentId: row.id, status })}>{label}</button>)}
+            {table === "media_assets" && <button className="link-button danger" disabled={blocked} onClick={() => { if (window.confirm("Supprimer définitivement le fichier du stockage ? Irréversible.")) void act({ action: "delete-media", contentId: row.id }); }}>Supprimer le fichier</button>}
           </div>
         </article>)}
       </section>)}
+      <ProjectDangerZone project={data.project} disabled={busy} onRefresh={load} />
     </>}
   </section>;
 }

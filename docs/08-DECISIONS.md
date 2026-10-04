@@ -247,3 +247,63 @@ Les animations sont ponctuelles et neutralisées avec prefers-reduced-motion.
 changer OTP, Supabase/RLS, R2 privé, rôles, statuts ni export autonome. Le site
 statique conserve son rendu autonome existant ; les interactions React de
 l'application active ne sont pas ajoutées implicitement à l'archive.
+
+## ADR-019 — Thème partagé et version visible
+
+Le 4 octobre 2026, l'utilisateur demande un choix d'ambiance par l'organisateur
+et de nouveaux skins. La migration 0008 ajoute `projects.theme`, borné à huit
+valeurs : album, classic, retirement, birthday, wedding, departure, birth,
+memory. Les projets existants prennent Album chaleureux. Le choix partagé
+remplace la préférence locale de l'ADR-018 ; il se modifie dans Organisation
+après contrôle organisateur, s'applique aux vues et à l'export autonome.
+Les tokens prédéfinis restent la seule source de CSS du thème.
+
+Le pied de page de l'application affiche la version issue de `package.json` ;
+la livraison préparée est 0.1.1. Aucun numéro dupliqué dans les composants.
+
+## ADR-020 — Création réservée aux gestionnaires du site
+
+L'accueil conserve les projets accessibles sous session/RLS, sans bouton de
+création. `/all` présente les outils de création aux gestionnaires connectés ;
+`/nouveau` et `POST /api/projects` contrôlent également cette autorisation.
+`LIVREDOR_SITE_MANAGERS`, exclusivement serveur, contient les adresses exactes
+autorisées, séparées par des virgules. L'email doit être confirmé par Supabase.
+Une configuration vide refuse toutes les créations ; ni rôle ni email fournis
+par le navigateur ne peuvent attribuer ce droit. Le premier gestionnaire a été
+confirmé par l'utilisateur et configuré localement, hors Git.
+
+Cela remplace la création par tout compte connecté des ADR-012/015, sans changer
+les rôles par projet : un gestionnaire devient organisateur de ses créations,
+mais n'est pas automatiquement organisateur des autres projets. La RPC de quota
+reste uniquement serveur ; le plafond global reste inchangé. `/all` est un accès
+discret, pas une protection par secret d'URL. Aucun compte Auth n'est supprimé
+ou modifié pour administrer un projet.
+
+## ADR-021 — Suppression définitive après restitution
+
+La zone de danger en bas d'Organisation exige le statut existant `archived`,
+un export complet enregistré côté serveur, la confirmation que le ZIP est
+sauvegardé et le slug recopié. L'archivage exige désormais une clôture préalable
+et un export réussi. Aucun nouveau statut métier n'est introduit.
+
+La migration 0008 conserve `content_revision`, `archive_exported_at` et
+`deletion_started_at`. L'export est confirmé uniquement à la fin du flux ZIP et
+si sa révision est encore actuelle ; erreurs et interruptions ne donnent aucun
+droit de suppression. Contenus, thème, informations ou réouverture invalident
+la preuve, y compris les écritures directes Supabase par RLS. Les champs protégés
+et RPC de preuve/suppression ne sont pas modifiables par un client.
+
+Une RPC vérifie organisateur, état et slug sous verrou, puis bloque les mutations
+et la réouverture. Les ajouts média récents imposent dix minutes d'attente avant
+le début du nettoyage (les URL PUT sont valables cinq minutes) ; leur date n'est
+pas modifiable. Le serveur nettoie le préfixe R2 UUID exact du projet, y compris
+staging et orphelins, par lots de 1000 relus depuis le début. Une erreur ou un
+échec partiel conserve les lignes et le verrou, permettant la reprise. La
+suppression PostgreSQL avec cascades intervient seulement après nettoyage R2.
+Les comptes/profils et les autres projets sont conservés.
+
+Il n'y a pas de transaction distribuée R2/PostgreSQL : la reprise est explicite.
+Les URL GET déjà délivrées expirent sous cinq minutes ; les copies de ZIP déjà
+enregistrées par les organisateurs restent sur leurs propres supports. Les
+clients sont invités à vérifier le ZIP : le serveur atteste sa génération,
+pas son enregistrement sur le disque de l'utilisateur.

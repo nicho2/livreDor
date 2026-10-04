@@ -16,6 +16,17 @@ Le système traite au minimum :
 - pas de tracking marketing par défaut.
 
 ## RLS
+
+Depuis 0.1.1, la création exige un email OTP confirmé figurant dans la liste
+serveur `LIVREDOR_SITE_MANAGERS`. `/all` et `/nouveau` contrôlent cet accès ;
+l'API le vérifie indépendamment. Masquer le bouton ne constitue pas une protection.
+Ce droit global reste distinct du rôle organisateur propre à chaque projet.
+
+La suppression complète exige un organisateur, un projet clôturé puis archivé,
+une preuve d'export à jour et une double confirmation. Un verrou interdit les
+modifications pendant le nettoyage R2 ; une erreur laisse une suppression
+reprenable. Les comptes sont conservés. Voir
+[les garanties détaillées](20-GESTION-THEMES-SUPPRESSION.md).
 Le schéma fourni impose notamment :
 - aucune lecture anonyme des projets, contributions, souvenirs ou métadonnées média (migration 0007) ;
 - lecture des contenus `published` des projets non brouillons uniquement après connexion OTP LivreDor ;

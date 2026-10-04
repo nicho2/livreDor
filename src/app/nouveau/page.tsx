@@ -1,5 +1,5 @@
-import { RequireAuth } from "@/components/RequireAuth";
+import { RequireSiteManager } from "@/components/RequireSiteManager";
 import { CreateProject } from "@/components/CreateProject";
 export default function NewProjectPage() {
-  return <main className="stack"><div><p className="kicker">Créer un LivreDor</p><h1>Commencer une nouvelle histoire.</h1><p>Connectez-vous avec votre email et votre code, puis créez votre projet. Vous en serez l&apos;organisateur.</p></div><RequireAuth returnTo="/nouveau"><CreateProject /></RequireAuth></main>;
+  return <main className="stack"><RequireSiteManager returnTo="/nouveau"><div><p className="kicker">Créer un LivreDor</p><h1>Commencer une nouvelle histoire.</h1><p>Vous serez l&apos;organisateur du nouveau projet.</p></div><CreateProject /></RequireSiteManager></main>;
 }

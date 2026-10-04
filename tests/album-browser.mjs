@@ -91,11 +91,6 @@ export async function testTimeline(tab, viewport, width) {
 }
 
 export async function testThemeAndAccess(tab) {
-  await tab.playwright.getByLabel("Ambiance").selectOption("classic");
-  await tab.playwright.locator('[data-theme="classic"]').waitFor({ state: "visible" });
-  await tab.reload();
-  await tab.playwright.locator('[data-theme="classic"]').waitFor({ state: "visible" });
-  await tab.playwright.getByLabel("Ambiance").selectOption("album");
   await tab.goto("http://localhost:3100/p/album-test/guestbook");
   await tab.playwright.getByRole("button", { name: "Feuilleter le livre" }).click();
   await tab.playwright.locator(".open-book").press("ArrowRight");
@@ -105,7 +100,7 @@ export async function testThemeAndAccess(tab) {
   await tab.playwright.getByText("Connectez-vous pour consulter les projets et souvenirs").waitFor({ state: "visible" });
   assert.equal(await tab.playwright.locator(".book-page").count(), 0);
   assert.equal(await tab.playwright.locator(".project-nav").count(), 0);
-  return "Thèmes persistants, clavier et retrait des contenus à la déconnexion OK";
+  return "Clavier et retrait des contenus à la déconnexion OK";
 }
 
 export async function testPageTurn(tab, viewport, width) {

@@ -20,3 +20,5 @@ alter default privileges in schema public grant select, insert, update, delete o
 \ir ../../supabase/migrations/0007_authenticated_read.sql
 \ir content-access.sql
 \ir project-quota.sql
+\ir ../../supabase/migrations/0008_project_themes_archive_deletion.sql
+\ir project-lifecycle.sql
