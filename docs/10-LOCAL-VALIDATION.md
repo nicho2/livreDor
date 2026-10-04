@@ -478,3 +478,10 @@ fictif ; les vrais ZIP sont vérifiés séparément par l'intégration.
 La migration 0008 et la configuration gestionnaire de l'hébergement restent à
 appliquer lors du déploiement coordonné de 0.1.1. Aucun projet réel n'a été supprimé
 et la base de production n'a pas reçu cette migration pendant la recette locale.
+
+Correction de recette : `testDeleteFixture` clique désormais sur la suppression
+après le parcours clôture → ZIP → archivage, vérifie le retour à l'accueil puis
+l'absence du projet après rechargement. Simulation en mémoire, sans appel R2.
+Les sessions fictives restent acceptées après redémarrage de la recette.
+Les libellés distinguent la génération du ZIP, son lien de retéléchargement et
+le changement d'état du projet. Build, lint, typecheck et Playwright réussis.

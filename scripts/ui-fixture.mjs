@@ -55,8 +55,30 @@ const fixture = createServer(async (req, res) => {
   res.end(JSON.stringify(req.headers.accept?.includes("application/vnd.pgrst.object+json") ? rows[0] ?? null : rows));
 });
 await new Promise(resolve => fixture.listen(54329, "127.0.0.1", resolve));
-const proxy = createServer((req, res) => {
+const proxy = createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
+  // UI-only deletion: remove synthetic rows in memory, never call R2.
+  if (url.pathname === `/api/projects/${projectId}` && req.method === "DELETE") {
+    res.setHeader("Content-Type", "application/json");
+    // Browser sessions survive fixture restarts; accept the same synthetic user
+    // with a still-valid fixture token, rather than only this process's token.
+    let fixtureUser = false;
+    try {
+      const supplied = (req.headers.authorization ?? "").replace(/^Bearer /, "");
+      const claims = JSON.parse(Buffer.from(supplied.split(".")[1], "base64url").toString());
+      fixtureUser = supplied.endsWith(".fixture") && claims.sub === userId && claims.exp > Date.now() / 1000;
+    } catch { /* Anonymous or malformed fixture token. */ }
+    if (!organizer || !fixtureUser) { res.writeHead(403); res.end(JSON.stringify({ error: "Accès organisateur requis." })); return; }
+    let input;
+    try { input = await body(req); } catch { res.writeHead(400); res.end(JSON.stringify({ error: "Confirmation invalide." })); return; }
+    const project = tables.projects.find(row => row.id === projectId);
+    if (!project) { res.writeHead(404); res.end(JSON.stringify({ error: "Projet introuvable." })); return; }
+    if (input.confirmation !== project.slug || input.archiveSaved !== true) { res.writeHead(400); res.end(JSON.stringify({ error: "Confirmez la sauvegarde et le lien du projet." })); return; }
+    if (project.status !== "archived" || !project.archive_exported_at) { res.writeHead(409); res.end(JSON.stringify({ error: "Clôturez, exportez puis archivez le projet." })); return; }
+    tables.projects = tables.projects.filter(row => row.id !== projectId);
+    for (const name of ["project_members", "guestbook_entries", "memories", "media_assets", "project_organizer_invites"]) tables[name] = tables[name].filter(row => row.project_id !== projectId);
+    res.end(JSON.stringify({ ok: true })); return;
+  }
   // UX-only blob: the real ZIP and storage cleanup have separate integration tests.
   if (organizer && url.pathname === `/api/projects/${projectId}/export` && req.method === "POST") {
     tables.projects[0].archive_exported_at = new Date().toISOString();

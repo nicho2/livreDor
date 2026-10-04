@@ -88,13 +88,18 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
         </form>
         <p className="message">Lien à transmettre : /p/{data.project.slug}</p>
       </section>
-      <section className="card stack"><h2>Collecte et archivage</h2><p>État : {data.project.status}. Clôturer bloque les contributions mais conserve la consultation et la modération.</p>
+      <section className="card stack"><h2>Collecte et sauvegarde</h2><p>État : {{ open: "Collecte ouverte", closed: "Collecte clôturée", archived: "Projet archivé", draft: "Brouillon" }[data.project.status] ?? data.project.status}.</p>
+        <ol className="stack">
+          <li><strong>Clôturer la collecte</strong> bloque les nouvelles contributions. Le projet reste consultable.</li>
+          <li><strong>Préparer et télécharger le ZIP</strong> crée la sauvegarde sur votre ordinateur. Décompressez-la et vérifiez son contenu.</li>
+          <li><strong>Archiver le projet</strong> marque le projet comme terminé dans LivreDor. Cela ne télécharge ni ne supprime aucun fichier.</li>
+        </ol>
         <div className="year-fields"><label>Ouverture (UTC, facultative)<input type="datetime-local" disabled={blocked} value={opensAt} onChange={(e) => setOpensAt(e.target.value)} /></label><label>Clôture (UTC, facultative)<input type="datetime-local" disabled={blocked} value={closesAt} onChange={(e) => setClosesAt(e.target.value)} /></label></div>
         <div className="actions">
-          {(["open", "closed", "archived"] as const).map((status) => <button className="button secondary" disabled={blocked || !!data.project.deletion_started_at || (status === "archived" && (!data.project.archive_exported_at || !["closed", "archived"].includes(data.project.status)))} key={status} onClick={() => setPendingStatus(status)}>{status === "open" ? "Ouvrir / enregistrer les dates" : status === "closed" ? "Clôturer" : "Archiver"}</button>)}
-          <button className="button" disabled={blocked || !!data.project.deletion_started_at || !["closed", "archived"].includes(data.project.status)} onClick={() => void exportArchive()}>Télécharger l&apos;archive ZIP</button>
-          {archiveUrl && <a className="button secondary" href={archiveUrl} download={`LivreDor-${data.project.slug}.zip`}>Enregistrer le ZIP préparé</a>}
+          {(["open", "closed", "archived"] as const).map((status) => <button className="button secondary" disabled={blocked || !!data.project.deletion_started_at || (status === "archived" && (!data.project.archive_exported_at || !["closed", "archived"].includes(data.project.status)))} key={status} onClick={() => setPendingStatus(status)}>{status === "open" ? "Ouvrir / enregistrer les dates" : status === "closed" ? "Clôturer" : "Archiver le projet"}</button>)}
+          <button className="button" disabled={blocked || !!data.project.deletion_started_at || !["closed", "archived"].includes(data.project.status)} onClick={() => void exportArchive()}>Préparer et télécharger le ZIP</button>
         </div>
+        {archiveUrl && <p>Le ZIP est prêt. Si le téléchargement automatique n&apos;a pas démarré : <a href={archiveUrl} download={`LivreDor-${data.project.slug}.zip`}>Télécharger à nouveau le même ZIP</a>. Ce lien ne crée pas une nouvelle sauvegarde.</p>}
         {pendingStatus && <div className="notice stack" role="group" aria-label="Confirmer le changement de collecte"><p>{pendingStatus === "open" ? "Ouvrir la collecte avec ces dates ?" : pendingStatus === "closed" ? "Clôturer la collecte avec ces dates ?" : "Avez-vous enregistré et vérifié le ZIP ? Confirmez l'archivage."}</p><div className="actions"><button className="button" disabled={blocked} onClick={() => { const status = pendingStatus; setPendingStatus(null); void act({ action: "project", status, opensAt: opensAt ? `${opensAt}:00Z` : null, closesAt: closesAt ? `${closesAt}:00Z` : null }); }}>Confirmer</button><button className="button secondary" disabled={blocked} onClick={() => setPendingStatus(null)}>Annuler</button></div></div>}
         <p className="muted">Clôturez, téléchargez et vérifiez le ZIP, puis archivez le projet. L&apos;archive contient un site autonome avec les seuls contenus publiés et une sauvegarde privée des autres contenus, sans adresses e-mail. Toute modification des contenus ou du thème nécessite un nouvel export avant suppression.</p>
       </section>

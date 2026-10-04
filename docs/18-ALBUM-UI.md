@@ -19,6 +19,9 @@ redémarrage réinitialise la recette. Aucun Supabase/R2 réel n'est contacté.
 L'écran de connexion indique explicitement la simulation et le code fictif,
 y compris après « Recevoir mon code » : ne pas attendre un email sur cette recette.
 La simulation média ne valide pas les signatures R2 ni la sécurité RLS réelle.
+Avec `--organizer`, la suppression complète du projet fictif est simulée en
+mémoire, jusqu'au retour à l'accueil. Aucun stockage réel n'est supprimé.
+Redémarrer la recette recrée le projet et ses contenus synthétiques.
 
 Garder le terminal de recette ouvert pendant l'essai. Le port `3101` affiché par
 Next est interne : il contourne le proxy de connexion et de médias. Les accès

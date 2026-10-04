@@ -29,14 +29,14 @@ export async function testDangerZone(tab) {
   await danger.waitFor({ state: "visible", timeoutMs: 20000 });
   const remove = tab.playwright.getByRole("button", { name: "Supprimer définitivement le projet", exact: true });
   assert.equal(await remove.isEnabled(), false);
-  assert.equal(await tab.playwright.getByRole("button", { name: "Archiver", exact: true }).isEnabled(), false);
+  assert.equal(await tab.playwright.getByRole("button", { name: "Archiver le projet", exact: true }).isEnabled(), false);
   await tab.playwright.getByRole("button", { name: "Clôturer", exact: true }).click();
   await tab.playwright.getByRole("button", { name: "Confirmer", exact: true }).click();
   // The organizer fixture supplies a synthetic UX blob, not a real ZIP.
-  const exportButton = tab.playwright.getByRole("button", { name: "Télécharger l'archive ZIP", exact: true });
+  const exportButton = tab.playwright.getByRole("button", { name: "Préparer et télécharger le ZIP", exact: true });
   await exportButton.click();
-  await tab.playwright.getByRole("link", { name: "Enregistrer le ZIP préparé", exact: true }).waitFor({ state: "visible", timeoutMs: 20000 });
-  await tab.playwright.getByRole("button", { name: "Archiver", exact: true }).click();
+  await tab.playwright.getByRole("link", { name: "Télécharger à nouveau le même ZIP", exact: true }).waitFor({ state: "visible", timeoutMs: 20000 });
+  await tab.playwright.getByRole("button", { name: "Archiver le projet", exact: true }).click();
   await tab.playwright.getByRole("button", { name: "Confirmer", exact: true }).click();
   await danger.getByRole("checkbox").check();
   await danger.getByRole("textbox").fill("wrong-slug");
@@ -46,6 +46,20 @@ export async function testDangerZone(tab) {
   await danger.getByRole("checkbox").uncheck();
   assert.equal(await remove.isEnabled(), false);
   return "Zone de danger : états, ZIP, archivage et double confirmation OK";
+}
+
+// Only run against the disposable organizer fixture, after testDangerZone.
+export async function testDeleteFixture(tab) {
+  assert.equal(new URL(await tab.url()).origin, "http://localhost:3100");
+  const danger = tab.playwright.getByRole("region", { name: "Zone de danger" });
+  await danger.getByRole("checkbox").check();
+  await danger.getByRole("textbox").fill("album-test");
+  await tab.playwright.getByRole("button", { name: "Supprimer définitivement le projet", exact: true }).click();
+  await tab.playwright.getByRole("heading", { name: "Construire ensemble une histoire à transmettre.", exact: true }).waitFor({ state: "visible" });
+  assert.equal(await tab.playwright.getByRole("link", { name: "Une nouvelle aventure" }).count(), 0);
+  await tab.reload();
+  assert.equal(await tab.playwright.getByRole("link", { name: "Une nouvelle aventure" }).count(), 0);
+  return "Suppression du projet fictif et retour accueil vérifiés";
 }
 
 export async function testManagerDenied(tab) {
