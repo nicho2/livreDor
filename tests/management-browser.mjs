@@ -1,4 +1,24 @@
 import assert from "node:assert/strict";
+export async function testCreateFixture(tab, slug) {
+  await tab.goto("http://localhost:3100/nouveau");
+  await tab.playwright.getByLabel("Titre du LivreDor", { exact: true }).fill("Projet de recette création");
+  await tab.playwright.getByLabel("Prénom et nom, ou nom de l'événement", { exact: true }).fill("Événement fictif");
+  await tab.playwright.getByLabel("Lien du projet", { exact: true }).fill(slug);
+  await tab.playwright.getByRole("button", { name: "Créer mon LivreDor", exact: true }).click();
+  await tab.playwright.getByRole("heading", { name: "Projet de recette création", exact: true }).waitFor({ state: "visible" });
+  assert.equal(await tab.url(), `http://localhost:3100/p/${slug}/admin`);
+  await tab.reload();
+  await tab.playwright.getByRole("heading", { name: "Collecte et sauvegarde", exact: true }).waitFor({ state: "visible" });
+  await tab.goto("http://localhost:3100/nouveau");
+  await tab.playwright.getByLabel("Titre du LivreDor", { exact: true }).fill("Ne doit pas remplacer le projet");
+  await tab.playwright.getByLabel("Prénom et nom, ou nom de l'événement", { exact: true }).fill("Autre événement fictif");
+  await tab.playwright.getByLabel("Lien du projet", { exact: true }).fill(slug);
+  await tab.playwright.getByRole("button", { name: "Créer mon LivreDor", exact: true }).click();
+  await tab.playwright.getByText("Ce lien existe déjà. Choisissez un autre lien ; aucun projet existant n'a été modifié.", { exact: true }).waitFor({ state: "visible" });
+  await tab.goto(`http://localhost:3100/p/${slug}/admin`);
+  await tab.playwright.getByRole("heading", { name: "Projet de recette création", exact: true }).waitFor({ state: "visible" });
+  return "Création, rôle organisateur, persistance et doublon de lien vérifiés";
+}
 export async function testManagerAndThemes(tab, viewport, width) {
   await viewport.set({ width, height: 950 });
   await tab.goto("http://localhost:3100/");

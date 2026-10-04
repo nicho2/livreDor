@@ -2,6 +2,7 @@
 import { createServer, request as httpRequest } from "node:http";
 import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 const projectId = "10000000-0000-4000-8000-000000000001";
 const userId = "20000000-0000-4000-8000-000000000001";
 const timestamp = "2026-10-03T12:00:00Z";
@@ -41,6 +42,16 @@ const fixture = createServer(async (req, res) => {
   if (url.pathname === "/auth/v1/verify") { await body(req); res.end(JSON.stringify({ access_token: token, token_type: "bearer", expires_in: 86400, refresh_token: "fixture-refresh", user })); return; }
   if (url.pathname === "/auth/v1/user") { res.end(JSON.stringify(user)); return; }
   if (url.pathname === "/auth/v1/logout") { res.end("{}"); return; }
+  if (url.pathname === "/rest/v1/rpc/create_project_limited") {
+    const input = await body(req);
+    if (!organizer || req.headers.authorization !== "Bearer fixture-service" || input.p_actor !== userId) { res.writeHead(403); res.end(JSON.stringify({ code: "42501", message: "Access denied" })); return; }
+    if (tables.projects.some(row => row.slug === input.p_slug)) { res.writeHead(409); res.end(JSON.stringify({ code: "23505", message: "Duplicate slug" })); return; }
+    if (tables.projects.length >= input.p_limit) { res.writeHead(409); res.end(JSON.stringify({ code: "P0001", message: "PROJECT_LIMIT_REACHED" })); return; }
+    const project = { id: randomUUID(), slug: input.p_slug, title: input.p_title, subject_name: input.p_subject_name, description: input.p_description, event_date: input.p_event_date, status: "open", created_by: userId, created_at: new Date().toISOString(), opens_at: null, closes_at: null, theme: "album", content_revision: 0, archive_exported_at: null, deletion_started_at: null };
+    tables.projects.push(project);
+    tables.project_members.push({ project_id: project.id, user_id: userId, role: "organizer" });
+    res.end(JSON.stringify([project])); return;
+  }
   if (url.pathname.startsWith("/rest/v1/rpc/")) { res.end("false"); return; }
   const name = url.pathname.split("/").pop();
   const matches = row => [...url.searchParams].every(([key, value]) => {
@@ -57,8 +68,10 @@ const fixture = createServer(async (req, res) => {
 await new Promise(resolve => fixture.listen(54329, "127.0.0.1", resolve));
 const proxy = createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
+  const projectRoute = url.pathname.match(/^\/api\/projects\/([0-9a-f-]{36})(\/export)?$/);
+  const requestedProjectId = projectRoute?.[1];
   // UI-only deletion: remove synthetic rows in memory, never call R2.
-  if (url.pathname === `/api/projects/${projectId}` && req.method === "DELETE") {
+  if (projectRoute && !projectRoute[2] && req.method === "DELETE") {
     res.setHeader("Content-Type", "application/json");
     // Browser sessions survive fixture restarts; accept the same synthetic user
     // with a still-valid fixture token, rather than only this process's token.
@@ -71,17 +84,19 @@ const proxy = createServer(async (req, res) => {
     if (!organizer || !fixtureUser) { res.writeHead(403); res.end(JSON.stringify({ error: "Accès organisateur requis." })); return; }
     let input;
     try { input = await body(req); } catch { res.writeHead(400); res.end(JSON.stringify({ error: "Confirmation invalide." })); return; }
-    const project = tables.projects.find(row => row.id === projectId);
+    const project = tables.projects.find(row => row.id === requestedProjectId);
     if (!project) { res.writeHead(404); res.end(JSON.stringify({ error: "Projet introuvable." })); return; }
     if (input.confirmation !== project.slug || input.archiveSaved !== true) { res.writeHead(400); res.end(JSON.stringify({ error: "Confirmez la sauvegarde et le lien du projet." })); return; }
     if (project.status !== "archived" || !project.archive_exported_at) { res.writeHead(409); res.end(JSON.stringify({ error: "Clôturez, exportez puis archivez le projet." })); return; }
-    tables.projects = tables.projects.filter(row => row.id !== projectId);
-    for (const name of ["project_members", "guestbook_entries", "memories", "media_assets", "project_organizer_invites"]) tables[name] = tables[name].filter(row => row.project_id !== projectId);
+    tables.projects = tables.projects.filter(row => row.id !== requestedProjectId);
+    for (const name of ["project_members", "guestbook_entries", "memories", "media_assets", "project_organizer_invites"]) tables[name] = tables[name].filter(row => row.project_id !== requestedProjectId);
     res.end(JSON.stringify({ ok: true })); return;
   }
   // UX-only blob: the real ZIP and storage cleanup have separate integration tests.
-  if (organizer && url.pathname === `/api/projects/${projectId}/export` && req.method === "POST") {
-    tables.projects[0].archive_exported_at = new Date().toISOString();
+  if (organizer && projectRoute?.[2] && req.method === "POST") {
+    const project = tables.projects.find(row => row.id === requestedProjectId);
+    if (!project || !["closed", "archived"].includes(project.status)) { res.writeHead(409, { "Content-Type": "application/json" }); res.end(JSON.stringify({ error: "Clôturez le projet avant de préparer le ZIP." })); return; }
+    project.archive_exported_at = new Date().toISOString();
     res.setHeader("Content-Type", "application/zip"); res.end("FICTITIOUS UI ARCHIVE — NOT A REAL EXPORT"); return;
   }
   if (url.pathname.startsWith("/api/media/")) { res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify({ url: `/fixture-assets/${url.pathname.endsWith("3") ? "signal.wav" : url.pathname.endsWith("2") ? "sortie.png" : "cafe.png"}` })); return; }

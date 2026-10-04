@@ -485,3 +485,8 @@ l'absence du projet après rechargement. Simulation en mémoire, sans appel R2.
 Les sessions fictives restent acceptées après redémarrage de la recette.
 Les libellés distinguent la génération du ZIP, son lien de retéléchargement et
 le changement d'état du projet. Build, lint, typecheck et Playwright réussis.
+
+Création isolée : `testCreateFixture` vérifie le formulaire, l'accès organisateur,
+la persistance après rechargement et le refus d'un lien existant sans écrasement.
+Clôture, ZIP fictif, archivage et suppression du nouveau projet également vérifiés
+dans le navigateur ; le projet synthétique initial reste disponible.

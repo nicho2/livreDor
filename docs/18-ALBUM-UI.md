@@ -22,6 +22,10 @@ La simulation média ne valide pas les signatures R2 ni la sécurité RLS réell
 Avec `--organizer`, la suppression complète du projet fictif est simulée en
 mémoire, jusqu'au retour à l'accueil. Aucun stockage réel n'est supprimé.
 Redémarrer la recette recrée le projet et ses contenus synthétiques.
+La création depuis `/all` ou `/nouveau` est également simulée : chaque nouveau
+projet reçoit un UUID et le rôle organisateur. Les liens uniques et le plafond
+de projets sont respectés. Clôture, export UX, archivage et suppression peuvent
+être essayés sur ces projets ; toutes ces données disparaissent au redémarrage.
 
 Garder le terminal de recette ouvert pendant l'essai. Le port `3101` affiché par
 Next est interne : il contourne le proxy de connexion et de médias. Les accès
