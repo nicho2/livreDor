@@ -16,6 +16,8 @@ Ouvrir http://localhost:3100/auth?next=/p/album-test/guestbook et utiliser
 `recette@example.test`, code fictif `123456`. Aucun email n'est envoyé. Les
 30 souvenirs, cinq messages et médias synthétiques sont en mémoire ; un
 redémarrage réinitialise la recette. Aucun Supabase/R2 réel n'est contacté.
+L'écran de connexion indique explicitement la simulation et le code fictif,
+y compris après « Recevoir mon code » : ne pas attendre un email sur cette recette.
 La simulation média ne valide pas les signatures R2 ni la sécurité RLS réelle.
 
 Garder le terminal de recette ouvert pendant l'essai. Le port `3101` affiché par

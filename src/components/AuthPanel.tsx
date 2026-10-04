@@ -6,6 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 
 export function AuthPanel({ returnTo }: { returnTo: string }) {
+  const isolatedRecipe = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === "fixture-only";
   const router = useRouter();
   const { user, ready, error: sessionError } = useAuth();
   const [email, setEmail] = useState("");
@@ -29,7 +30,7 @@ export function AuthPanel({ returnTo }: { returnTo: string }) {
       });
       if (error) return setMessage(error.message);
       setStep("otp");
-      setMessage("Code envoyé. Consultez votre messagerie.");
+      setMessage(isolatedRecipe ? "Recette isolée : aucun email envoyé. Saisissez le code fictif 123456." : "Code envoyé. Consultez votre messagerie.");
     } catch {
       setMessage("Impossible d'envoyer le code. Vérifiez votre connexion et réessayez.");
     } finally { setBusy(false); }
@@ -53,7 +54,7 @@ export function AuthPanel({ returnTo }: { returnTo: string }) {
   return (
     <div className="card auth-panel">
       <h1>Connexion</h1>
-      <p className="muted">Aucun mot de passe : un code temporaire est envoyé par email.</p>
+      <p className="muted">{isolatedRecipe ? "Recette isolée : utilisez recette@example.test et le code 123456. Aucun email n’est envoyé." : "Aucun mot de passe : un code temporaire est envoyé par email."}</p>
       {step === "email" ? (
         <form onSubmit={requestOtp} className="stack">
           <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
