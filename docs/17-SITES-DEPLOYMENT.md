@@ -183,3 +183,30 @@ de l'album a été effectuée en local et reste à refaire sur cette publication
 Sous Windows, placer `C:\\Program Files\\Git\\bin` en tête du PATH du workflow
 pour sélectionner Git Bash, en plus de `TAR_OPTIONS=--force-local` ; le shell
 `bash` de WSL peut être présent sans distribution installée.
+
+### Release v0.1.1 — Gestion et personnalisation
+
+Publiée le 4 octobre 2026 à 12 h 16 (Paris), statut `succeeded`, version Sites 6,
+configuration d'environnement révision 7, source du tag annoté `v0.1.1` :
+`ca426a9547d6494d31fabe9f38beb6a99eaa1809`.
+Déploiement : `appgdep_6ac22767dad8819193ad6c55baa1cb25`.
+
+La branche validée est intégrée dans main et poussée sur GitHub ; release :
+https://github.com/nicho2/livreDor/releases/tag/v0.1.1.
+CI du commit de release réussie. Publication depuis la copie isolée
+`.sites-runtime/release-v0.1.1` : build Workers, lint, typecheck, 47 tests Node,
+27 contrôles HTML sans données anonymes et inspection du bundle navigateur
+sans secrets serveur ni liste des gestionnaires. Les 105 contrôles API passent
+sur chacun des runtimes Next et Sites ; recette locale validée par l'utilisateur.
+
+Migrations 0008 et 0009 appliquées au Supabase configuré avec certificat racine
+et TLS verify-full. Vérification des empreintes des sept tables métier dans la
+transaction avant commit : contenus, membres, profils et invitations conservés.
+Les nouveaux champs de projets prennent leurs valeurs par défaut. Les fonctions
+de création avec organisateur et de suppression sont réservées au serveur.
+
+La liste des gestionnaires est configurée comme secret sur Sites, uniquement
+avec l'adresse autorisée par l'utilisateur. Audience publique par lien et
+connexion OTP LivreDor conservées. Aucune suppression ni changement de CORS/R2
+pendant la publication. Aucun nouvel OTP réel envoyé pendant ce déploiement.
+La recette réelle en ligne de 0.1.1 reste à effectuer par l'utilisateur.
