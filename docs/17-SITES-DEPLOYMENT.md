@@ -235,3 +235,24 @@ n'a été clôturé ou supprimé. Un premier chargement des aperçus a nécessit
 Actualiser les médias ; les aperçus se sont ensuite chargés correctement.
 Un nouveau cycle OTP, un deuxième compte, les codecs de téléphones réels et
 une recette complète clôture/ZIP restent des contrôles distincts.
+
+
+## Publication 0.1.3 — 6 octobre 2026
+
+Publication réussie à 21 h 01 (Paris), version Sites 8, environnement révision 9.
+URL : https://livredor.nicho2.chatgpt.site .
+Source GitHub et Sites : `81038b2a53426d454b11750fbfc5dafa0ba47d60`, tag `v0.1.3`.
+Version : `appgprj_6ac110ead3c88191bdbce19b3645d3eb~appgver_4da412714b9c8191b4467063551aab68`.
+Déploiement : `appgdep_6ac54557a0f08191aff0bec45fbb27f8`.
+Archive préparée par le helper Sites depuis la copie isolée, avec le build Workers
+déjà validé du même code ; 200 fichiers, 4 003 840 octets. Scanner des 30 assets
+navigateur réussi. Release GitHub créée ; CI branche et tag réussies.
+
+Clé Resend secrète et expéditeur configurés par l'utilisateur, présents dans la
+révision appliquée. Audience publique conservée, accès aux contributions via OTP
+et RLS. Migrations 0010–0012 déjà appliquées : aucune migration rejouée, aucune
+purge automatique ajoutée. Contrôles HTTP après déploiement : accueil, notice et
+information JCD répondent 200 avec version 0.1.3 ; contact anonyme refusé (401).
+Aucun email envoyé ni souvenir réel modifié pendant cette publication.
+La réception email et les parcours authentifiés restent à recetter.
+Aucun serveur de test lancé ; le serveur utilisateur 3000 reste sous son contrôle.

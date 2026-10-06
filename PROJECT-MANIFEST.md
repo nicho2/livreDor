@@ -1,6 +1,6 @@
 # Manifest LivreDor — état au 4 octobre 2026
 
-La V1 est implémentée et la release 0.1.2 publiée sur Sites (version 7). Ce manifeste remplace celui du kit initial.
+La V1 est implémentée et la release 0.1.3 publiée sur Sites (version 8). Ce manifeste remplace celui du kit initial.
 
 ## Documentation
 
@@ -29,3 +29,6 @@ sur TEST : photo/audio/vidéo à la création, publication directe et focus mobi
 Restent la recette complémentaire à deux comptes, les codecs représentatifs,
 l'accessibilité et la performance sur téléphone réel, ainsi qu'information et
 conservation avant collecte réelle. Voir `docs/06-BACKLOG.md` et le document 22.
+
+
+Livraison du 6 octobre : release 0.1.3, source `81038b2`, deux CI réussies, Sites 8 et environnement 9. Contrôles publics HTTP réussis ; recette authentifiée et réception email restent à confirmer. Voir documents 17 et 24.

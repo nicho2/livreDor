@@ -14,7 +14,7 @@ Lis dans cet ordre :
 
 ## État actuel et reprise
 
-La V1 est implémentée et la release 0.1.2 est publiée (version Sites 7).
+La V1 est implémentée et la release 0.1.3 est publiée (version Sites 8).
 Ne pas recommencer la mise en route sur la base existante. Lire `README.md`,
 `docs/README.md`, `docs/10-LOCAL-VALIDATION.md` et `docs/20-GESTION-THEMES-SUPPRESSION.md`
 pour les preuves et contrôles restants. Les migrations 0001–0009 sont appliquées

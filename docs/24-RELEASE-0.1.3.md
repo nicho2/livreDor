@@ -1,7 +1,9 @@
-# Release 0.1.3 — préparation du 6 octobre 2026
+# Release 0.1.3 — publiée le 6 octobre 2026
 
-Code préparé localement, non déployé. La dernière version publique documentée est
-0.1.2. Un commit Git local ne publie ni GitHub ni le site Sites.
+Release [v0.1.3](https://github.com/nicho2/livreDor/releases/tag/v0.1.3),
+commit `81038b2a53426d454b11750fbfc5dafa0ba47d60`, publiée sur
+[LivreDor](https://livredor.nicho2.chatgpt.site) à 21 h 01 (Paris).
+Version Sites 8, déploiement réussi, environnement révision 9 ; deux CI réussies.
 
 ## Comportement livré dans le code
 
@@ -26,9 +28,9 @@ Code préparé localement, non déployé. La dernière version publique document
 | --- | --- |
 | Supabase configuré | Migrations 0010 contact, 0011 suppression et 0012 correction installées. Aucun contenu utilisateur effacé par les migrations. |
 | Resend local | Clé et expéditeur configurés par l'utilisateur. Test réel le 5 octobre : demande enregistrée, notification acceptée ; réception en boîte non attestée. |
-| Resend hébergé | Configuration à réaliser par l'utilisateur. Ne pas copier un fichier `.env.local` dans le dépôt. |
-| Application publique | 0.1.2 ; publication 0.1.3 et recette hébergée restent à faire. |
-| Documentation | Synchronisée avec le code préparé. Disponible localement ; publication GitHub séparée. |
+| Resend hébergé | Clé secrète et expéditeur présents, appliqués au déploiement. Réception en boîte à confirmer pendant la recette. |
+| Application publique | 0.1.3 ; accueil, confidentialité et information répondent 200 et affichent cette version. Contact anonyme refusé avec 401. |
+| Documentation | Synchronisée avec le code et publiée sur GitHub. Registre de déploiement mis à jour après publication. |
 
 ## Contrôles et limites
 
@@ -47,10 +49,10 @@ fichiers indexés Git vérifie les identifiants serveur avant commit. Les serveu
 de test sont temporaires et leurs ports sont vérifiés
 après arrêt. Le serveur utilisateur sur 3000 reste sous son contrôle.
 
-## Après la préparation Git
+## Après la publication
 
-1. L'utilisateur configure `RESEND_API_KEY` et `LIVREDOR_CONTACT_FROM` sur l'hébergement.
-2. Publier le code et la documentation selon le circuit de livraison, puis Sites.
+1. Configuration `RESEND_API_KEY` et `LIVREDOR_CONTACT_FROM` vérifiée sur l'hébergement.
+2. Code, tag, release et site publiés ; aucun serveur de test lancé pour cette publication.
 3. Tester en ligne OTP, demande privée et réception email, suppression avec image,
    masquage organisateur, clôture et ZIP autonome. La recette personnelle utilisateur
    reste reportée à sa demande.

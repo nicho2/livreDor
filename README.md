@@ -4,16 +4,17 @@ Application de collecte et de restitution de souvenirs, développée et testable
 
 Version 0.1.2 : [nouveau parcours des souvenirs et recette de livraison](docs/21-RELEASE-0.1.2.md).
 
-Version 0.1.3 préparée localement, non publiée sur le site public : étapes pour
+Version 0.1.3 publiée le 6 octobre 2026 : étapes pour
 les contributeurs, contact organisateur par Resend, suppression définitive des
 souvenirs par leur auteur, espacements et revue RGPD. Voir
-[la préparation de release](docs/24-RELEASE-0.1.3.md) et
+[la release](docs/24-RELEASE-0.1.3.md) et
 [le contrôle et les points restant à régler](docs/23-RGPD-ET-PARCOURS-CONTRIBUTEUR.md).
 La limite de conservation des données hébergées est fixée à trois mois maximum
 après l'événement ; le destinataire garde la restitution. L'activation du contact
 nécessite les migrations 0010–0012, une clé Resend serveur et un expéditeur vérifié.
 Ces migrations sont appliquées au Supabase configuré ; l'envoi local est testé.
-La configuration Resend de l'hébergement reste à réaliser par l'utilisateur.
+Resend est configuré sur l'hébergement et appliqué au déploiement 0.1.3.
+Site : https://livredor.nicho2.chatgpt.site ; réception email et recette personnelle restent à confirmer.
 
 La version apparaît en pied de page. La création des projets est réservée aux
 gestionnaires du site depuis `/all` : voir [configuration et gestion des thèmes](docs/20-GESTION-THEMES-SUPPRESSION.md).

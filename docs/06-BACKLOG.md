@@ -76,7 +76,8 @@ de production. Les preuves et limites de validation sont dans
 - [x] Revue RGPD et écarts documentés : voir document 23.
 - [ ] Appliquer effectivement la suppression avant l'échéance ; comptes/sauvegardes et contrats fournisseurs à traiter séparément.
 - [x] Contact email local : configuration Resend et migration 0010 installées ; message enregistré et notification acceptée le 5 octobre. Livraison en boîte non attestée.
-- [ ] Configuration Resend sur l'hébergement par l'utilisateur, puis recette email en ligne.
+- [x] Configuration Resend sur l'hébergement appliquée au déploiement du 6 octobre.
+- [ ] Recette email en ligne et réception en boîte.
 
 ## Prochaine version après v0.1.0
 
@@ -97,7 +98,7 @@ de production. Les preuves et limites de validation sont dans
 - [x] Défilement et focus du formulaire rempli après « Modifier ».
 - [x] Livraison et recette des trois corrections sur l'hébergement, à 375 px également.
 
-## Release 0.1.3 — préparée, non publiée
+## Release 0.1.3 — publiée
 
 - [x] Étapes et contact, notice publique de confidentialité et liens depuis la connexion.
 - [x] Contact privé avec notification Resend, quota, reprise idempotente et accusé de lecture.
@@ -106,5 +107,6 @@ de production. Les preuves et limites de validation sont dans
 - [x] Migrations 0010–0012 appliquées au Supabase configuré et testées sur PostgreSQL jetable.
 - [x] Clôture/restitution/suppression manuelle expliquées ; aucune purge automatique.
 - [x] Espacement entre vignettes et bloc inférieur du projet, et entre sections de l'accueil.
-- [ ] Publication du code 0.1.3 et recette de l'environnement hébergé.
+- [x] Publication du code 0.1.3, release GitHub, deux CI réussies et version Sites 8 ; contrôles HTTP publics réussis.
+- [ ] Recette des parcours authentifiés hébergés, reportée par l'utilisateur.
 - [ ] Mentions propres au responsable et règles de diffusion à compléter avant collecte réelle.

@@ -5,7 +5,7 @@ versionnés avec le code, pas publiés sur le site applicatif.
 
 ## Installer, tester, exploiter
 
-- [Release 0.1.3 préparée et contrôles avant publication](24-RELEASE-0.1.3.md)
+- [Release 0.1.3 publiée et contrôles](24-RELEASE-0.1.3.md)
 - [Revue RGPD, conservation et parcours contributeur](23-RGPD-ET-PARCOURS-CONTRIBUTEUR.md)
 
 - [Release 0.1.2 et parcours de recette](21-RELEASE-0.1.2.md)
@@ -36,13 +36,13 @@ versionnés avec le code, pas publiés sur le site applicatif.
 
 ## Disponibilité en ligne
 
-La préparation 0.1.3 est documentée dans ce dépôt local. Elle n'est pas encore
-publiée sur GitHub ni sur Sites ; les étapes de diffusion sont séparées des
-contrôles locaux. La configuration Resend de l'hébergement est prise en charge
-par l'utilisateur.
+La version 0.1.3 et sa documentation sont publiées sur
+[GitHub](https://github.com/nicho2/livreDor/tree/main/docs).
+Le commit `81038b2` et son tag `v0.1.3` ont deux CI réussies.
+La configuration Resend de l'utilisateur est appliquée au déploiement.
 
 La version 0.1.2 et sa documentation sont disponibles sur [GitHub](https://github.com/nicho2/livreDor/tree/main/docs). Le commit de release 175548d et son tag ont deux CI réussies.
 
-Le dépôt source Sites est distinct : pousser GitHub ne déploie pas automatiquement l'application. Sites confirme la publication réussie de la version 7 (application 0.1.2), au même commit ; voir [le registre](17-SITES-DEPLOYMENT.md). Les comptes rendus ajoutés après publication sont des mises à jour documentaires.
+Le dépôt source Sites est distinct : pousser GitHub ne déploie pas automatiquement l'application. Sites confirme la publication réussie de la version 8 (application 0.1.3), au même commit ; voir [le registre](17-SITES-DEPLOYMENT.md). Les comptes rendus ajoutés après publication sont des mises à jour documentaires.
 
 Avant ouverture : [information et conservation](22-OUVERTURE-CONFIDENTIALITE.md).
