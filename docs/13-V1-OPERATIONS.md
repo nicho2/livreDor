@@ -2,8 +2,16 @@
 
 ## Démarrer et vérifier
 
-Prérequis : Node 24, `.env.local` configuré, migrations 0001 à 0009 appliquées,
+Prérequis pour 0.1.3 : Node 24, `.env.local` configuré, migrations 0001 à 0012 appliquées,
 modèles OTP Supabase et bucket R2 privé/CORS configurés.
+
+Le Supabase configuré a reçu 0010–0012 le 5 octobre 2026. Une nouvelle installation
+doit appliquer les fichiers dans l'ordre ; ne pas relancer 0011 sur une base qui
+possède déjà son champ. `0012` corrige la suppression avec un média finalisé ou
+déjà retiré. Les migrations n'exécutent aucune suppression de contenu existant.
+Le contact nécessite aussi `RESEND_API_KEY` et `LIVREDOR_CONTACT_FROM` côté serveur,
+distincts de la configuration SMTP des codes OTP. L'environnement local ne configure
+pas l'hébergement. Voir [la release préparée](24-RELEASE-0.1.3.md).
 
 La création exige aussi la migration 0006. `LIVREDOR_MAX_PROJECTS=3` (par défaut)
 limite à trois projets au total, tous états confondus. `0` suspend la création.

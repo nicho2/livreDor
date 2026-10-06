@@ -92,6 +92,7 @@ Utiliser uniquement :
 - L'email sert à l'authentification et à la traçabilité ; ne pas l'afficher.
 - Prévoir suppression/masquage des contributions.
 - Prévoir une durée de vie du projet et une phase d'archivage.
+- Aucune purge automatique ni suppression planifiée : la suppression des données hébergées du projet reste manuelle, après vérification de la restitution, au plus tard trois mois après l'événement. Le destinataire conserve la restitution remise.
 - Ne pas ajouter de tracking marketing dans la V1.
 
 ## Convention de code
@@ -126,6 +127,12 @@ Lire avant modification structurante :
 - `docs/08-DECISIONS.md`
 
 ## Règle pour les agents
+Les serveurs lancés pour une recette ou un test sont temporaires. Relever les
+processus et ports utilisés, arrêter le serveur et ses processus enfants en fin
+de test, puis vérifier que les ports sont libérés, même après un échec. Ne laisser
+un serveur ouvert que sur demande explicite de l'utilisateur. Ne jamais arrêter
+un processus tiers simplement parce qu'il utilise un port habituel.
+
 Les serveurs lancés pour une recette ou un test sont temporaires. Relever les
 processus et ports utilisés, arrêter le serveur et ses processus enfants en fin
 de test, puis vérifier que les ports sont libérés, même après un échec. Ne laisser

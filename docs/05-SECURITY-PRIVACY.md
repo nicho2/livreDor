@@ -15,6 +15,21 @@ Le système traite au minimum :
 - email non public ;
 - pas de tracking marketing par défaut.
 
+La règle utilisateur du 4 octobre fixe les données hébergées du projet à trois
+mois maximum après l'événement ; la restitution est conservée par son destinataire.
+La suppression est exclusivement manuelle, après vérification de la restitution :
+toute purge automatique et toute suppression planifiée sont interdites.
+Comptes partagés, sauvegardes et copies email ont des règles
+distinctes à établir. Voir [la revue et ses écarts](23-RGPD-ET-PARCOURS-CONTRIBUTEUR.md).
+
+Le contact utilise Resend exclusivement côté serveur : clé privée, expéditeur
+vérifié, destinataires résolus via les seuls comptes organisateurs du projet.
+Le JSON client n'accepte aucune adresse de destination. Le contributeur est
+informé que son email de connexion sert de Reply-To aux organisateurs. Leurs
+adresses ne sont retournées ni par l'API ni par les métadonnées des demandes.
+Les demandes privées sont protégées par RLS, exclues de tous les exports, et
+supprimées avec le projet ; les copies email ne sont pas rappelées à distance.
+
 ## RLS
 
 Depuis 0.1.1, la création exige un email OTP confirmé figurant dans la liste
@@ -34,6 +49,12 @@ Le schéma fourni impose notamment :
 - modification par auteur ou organisateur selon le cas.
 
 Les politiques doivent être testées avant production.
+
+La suppression d'un souvenir par son auteur passe par l'API serveur et les RPC
+0011, interdites aux clients. Elle nettoie R2 avant la cascade des métadonnées.
+Le champ technique de reprise bloque les modifications pendant le nettoyage.
+Une contribution masquée reste visible à son auteur ; le masquage organisateur
+reste une modération réversible, distincte de cette suppression définitive.
 
 Une session OTP n'est pas une invitation nominative : les comptes authentifiés
 peuvent consulter les projets non brouillons, même avant de contribuer. Les

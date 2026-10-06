@@ -23,8 +23,13 @@ const tables = {
   memories: Array.from({ length: largeAlbum ? 300 : 30 }, (_, i) => ({ id: `30000000-0000-4000-8000-${String(i + 1).padStart(12, "0")}`, project_id: projectId, author_id: `other-${i}`, display_name: "Léa", title: `Un bel instant ${i + 1}`, body: "Un café, des rires et cette journée que nous n’oublierons pas.\nUn souvenir à partager ensemble.", occurred_on: null, year_from: i === 29 ? null : 1990 + i, year_to: null, status: "published", created_at: timestamp })),
   media_assets: [],
   project_organizer_invites: [],
+  organizer_messages: [],
 };
 Object.assign(tables.projects[0], { theme: "album", content_revision: 0, archive_exported_at: null, deletion_started_at: null });
+if (process.argv.includes("--memory-delete")) {
+  Object.assign(tables.memories[0], { author_id: userId, title: "TEST — souvenir à supprimer" });
+  Object.assign(tables.memories[1], { author_id: userId, title: "TEST — souvenir masqué", status: "hidden" });
+}
 tables.media_assets = [1, 2, 3].map(i => ({ id: `photo-${i}`, project_id: projectId, memory_id: tables.memories[0].id, owner_id: userId, kind: i === 3 ? "audio" : "image", object_key: "fixture", original_filename: i === 3 ? "signal.wav" : `album-${i}.png`, mime_type: i === 3 ? "audio/wav" : "image/png", size_bytes: 1024, status: "published", created_at: timestamp }));
 if (largeAlbum) {
   tables.media_assets = tables.memories.flatMap((memory, index) => Array.from({ length: 20 }, (_, i) => ({
@@ -44,6 +49,7 @@ const fixture = createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
   if (url.pathname === "/auth/v1/otp") { res.end("{}"); return; }
   if (url.pathname === "/auth/v1/verify") { await body(req); res.end(JSON.stringify({ access_token: token, token_type: "bearer", expires_in: 86400, refresh_token: "fixture-refresh", user })); return; }
+  if (url.pathname === "/auth/v1/token") { await body(req); res.end(JSON.stringify({ access_token: token, token_type: "bearer", expires_in: 86400, refresh_token: "fixture-refresh", user })); return; }
   if (url.pathname === "/auth/v1/user") { res.end(JSON.stringify(user)); return; }
   if (url.pathname === "/auth/v1/logout") { res.end("{}"); return; }
   if (["/rest/v1/rpc/create_project_limited", "/rest/v1/rpc/create_project_with_organizer"].includes(url.pathname)) {
@@ -56,6 +62,17 @@ const fixture = createServer(async (req, res) => {
     tables.project_members.push({ project_id: project.id, user_id: userId, role: "organizer" });
     if (input.p_organizer_email && input.p_organizer_email !== user.email) tables.project_organizer_invites.push({ project_id: project.id, email: input.p_organizer_email, invited_by: userId, accepted_by: null, created_at: timestamp });
     res.end(JSON.stringify([project])); return;
+  }
+  if (url.pathname === "/rest/v1/rpc/send_organizer_message") {
+    const input = await body(req);
+    const message = { id: randomUUID(), project_id: input.p_project_id, author_id: userId, display_name: input.p_display_name, category: input.p_category, body: input.p_body, created_at: new Date().toISOString(), read_at: null };
+    tables.organizer_messages.push(message); res.end(JSON.stringify(message.id)); return;
+  }
+  if (url.pathname === "/rest/v1/rpc/mark_organizer_message_read") {
+    const input = await body(req);
+    const message = tables.organizer_messages.find(row => row.id === input.p_message_id);
+    if (!organizer || !message) { res.writeHead(403); res.end(JSON.stringify({ message: "Accès refusé" })); return; }
+    message.read_at = new Date().toISOString(); res.end("null"); return;
   }
   if (url.pathname.startsWith("/rest/v1/rpc/")) { res.end("false"); return; }
   const name = url.pathname.split("/").pop();
@@ -73,6 +90,22 @@ const fixture = createServer(async (req, res) => {
 await new Promise(resolve => fixture.listen(backendPort, "127.0.0.1", resolve));
 const proxy = createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
+  const memoryDelete = url.pathname.match(/^\/api\/memories\/([0-9a-f-]{36})$/);
+  if (memoryDelete && req.method === "DELETE") {
+    const memory = tables.memories.find(row => row.id === memoryDelete[1] && row.author_id === userId);
+    res.setHeader("Content-Type", "application/json");
+    if (!memory) { res.writeHead(403); res.end(JSON.stringify({ error: "Vous pouvez supprimer uniquement vos souvenirs." })); return; }
+    tables.memories = tables.memories.filter(row => row.id !== memory.id);
+    tables.media_assets = tables.media_assets.filter(row => row.memory_id !== memory.id);
+    res.end(JSON.stringify({ deleted: true })); return;
+  }
+  if (url.pathname === `/api/projects/${projectId}/contact` && req.method === "POST") {
+    const input = await body(req);
+    res.setHeader("Content-Type", "application/json");
+    if (input.body.includes("ÉCHEC EMAIL")) { res.writeHead(502); res.end(JSON.stringify({ error: "Envoi email simulé refusé. Votre texte reste dans le formulaire." })); return; }
+    if (!tables.organizer_messages.some(row => row.id === input.requestId)) tables.organizer_messages.push({ id: input.requestId, project_id: projectId, author_id: userId, display_name: input.displayName, category: input.category, body: input.body, created_at: new Date().toISOString(), read_at: null, notification_sent_at: new Date().toISOString() });
+    res.end(JSON.stringify({ sent: true })); return;
+  }
   const projectRoute = url.pathname.match(/^\/api\/projects\/([0-9a-f-]{36})(\/export)?$/);
   const requestedProjectId = projectRoute?.[1];
   // UI-only deletion: remove synthetic rows in memory, never call R2.

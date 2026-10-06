@@ -11,6 +11,8 @@ import { ContributionForm } from "@/components/ContributionForm";
 import { MemoryManager } from "@/components/MemoryManager";
 import { ContributionNameProvider } from "@/components/ContributionNameProvider";
 import { OrganizerPanel } from "@/components/OrganizerPanel";
+import { ContributorInformation } from "@/components/ContributorInformation";
+import { OrganizerContact } from "@/components/OrganizerContact";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { chronologicalMemories, memoryDateLabel, projectWindow } from "@/lib/presentation";
 import type { GuestbookEntry, Memory } from "@/types/database";
@@ -32,7 +34,7 @@ export function ProjectOverview() {
     <Link className="card" href={`/p/${project.slug}/guestbook`}><span className="album-symbol" aria-hidden="true">✎</span><h2>Les mots de chacun</h2><p>Un livre à parcourir, des mots à garder.</p></Link>
     <Link className="card" href={`/p/${project.slug}/wall`}><span className="album-symbol" aria-hidden="true">▧</span><h2>Nos souvenirs partagés</h2><p>Photos, anecdotes et petits moments précieux.</p></Link>
     <Link className="card" href={`/p/${project.slug}/timeline`}><span className="album-symbol" aria-hidden="true">↝</span><h2>Le fil de notre histoire</h2><p>Retrouver les moments au fil des années.</p></Link>
-  </section></main>;
+  </section><ContributorInformation compact /></main>;
 }
 
 export function PublishedView({ view, memoryId }: { view: "guestbook" | "wall" | "timeline" | "memory"; memoryId?: string }) {
@@ -83,6 +85,7 @@ export function ProjectContribution() {
   const { closed, future } = projectWindow(project);
   return <main className="stack">
     <div><p className="kicker">Contribution</p><h1>{project.subject_name}</h1><p className="muted">Commencez par votre message. Les souvenirs et médias viennent ensuite.</p></div>
+    <ContributorInformation compact />
     <fieldset className="contribution-fields" disabled={closed || future}>
       <ContributionNameProvider key={project.id} projectId={project.id}>
         <ContributionForm projectId={project.id} /><MemoryManager projectId={project.id} />
@@ -94,4 +97,9 @@ export function ProjectContribution() {
 export function ProjectOrganization() {
   const project = useProject();
   return <main className="stack"><div><p className="kicker">Administration</p><h1>{project.title}</h1></div><OrganizerPanel projectId={project.id} /></main>;
+}
+
+export function ProjectInformation() {
+  const project = useProject();
+  return <main className="stack"><ContributorInformation /><OrganizerContact projectId={project.id} /></main>;
 }

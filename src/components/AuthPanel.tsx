@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
@@ -55,6 +56,7 @@ export function AuthPanel({ returnTo }: { returnTo: string }) {
     <div className="card auth-panel">
       <h1>Connexion</h1>
       <p className="muted">{isolatedRecipe ? "Recette isolée : utilisez recette@example.test et le code 123456. Aucun email n’est envoyé." : "Aucun mot de passe : un code temporaire est envoyé par email."}</p>
+      <p className="muted">Votre email sert à la connexion et à rattacher vos contributions à votre compte. Il ne sera pas affiché dans les souvenirs. <Link href="/confidentialite">Comprendre l’utilisation de vos données</Link>.</p>
       {step === "email" ? (
         <form onSubmit={requestOtp} className="stack">
           <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>

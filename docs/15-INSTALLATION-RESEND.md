@@ -1,8 +1,8 @@
 # Installation — Supabase OTP avec Resend
 
 Procédure vérifiée dans les documentations officielles le 3 octobre 2026.
-Resend transporte les emails ; Supabase génère et valide les codes. Aucun SDK
-Resend, hook ou endpoint email supplémentaire n'est nécessaire dans LivreDor.
+Resend transporte les emails ; Supabase génère et valide les codes. Pour l'OTP,
+aucun SDK Resend, hook ou endpoint email supplémentaire n'est nécessaire.
 La configuration SMTP existante n'a pas été modifiée pendant cette rédaction.
 
 ## 1. Application et base
@@ -61,6 +61,29 @@ Supabase → Authentication → Email / Emails (section Notifications selon l'UI
 Enregistrer. La clé ne va **pas** dans `.env.local` de LivreDor pour ce scénario :
 c'est Supabase qui dialogue avec Resend. Ne pas confondre la clé Resend avec la
 clé Supabase, le mot de passe PostgreSQL ou les identifiants R2.
+
+### Contact contributeur → organisateurs (évolution après 0.1.2)
+
+Ce second usage envoie des notifications depuis le serveur LivreDor. Configurer
+`RESEND_API_KEY` comme secret serveur et `LIVREDOR_CONTACT_FROM` comme adresse
+d'expédition brute sur un domaine Resend vérifié, en local et chez l'hébergeur.
+Préférer une clé dédiée avec droits d'envoi. Ces valeurs sont indépendantes du
+SMTP Supabase ; le serveur ne lit pas son mot de passe SMTP. Pas de SDK nouveau :
+appel HTTPS à l'API Resend batch avec clé d'idempotence, deux organisateurs maximum.
+Appliquer la migration 0010 avant activation. La clé ne va jamais dans Git,
+le manifeste d'hébergement ou une variable NEXT_PUBLIC. Désactiver tracking
+d'ouverture/clics pour cet expéditeur également.
+
+Les destinataires sont les comptes organisateurs du projet résolus côté serveur.
+Le contributeur ne reçoit pas leurs adresses. Son email confirmé sert de Reply-To,
+pour que l'organisateur réponde directement par email. Les messages enregistrés
+sont exclus du ZIP ; les copies email nécessitent leur propre conservation.
+Un échec est affiché honnêtement ; le même message peut être repris sans doublon
+dans la fenêtre d'idempotence, sans retaper son texte. L'acceptation par Resend
+ne prouve pas la réception en boîte ; vérifier une livraison réelle à l'activation.
+
+Références : [envoi batch](https://resend.com/docs/api-reference/emails/send-batch-emails),
+[idempotence](https://resend.com/docs/dashboard/emails/idempotency-keys).
 
 Référence : [Resend avec Supabase SMTP](https://resend.com/docs/send-with-supabase-smtp).
 

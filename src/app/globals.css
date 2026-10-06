@@ -179,7 +179,8 @@ input, select, textarea, .toggle { background: var(--paper); }
 
 .mobile-nav-label { display: none; }
 @media (max-width: 767px) { .desktop-nav-label { display: none; } .mobile-nav-label { display: inline; } .project-nav a { flex: 1 0 auto; text-align: center; } }
-.album-navigation { margin-top: 24px; }
+.album-navigation { margin-top: 24px; margin-bottom: 24px; }
+.home-page > section + section { margin-top: 24px; }
 .album-navigation a { text-decoration: none; transition: transform var(--motion-fast); }
 .album-navigation .album-symbol { display: block; font-size: 2rem; color: var(--accent); }
 .album-navigation a:nth-child(2) { background: var(--secondary); }

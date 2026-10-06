@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { getAuthReturnPath, getAuthHref } from "../src/lib/auth-navigation.ts";
 
 test("retour aux routes locales du projet", () => {
+  assert.equal(getAuthReturnPath("/p/depart-demo/information"), "/p/depart-demo/information");
   for (const path of ["/nouveau", "/p/depart-demo", "/p/depart-demo/contribute", "/p/autre-projet/guestbook", "/p/autre-projet/wall", "/p/autre-projet/timeline", "/p/autre-projet/memories/30000000-0000-4000-8000-000000000001"]) {
     assert.equal(getAuthReturnPath(path), path);
   }

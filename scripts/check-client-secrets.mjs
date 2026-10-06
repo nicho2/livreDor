@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-const names = ["SUPABASE_SERVICE_ROLE_KEY", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "DATABASE_URL", "LIVREDOR_SITE_MANAGERS"];
+const names = ["SUPABASE_SERVICE_ROLE_KEY", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "DATABASE_URL", "LIVREDOR_SITE_MANAGERS", "RESEND_API_KEY", "LIVREDOR_CONTACT_FROM"];
 const values = names.flatMap(name => {
   const value = process.env[name];
   if (!value) return [];

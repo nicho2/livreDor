@@ -24,3 +24,9 @@ alter default privileges in schema public grant select, insert, update, delete o
 \ir project-lifecycle.sql
 \ir ../../supabase/migrations/0009_creation_organizer.sql
 \ir creation-organizer.sql
+\ir ../../supabase/migrations/0010_organizer_contact.sql
+\ir organizer-contact.sql
+\ir ../../supabase/migrations/0011_memory_deletion.sql
+\ir memory-deletion.sql
+\ir ../../supabase/migrations/0012_completed_media_deletion.sql
+\ir completed-media-deletion.sql

@@ -2,6 +2,11 @@
 
 ## Relations principales
 
+La migration 0011 ajoute `memories.deletion_started_at` pour une suppression
+manuelle reprenable. Ce champ est protégé contre les écritures client ; les RPC
+de début/fin sont réservées au serveur et contrôlent l'auteur du souvenir.
+Après nettoyage R2, la suppression du souvenir cascade vers ses `media_assets`.
+
 ```text
 auth.users
    |
@@ -61,6 +66,16 @@ contenu éditorial et n'introduit aucun nouveau statut de publication.
 La migration 0009 ajoute la RPC serveur `create_project_with_organizer`, qui
 réutilise le quota de création et enregistre une invitation privée dans la même
 transaction. L'acceptation reste celle de 0005 et exige l'email OTP confirmé.
+
+## organizer_messages (migration 0010)
+
+Demandes privées séparées des contenus de souvenir : projet, auteur, nom affiché,
+catégorie d'aide/média/droits, texte, date, lecture organisateur et confirmation
+de notification email. Aucun email stocké dans cette table ; destinataires et
+Reply-To sont résolus côté serveur. Lecture RLS auteur/organisateurs, écritures
+par RPC contrôlée et confirmation d'envoi par service_role. UUID de requête pour
+reprise idempotente ; aucune inclusion dans les archives, cascade à la suppression
+du projet. Ces demandes restent possibles après clôture pour les membres existants.
 
 ## profiles
 Profil public minimal séparé de l'email Supabase.

@@ -13,13 +13,19 @@ Avant de partager l'invitation, l'organisateur fixe les éléments suivants :
 ## Texte d'information à compléter avant envoi
 
 « [Organisateur et contact] recueille vos contributions pour [projet/finalité].
-Les contributions publiées sont consultables par les membres connectés du
-projet ; vos brouillons restent privés à leur auteur et aux organisateurs.
+Les contributions publiées sont consultables par les comptes connectés à
+LivreDor qui accèdent au projet, sans liste d'invités ; vos brouillons restent
+accessibles à leur auteur et aux organisateurs.
 L'email sert à l'accès et à la traçabilité et n'apparaît pas dans la restitution.
 La collecte est ouverte jusqu'au [date]. La base légale est [base retenue].
-Les données actives seront conservées jusqu'au [date ou durée]. La restitution
+Les données hébergées du projet seront supprimées au plus tard trois mois après
+la date de l'événement. La restitution
 finale sera remise à [destinataires], selon [modalités de diffusion]. Pour exercer
-vos droits, contactez [contact]. Si le traitement repose sur votre consentement,
+vos droits tant que le projet est accessible, utilisez son formulaire privé.
+La suppression du projet ne rappelle pas les copies remises et ne met pas fin
+aux droits concernant vos données.
+Le formulaire de contact transmet votre demande et votre email de réponse aux
+organisateurs, dont les adresses ne sont pas affichées dans LivreDor. Si le traitement repose sur votre consentement,
 vous pouvez le retirer selon [procédure]. »
 
 Ne pas publier ce texte avec ses champs incomplets. N'envoyer que des médias dont
@@ -30,9 +36,14 @@ comment demander le retrait d'une image ou d'un souvenir.
 
 L'application permet masquage, suppression des médias et suppression protégée
 du projet. À l'échéance : clôturer, exporter et vérifier le ZIP autonome, remettre
-la restitution selon les modalités convenues, puis supprimer les données actives
-si la durée retenue l'exige. Il n'existe pas de purge automatique. Les copies du
+la restitution selon les modalités convenues, puis supprimer manuellement les
+données hébergées avant la limite de trois mois. Toute purge automatique et toute
+suppression planifiée sont interdites. Les copies du
 ZIP et du site final nécessitent leur propre règle de conservation et de retrait.
+La restitution est conservée par son destinataire ; la limite de trois mois
+concerne l'hébergement LivreDor. Le ZIP organisateur comprend aussi une sauvegarde
+privée des brouillons et contenus masqués ; informer les participants de cette
+copie et décider sa conservation. Les messages de contact sont exclus du ZIP.
 La présente préparation n'ajoute pas de case de consentement ni de base légale
 automatiquement choisie dans l'application.
 

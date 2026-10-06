@@ -40,6 +40,14 @@ RLS                           v
 - documents.
 
 ### API Next.js
+
+Depuis la préparation 0.1.3, `POST /api/projects/[id]/contact` vérifie la session
+et l'appartenance, enregistre une demande privée dans Supabase, puis notifie les
+organisateurs via Resend. Destinataires et clés restent côté serveur ; le navigateur
+ne choisit pas les adresses. `DELETE /api/memories/[id]` utilise les RPC serveur
+0011/0012 pour verrouiller le souvenir de l'auteur, nettoyer R2 puis supprimer la
+ligne avec cascade des métadonnées. Les erreurs permettent une reprise manuelle.
+
 La route `POST /api/media/presign` :
 1. récupère le bearer token Supabase ;
 2. vérifie l'utilisateur ;

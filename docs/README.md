@@ -5,6 +5,9 @@ versionnés avec le code, pas publiés sur le site applicatif.
 
 ## Installer, tester, exploiter
 
+- [Release 0.1.3 préparée et contrôles avant publication](24-RELEASE-0.1.3.md)
+- [Revue RGPD, conservation et parcours contributeur](23-RGPD-ET-PARCOURS-CONTRIBUTEUR.md)
+
 - [Release 0.1.2 et parcours de recette](21-RELEASE-0.1.2.md)
 - [Version, thèmes et gestion du site (0.1.1)](20-GESTION-THEMES-SUPPRESSION.md)
 - [Présentation de l'application en images, ordinateur et mobile](19-PRESENTATION-VISUELLE.md)
@@ -32,6 +35,11 @@ versionnés avec le code, pas publiés sur le site applicatif.
 - [Consignes de reprise](09-CODEX-PROMPT.md)
 
 ## Disponibilité en ligne
+
+La préparation 0.1.3 est documentée dans ce dépôt local. Elle n'est pas encore
+publiée sur GitHub ni sur Sites ; les étapes de diffusion sont séparées des
+contrôles locaux. La configuration Resend de l'hébergement est prise en charge
+par l'utilisateur.
 
 La version 0.1.2 et sa documentation sont disponibles sur [GitHub](https://github.com/nicho2/livreDor/tree/main/docs). Le commit de release 175548d et son tag ont deux CI réussies.
 

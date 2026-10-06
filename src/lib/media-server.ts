@@ -59,6 +59,7 @@ export async function finalizeMedia(media: MediaAsset, userId: string) {
   }
   const client = getR2Client(), bucket = mediaBucket();
   if (!finalized) {
+    if (Date.now() - Date.parse(media.created_at) >= 5 * 60 * 1000) throw new ApiError(410, "L’envoi a expiré. Ajoutez à nouveau le fichier.");
     const staged = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: uploadKey(media) }));
     if (staged.ContentLength !== media.size_bytes || staged.ContentType !== media.mime_type) throw new ApiError(400, "Le fichier reçu ne correspond pas au fichier déclaré.");
     // PUT targets staging only. A live PUT URL cannot overwrite a finalized object.
@@ -73,6 +74,11 @@ export async function finalizeMedia(media: MediaAsset, userId: string) {
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: uploadKey(media) }));
 }
 export async function mediaReadUrl(media: MediaAsset) {
+  if (media.memory_id) {
+    const parent = await getSupabaseServiceClient().from("memories").select("deletion_started_at").eq("id", media.memory_id).maybeSingle();
+    if (parent.error) throw new Error("Database unavailable");
+    if (!parent.data || parent.data.deletion_started_at) throw new ApiError(409, "Ce souvenir est en cours de suppression.");
+  }
   const { data: project, error } = await getSupabaseServiceClient().from("projects").select("deletion_started_at").eq("id", media.project_id).maybeSingle();
   if (error) throw new Error("Database unavailable");
   if (!project || project.deletion_started_at) throw new ApiError(409, "Le projet est en cours de suppression.");

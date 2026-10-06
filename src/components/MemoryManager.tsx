@@ -9,6 +9,7 @@ import { resolveDisplayName } from "@/lib/display-name";
 import { MediaGallery } from "@/components/MediaGallery";
 import { validateMediaFile } from "@/lib/media";
 import { MEDIA_ACCEPT, uploadMemoryMedia } from "@/lib/media-upload";
+import { authenticatedFetch } from "@/lib/api-client";
 
 type DateMode = "none" | "exact" | "period";
 
@@ -47,7 +48,6 @@ export function MemoryManager({ projectId }: { projectId: string }) {
       .select("*")
       .eq("project_id", projectId)
       .eq("author_id", auth.user.id)
-      .neq("status", "hidden")
       .order("created_at", { ascending: false });
 
     if (error) setFeedback(error.message);
@@ -67,7 +67,6 @@ export function MemoryManager({ projectId }: { projectId: string }) {
         .select("*")
         .eq("project_id", projectId)
         .eq("author_id", auth.user.id)
-        .neq("status", "hidden")
         .order("created_at", { ascending: false });
 
       if (!active) return;
@@ -235,23 +234,22 @@ export function MemoryManager({ projectId }: { projectId: string }) {
     setFeedback("");
   }
 
-  async function hideMemory(id: string) {
-    if (!window.confirm("Masquer ce souvenir et ses médias sur le mur ?")) return;
+  async function deleteMemory(id: string) {
+    if (submitting.current) return;
+    if (!window.confirm("Supprimer définitivement ce souvenir et ses fichiers de LivreDor ? Cette action est irréversible. Si quelqu’un a déjà enregistré ces fichiers sur son ordinateur ou son téléphone, ils y resteront.")) return;
+    submitting.current = true;
     setBusy(true);
+    setFeedback("");
     try {
-    const supabase = getSupabaseBrowser();
-    // RLS may filter an UPDATE to zero rows (e.g. after project closure).
-    // Require a returned row before announcing success.
-    const { error } = await supabase.from("memories").update({ status: "hidden" }).eq("id", id).eq("project_id", projectId).select("id").single();
-    setBusy(false);
-    if (error) setFeedback(error.message);
-    else {
+      await authenticatedFetch(`/api/memories/${id}`, { method: "DELETE" });
       if (editingId === id) resetForm();
-      setFeedback("Souvenir masqué.");
+      setFeedback("Souvenir et fichiers supprimés définitivement de LivreDor.");
+      await loadMemories();
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Suppression impossible. Réessayez.");
       await loadMemories();
     }
-    } catch { setFeedback("Masquage impossible. Réessayez."); }
-    finally { setBusy(false); }
+    finally { setBusy(false); submitting.current = false; }
   }
 
   return (
@@ -267,16 +265,16 @@ export function MemoryManager({ projectId }: { projectId: string }) {
           {memories.map((memory) => (
             <article className="card memory-summary" key={memory.id}>
               <div>
-                <span className={`status status-${memory.status}`}>{memory.status === "published" ? "Publié" : "Brouillon"}</span>
+                <span className={`status status-${memory.status}`}>{memory.deletion_started_at ? "Suppression à terminer" : memory.status === "published" ? "Publié" : memory.status === "hidden" ? "Masqué" : "Brouillon"}</span>
                 <h3>{memory.title || "Souvenir sans titre"}</h3>
                 <p>{memory.body}</p>
               </div>
               <div className="actions">
                 {memory.status === "draft" && <button className="button" type="button" disabled={busy || editingId === memory.id} onClick={() => void publishMemory(memory)}>Publier</button>}
-                <button className="button secondary" type="button" disabled={busy} onClick={() => editMemory(memory)}>Modifier</button>
-                <button className="link-button danger" type="button" disabled={busy} onClick={() => void hideMemory(memory.id)}>Masquer</button>
+                {memory.status !== "hidden" && <button className="button secondary" type="button" disabled={busy} onClick={() => editMemory(memory)}>Modifier</button>}
+                <button className="link-button danger" type="button" disabled={busy} onClick={() => void deleteMemory(memory.id)}>{memory.deletion_started_at ? "Réessayer la suppression" : "Supprimer"}</button>
               </div>
-              {editingId !== memory.id && <MediaGallery key={`${memory.id}-${mediaRevision}`} memoryId={memory.id} projectId={projectId} editable disabled={busy} />}
+              {editingId !== memory.id && !memory.deletion_started_at && <MediaGallery key={`${memory.id}-${mediaRevision}`} memoryId={memory.id} projectId={projectId} editable={memory.status !== "hidden"} disabled={busy} />}
             </article>
           ))}
         </div>

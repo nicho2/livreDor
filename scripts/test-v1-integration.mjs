@@ -43,6 +43,21 @@ const fixture = createServer(async (request, response) => {
       const rpc = url.pathname.split("/").pop(), user = tokens[token];
       const fail = (code) => { response.statusCode = 400; response.end(JSON.stringify({ code, message: "Fixture refusal" })); };
       if (!user && token !== "test-service") { fail("42501"); return; }
+      if (["begin_memory_deletion", "finish_memory_deletion"].includes(rpc)) {
+        const memory = tables.memories.find(m => m.id === body.p_memory_id);
+        const p = tables.projects.find(p => p.id === memory?.project_id);
+        if (token !== "test-service" || !memory || memory.author_id !== body.p_actor || !p) { fail("42501"); return; }
+        if (rpc === "begin_memory_deletion") {
+          if (!memory.deletion_started_at && p.status !== "open") { fail("42501"); return; }
+          if (tables.media_assets.some(m => m.memory_id === memory.id && m.status === "draft" && Date.now() - Date.parse(m.created_at) < 600000)) { response.statusCode = 400; response.end(JSON.stringify({ code: "23514", message: "RECENT_UPLOADS_WAIT" })); return; }
+          memory.deletion_started_at ??= new Date().toISOString(); memory.status = "hidden";
+          response.end(JSON.stringify(memory)); return;
+        }
+        if (!memory.deletion_started_at) { fail("23514"); return; }
+        tables.memories = tables.memories.filter(m => m.id !== memory.id);
+        tables.media_assets = tables.media_assets.filter(m => m.memory_id !== memory.id);
+        response.end("true"); return;
+      }
       if (["confirm_project_export", "begin_project_deletion", "finish_project_deletion"].includes(rpc)) {
         if (token !== "test-service") { fail("42501"); return; }
         const p = tables.projects.find(project => project.id === body.p_project_id);
@@ -126,7 +141,7 @@ const sitesRuntime = process.argv.includes("--sites");
 const htmlOnly = process.argv.includes("--html-only");
 const child = spawn(process.execPath, sitesRuntime ? ["scripts/test-sites-server.mjs", String(appPort)] : ["node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", String(appPort)], {
   windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
-  env: { ...process.env, LIVREDOR_SITE_MANAGERS: "a@example.test", LIVREDOR_MAX_PROJECTS: "3", SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon", SUPABASE_SERVICE_ROLE_KEY: "test-service" },
+  env: { ...process.env, RESEND_API_KEY: "", LIVREDOR_CONTACT_FROM: "", LIVREDOR_SITE_MANAGERS: "a@example.test", LIVREDOR_MAX_PROJECTS: "3", SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon", SUPABASE_SERVICE_ROLE_KEY: "test-service" },
 });
 child.stdout.on("data", () => {}); child.stderr.on("data", () => {});
 const base = `http://127.0.0.1:${appPort}`;
@@ -165,7 +180,7 @@ try {
   const input = { projectId: ids.project, memoryId: ids.memory, filename: "test-pixel.png", mimeType: "image/png", sizeBytes: 68 };
   // API-only checks miss SSR module imports. Exercise HTML routes before any
   // writes, using the same isolated fixture on Next.js and on Workers.
-  for (const path of ["/", "/auth", "/all", "/nouveau", "/p/integration-test", "/p/integration-test/guestbook", "/p/integration-test/wall", "/p/integration-test/timeline", `/p/integration-test/memories/${ids.memory}`]) {
+  for (const path of ["/", "/auth", "/confidentialite", "/all", "/nouveau", "/p/integration-test", "/p/integration-test/guestbook", "/p/integration-test/wall", "/p/integration-test/timeline", "/p/integration-test/information", `/p/integration-test/memories/${ids.memory}`]) {
     const response = await call(path, { token: null });
     check(response.status === 200 && response.headers.get("content-type")?.includes("text/html"), `rendu HTML ${path} disponible`);
     const html = await response.text();
@@ -177,6 +192,14 @@ try {
     return;
   }
   const newDetails = { title: "TEST Nouveau LivreDor", subjectName: "TEST Marie Martin", description: "Présentation de test", eventDate: "2026-10-03", slug: `test-${randomUUID()}` };
+  const contactPath = `/api/projects/${ids.project}/contact`;
+  const contactBody = { requestId: randomUUID(), displayName: "TEST", category: "rights", body: "TEST : demande de retrait" };
+  check((await call(contactPath, { method: "POST", token: null, body: contactBody })).status === 401, "contact privé : authentification requise");
+  check((await call(contactPath, { method: "POST", token: "invalid", body: contactBody })).status === 401, "contact privé : jeton invalide refusé");
+  check((await call(contactPath, { method: "POST", body: { ...contactBody, to: "forged@example.test" } })).status === 400, "contact privé : destinataire forgé refusé");
+  check((await call(`/api/projects/${randomUUID()}/contact`, { method: "POST", body: contactBody })).status === 403, "contact privé : autre projet refusé");
+  const unconfiguredContact = await call(contactPath, { method: "POST", body: contactBody });
+  check(unconfiguredContact.status === 503 && !(await unconfiguredContact.text()).includes("@"), "contact privé : absence de configuration explicite, sans adresse révélée ni email envoyé");
   check((await call("/api/projects", { method: "POST", token: null, body: newDetails })).status === 401, "création sans session refusée");
   check((await call("/api/projects", { method: "POST", body: { ...newDetails, created_by: ids.b } })).status === 400, "créateur forgé refusé");
   check((await call("/api/projects", { method: "POST", body: { ...newDetails, p_limit: 9999 } })).status === 400, "limite fournie par client refusée");
@@ -309,6 +332,34 @@ try {
   check(!tables.projects.some(p => p.id === createdProject.id) && !tables.project_members.some(m => m.project_id === createdProject.id), "projet et appartenances supprimés");
   const remaining = await storage.send(new ListObjectsV2Command({ Bucket: bucket, Prefix: `${createdProject.id}/` }));
   check(!remaining.Contents?.length && tables.projects.some(p => p.id === ids.project), "R2 nettoyé, temporaires et orphelins compris, autre projet conservé");
+  const memoryToDelete = { ...tables.memories[0], id: randomUUID(), status: "published", deletion_started_at: null };
+  tables.memories.push(memoryToDelete);
+  tables.projects[0].status = "open";
+  const deletionAsset = { ...row, id: randomUUID(), memory_id: memoryToDelete.id, status: "published", created_at: new Date(Date.now() - 86400000).toISOString() };
+  deletionAsset.object_key = `${ids.project}/${ids.a}/${deletionAsset.id}-test-pixel.png`;
+  tables.media_assets.push(deletionAsset);
+  const deletionStaging = `${ids.project}/${ids.a}/uploads/${deletionAsset.id}`;
+  extraCleanupKeys.push(deletionAsset.object_key, deletionStaging);
+  await storage.send(new PutObjectCommand({ Bucket: bucket, Key: deletionAsset.object_key, Body: bytes }));
+  await storage.send(new PutObjectCommand({ Bucket: bucket, Key: deletionStaging, Body: bytes }));
+  const memoryDeletePath = `/api/memories/${memoryToDelete.id}`;
+  check((await call(memoryDeletePath, { method: "DELETE", token: null })).status === 401, "suppression souvenir : connexion exigée");
+  check((await call(memoryDeletePath, { method: "DELETE", token: "test-b" })).status === 403, "suppression souvenir : autre auteur refusé");
+  check((await call(memoryDeletePath, { method: "DELETE", token: "test-organizer" })).status === 403, "organisateur ne supprime pas le souvenir d’autrui depuis l’API auteur");
+  deletionAsset.created_at = new Date().toISOString();
+  deletionAsset.status = "draft";
+  check((await call(memoryDeletePath, { method: "DELETE" })).status === 409 && !memoryToDelete.deletion_started_at, "suppression souvenir : protection des uploads récents sans perte de données");
+  deletionAsset.status = "published";
+  const validDeletionKey = deletionAsset.object_key;
+  deletionAsset.object_key = "another-project/private.png";
+  check((await call(memoryDeletePath, { method: "DELETE" })).status === 409 && memoryToDelete.deletion_started_at && tables.media_assets.includes(deletionAsset), "échec stockage : souvenir verrouillé et métadonnées conservées pour reprise");
+  deletionAsset.object_key = validDeletionKey;
+  check((await call(memoryDeletePath, { method: "DELETE" })).status === 200, "suppression souvenir : reprise et effacement définitif");
+  check(!tables.memories.some(m => m.id === memoryToDelete.id) && !tables.media_assets.some(m => m.memory_id === memoryToDelete.id), "souvenir et métadonnées retirés, sans modifier les autres souvenirs");
+  for (const key of [validDeletionKey, deletionStaging]) {
+    let absent = false; try { await storage.send(new HeadObjectCommand({ Bucket: bucket, Key: key })); } catch (error) { absent = error.name === "NotFound"; }
+    check(absent, "suppression souvenir : fichier R2 final/temporaire effectivement absent");
+  }
   console.log(`PASS : ${assertions} contrôles ; Auth/données fictives locales, R2 réel.`);
 } finally {
   // Delete only keys derived from this run's UUIDs, never enumerating user objects.

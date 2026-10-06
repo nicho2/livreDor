@@ -43,6 +43,16 @@ Doit immédiatement expliquer :
 
 CTA principal : `Laisser un message`.
 
+« Étapes et contact » explique collecte, visibilité, clôture, export et suppression
+de l'hébergement au plus tard trois mois après l'événement. Le destinataire garde
+la restitution. Un rappel court précède les formulaires de contribution.
+Le contact privé notifie les organisateurs par Resend sans exposer leurs adresses
+au navigateur. Leur réponse utilise l'email confirmé du contributeur, annoncé
+avant envoi. Les erreurs conservent le texte ; une reprise du même message utilise
+la même clé tant que le formulaire reste ouvert. Après rechargement, consulter
+l'historique avant d'envoyer à nouveau. Les demandes et leur confirmation de lecture
+sont consultables dans Organisation, hors du livre d'or et des exports.
+
 ## Éditeur de message
 La barre de personnalisation doit rester petite. Préférer boutons prédéfinis à des paramètres libres.
 
@@ -69,6 +79,14 @@ l'enregistrement, le souvenir est conservé en brouillon pendant l'envoi ;
 En cas d'échec, le formulaire et les fichiers restant à envoyer sont conservés
 dans la page ; les fichiers déjà envoyés restent attachés au brouillon.
 Un brouillon enregistré peut aussi être publié directement depuis sa carte.
+
+Dans Mes contributions, « Supprimer » efface définitivement le souvenir et ses
+fichiers de LivreDor après confirmation. Les souvenirs masqués restent visibles
+à leur auteur avec ce bouton, sans action de republication. Si le stockage échoue,
+la carte « Suppression à terminer » propose « Réessayer la suppression ». Seul un
+envoi non terminé datant de moins de dix minutes demande d'attendre. Une image
+déjà envoyée ou retirée ne retarde pas la suppression (migration 0012).
+Organisation conserve ses actions publier/masquer ; masquer ne détruit rien.
 
 ## Livre d'or
 La navigation et l'accueil du projet donnent accès à `/p/[slug]/guestbook`.

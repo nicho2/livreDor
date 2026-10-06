@@ -3,6 +3,13 @@ export type ProjectStatus = "draft" | "open" | "closed" | "archived";
 export type ProjectRole = "organizer" | "contributor";
 export type MediaKind = "image" | "video" | "audio" | "document";
 
+export interface OrganizerMessage {
+  [key: string]: unknown;
+  id: string; project_id: string; author_id: string; display_name: string;
+  category: "help" | "media" | "rights"; body: string; created_at: string; read_at: string | null;
+  notification_sent_at?: string | null;
+}
+
 export interface Project {
   [key: string]: unknown;
   id: string;
@@ -57,6 +64,7 @@ export interface Memory {
   year_to: number | null;
   status: PublicationStatus;
   created_at: string;
+  deletion_started_at?: string | null;
 }
 
 export interface MediaAsset {
@@ -84,6 +92,7 @@ type Update<T> = Partial<Omit<T, "id" | "created_at">>;
 export interface Database {
   public: {
     Tables: {
+      organizer_messages: { Row: OrganizerMessage; Insert: Record<string, unknown>; Update: { notification_sent_at?: string | null }; Relationships: [] };
       project_organizer_invites: {
         Row: { project_id: string; email: string; invited_by: string; accepted_by: string | null; created_at: string };
         Insert: { project_id: string; email: string; invited_by: string; accepted_by?: string | null; created_at?: string };
@@ -129,6 +138,10 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      begin_memory_deletion: { Args: { p_memory_id: string; p_actor: string }; Returns: Memory };
+      finish_memory_deletion: { Args: { p_memory_id: string; p_actor: string }; Returns: boolean };
+      send_organizer_message: { Args: { p_project_id: string; p_display_name: string; p_category: string; p_body: string; p_request_id?: string }; Returns: string };
+      mark_organizer_message_read: { Args: { p_message_id: string }; Returns: undefined };
       confirm_project_export: { Args: { p_project_id: string; p_revision: number }; Returns: boolean };
       begin_project_deletion: { Args: { p_project_id: string; p_actor: string; p_slug: string }; Returns: Project };
       finish_project_deletion: { Args: { p_project_id: string; p_actor: string }; Returns: boolean };

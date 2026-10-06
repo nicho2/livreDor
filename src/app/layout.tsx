@@ -22,7 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <AuthNav />
             </header>
             {children}
-            <footer className="app-version" aria-label="Version de l'application">LivreDor · v{packageInfo.version}</footer>
+            <footer className="app-version" aria-label="Version de l'application">LivreDor · v{packageInfo.version} · <Link href="/confidentialite">Données et confidentialité</Link></footer>
           </div>
         </AuthProvider></ThemeProvider>
       </body>

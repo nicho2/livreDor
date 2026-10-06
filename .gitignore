@@ -16,4 +16,7 @@ coverage
 dist/
 .wrangler/
 .sites-runtime/
+# Local recipe proofs may contain real contributor content; keep them off Git.
+docs/screenshots/contact-local-success.png
+docs/screenshots/memory-delete-local.png
 *.tar.gz

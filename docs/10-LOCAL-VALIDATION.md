@@ -567,3 +567,71 @@ TEST uniquement : création avec PNG/WAV/MP4, brouillon et publication directe,
 Photos chargées et médias décodés depuis R2. Voir le registre 17 pour les limites.
 
 ![Édition mobile en production](screenshots/souvenir-edition-online-mobile.png)
+
+## Préparation locale 0.1.3 — contact et information
+
+Le 4 octobre 2026 : lint, TypeScript et 52 tests unitaires passent. La migration
+0010 et ses contrôles RLS, idempotence, quota et cascade passent sur PostgreSQL
+jetable. Les contrôles d'intégration Next.js et Sites passent chacun avec
+116 vérifications ; aucune notification réelle n'est envoyée par ces tests.
+Le parcours navigateur simulé vérifie l'échec email sans perte du texte,
+l'envoi accepté et l'accusé de lecture organisateur.
+
+Après clarification utilisateur, toute purge automatique et toute suppression
+planifiée sont interdites. Les textes et consignes imposent une suppression
+manuelle après vérification de la restitution, avant trois mois après l'événement.
+La clé Resend, l'expéditeur et les mentions propres au responsable restent
+attendus ; migration hébergée et activation publique ne sont pas réalisées.
+La version en ligne reste 0.1.2. Aucun serveur de test ne reste en écoute sur
+les ports contrôlés 3000, 3100–3102, 3200–3202, 3300–3301 et 54329.
+
+### Diagnostic et recette réelle du 5 octobre 2026
+
+Le formulaire local échouait avec PGRST202 : la migration 0010 n'était pas
+installée sur Supabase. Application de 0010 sans suppression de données et
+rechargement du schéma API. Sur le serveur 3000 lancé par l'utilisateur : un
+message explicitement technique a été enregistré sur jcd et sa notification
+acceptée par Resend, avec confirmation dans l'historique privé. La livraison
+dans la boîte destinataire reste à confirmer. Le brouillon utilisateur a été
+préservé ; aucun serveur supplémentaire n'a été lancé. Le serveur utilisateur
+est conservé pour sa recette. Le message d'erreur API distingue désormais une
+migration manquante d'un refus d'accès ou de quota.
+
+### Suppression des souvenirs du 5 octobre 2026
+
+Migration 0011 validée sur PostgreSQL jetable puis appliquée au Supabase configuré,
+sans supprimer de contenu existant. Lint, TypeScript, 52 tests unitaires et builds
+Next.js/Sites passent. Les tests d'intégration passent avec 125 contrôles sur
+chaque runtime : refus anonyme/autre auteur, upload récent, conservation des
+références en cas d'échec, reprise, suppression des objets R2 finaux/temporaires
+et cascade des métadonnées sur des UUID synthétiques uniquement.
+Le contrôle des 30 fichiers client compilés ne détecte aucun secret serveur.
+La lecture du parcours local jcd confirme les cartes masquées de l'auteur et
+« Supprimer » ; aucun souvenir utilisateur n'a été supprimé pendant la recette.
+Organisation conserve sa modération. Serveurs de test arrêtés ; seul le serveur
+3000 lancé par l'utilisateur reste ouvert. La livraison publique reste à faire.
+
+### Correction de l'attente de suppression avec image
+
+Migration 0012 testée sur PostgreSQL jetable puis appliquée au Supabase configuré :
+une image récente publiée ou masquée ne bloque plus l'effacement ; un envoi
+récent encore en brouillon reste protégé. Aucun contenu utilisateur supprimé.
+Lint et TypeScript passent. Les 125 tests du runtime Sites passent avec une
+image finalisée récente et le contrôle d'absence des objets R2 après suppression.
+La confirmation explique simplement qu'une copie enregistrée sur un appareil
+extérieur restera sur cet appareil. Aucun serveur supplémentaire conservé.
+
+## Contrôle de préparation Git 0.1.3 — 6 octobre 2026
+
+Sur la version finale : lint, TypeScript, 52 tests unitaires, compilation Next.js
+dans un dossier isolé et compilation Sites réussis. Les 125 contrôles API/R2
+passent pour chacun des deux runtimes. Toutes les migrations 0001–0012 et les
+tests RLS, contact, quota concurrent et suppression passent sur PostgreSQL jetable,
+arrêté après test. L'audit Supabase en lecture seule confirme TLS, huit tables RLS,
+sept RPC réservées au serveur, deux RPC privées de contact et la correction 0012.
+Les quatre tables de contenu restent vides pour le rôle anonyme.
+
+La documentation décrit séparément code local, schéma Supabase installé et site
+public 0.1.2. L'utilisateur prend en charge Resend hébergé ; aucune publication
+n'est réalisée pendant cette préparation. Le contrôle des fichiers client et
+des fichiers indexés Git complète la vérification des secrets avant commit.

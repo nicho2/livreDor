@@ -319,3 +319,62 @@ Le gestionnaire conserve les droits organisateur du projet qu'il crée ; le
 champ est facultatif. Sa propre adresse ne produit pas une invitation inutile.
 Cette évolution facilite la remise du projet à son organisateur sans ajouter
 un rôle global, une recherche de compte par email ou une nouvelle table.
+
+## ADR-023 — Information des contributeurs et contact organisateur
+
+Le 4 octobre 2026, l'utilisateur demande une explication de la collecte jusqu'à
+la clôture/restitution et un moyen d'envoyer un message aux organisateurs.
+Il précise que la notification doit être un email via Resend, sans révéler les
+adresses organisateur au contributeur dans LivreDor. Cela constitue une exception
+explicite au hors périmètre « messagerie » : formulaire privé ponctuel d'aide,
+de retrait de média ou d'exercice des droits, sans conversation, commentaires
+ni réseau social. Les réponses se font par email, hors de l'application.
+
+La migration 0010 conserve ces demandes séparément des contenus de souvenir,
+sous RLS auteur/organisateurs, hors de tous les exports et supprimées avec le
+projet. RPC avec email confirmé, appartenance, verrou et quota 5/24 h. L'API
+résout uniquement les comptes organisateurs du projet côté serveur et envoie
+un email séparé à chacun via Resend, avec Reply-To contributeur confirmé.
+Les adresses ne viennent jamais du JSON client. Une clé de requête assure
+la reprise du même message sans nouvelle ligne et l'idempotence Resend.
+Pas d'affirmation d'envoi si l'API refuse ; la trace privée et le texte restent
+disponibles. Aucun nouveau statut de publication n'est introduit.
+
+## ADR-024 — Trois mois maximum pour l'hébergement du projet
+
+L'utilisateur fixe la limite à trois mois calendaires après l'événement,
+indépendamment de la clôture. Le calcul arrondit au dernier jour du mois cible.
+Cette limite concerne les données hébergées du projet, fichiers et demandes
+privées compris. Le destinataire conserve la restitution remise durablement.
+La notice distingue clôture, archivage et suppression et annonce les copies
+privées du ZIP. L'échéance est affichée aux contributeurs et aux organisateurs.
+L'organisateur doit exécuter manuellement la suppression avant cette échéance,
+après vérification de la restitution. L'utilisateur interdit explicitement toute
+purge automatique : aucun job ni ordonnanceur de suppression ne doit être ajouté.
+Les comptes partagés entre projets,
+les sauvegardes techniques et les copies email demandent des règles distinctes.
+Le contrôle RGPD et les écarts restant ouverts sont dans le document 23.
+
+## ADR-025 — Suppression définitive des souvenirs par leur auteur
+
+Le 5 octobre 2026, l'utilisateur remplace explicitement « Masquer » par
+« Supprimer » dans Mes contributions. Le masquage reste une action de modération
+dans Organisation. Les souvenirs masqués restent consultables par leur auteur,
+qui peut les supprimer, sans les republier depuis leur carte.
+
+Une API serveur vérifie l'auteur et l'appartenance. La migration 0011 fournit
+deux RPC réservées au serveur et un champ technique `deletion_started_at`, sans
+nouveau statut de publication. La collecte doit être ouverte pour commencer
+(l'organisateur conserve ses droits sur ses propres contenus). Le nettoyage
+peut être repris après clôture si la suppression avait déjà commencé.
+Un verrou retire le souvenir du mur et bloque les modifications et nouveaux
+médias. Les objets R2 finaux et temporaires sont supprimés avant la ligne du
+souvenir ; la cascade supprime les métadonnées. Un échec conserve les références
+et propose une reprise manuelle. Les mutations invalident la preuve d'export.
+
+Après correction 0012 le 5 octobre, seuls les uploads récents non terminés
+(média `draft`) imposent d'attendre. Une image finalisée (`published`) ou déjà
+retirée (`hidden`) ne bloque plus la suppression, même récente. Les finalisations
+non terminées expirent après cinq minutes. Aucune tâche automatique n'est ajoutée. Les copies
+déjà exportées ou téléchargées ne peuvent pas être rappelées. La confirmation
+de suppression annonce son caractère irréversible.

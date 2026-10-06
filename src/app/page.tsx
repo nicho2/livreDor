@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   return (
-    <main>
+    <main className="home-page">
       <section className="hero hero-album">
         <AlbumCover />
         <p className="kicker">Livre d&apos;or + souvenirs</p>
