@@ -1,5 +1,12 @@
 # Release 0.1.4 — Invitations partagées
 
+Publiée le 8 octobre 2026 : [release GitHub](https://github.com/nicho2/livreDor/releases/tag/v0.1.4)
+et [site](https://livredor.nicho2.chatgpt.site), commit
+`f1ec35c74e7d5101cabc98f9b6fed9ff4725d104`. Version Sites 9, environnement
+révision 9. Migration 0013 appliquée avec TLS et contrôle transactionnel des
+empreintes des huit tables existantes : données conservées. Les contrôles HTTP
+du site affichent 0.1.4 et les API administratives refusent les appels anonymes.
+
 L'accueil affiche seulement les projets dont le compte est membre. Le premier
 accès passe par le lien partagé muni d'un code aléatoire, conservé pendant la
 connexion OTP puis retiré de l'URL après acceptation. Aucune contribution n'est

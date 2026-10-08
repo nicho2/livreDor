@@ -1,5 +1,9 @@
 # LivreDor
 
+Version 0.1.4 publiée le 8 octobre 2026 : invitations partagées avec code
+aléatoire et accueil limité aux projets rejoints. Migration 0013 appliquée au
+Supabase configuré ; [release et accès](docs/25-RELEASE-0.1.4.md).
+
 Application de collecte et de restitution de souvenirs, développée et testable localement.
 
 Version 0.1.2 : [nouveau parcours des souvenirs et recette de livraison](docs/21-RELEASE-0.1.2.md).

@@ -5,6 +5,8 @@ versionnés avec le code, pas publiés sur le site applicatif.
 
 ## Installer, tester, exploiter
 
+- [Release 0.1.4 : invitations et accès aux projets](25-RELEASE-0.1.4.md)
+
 - [Release 0.1.3 publiée et contrôles](24-RELEASE-0.1.3.md)
 - [Revue RGPD, conservation et parcours contributeur](23-RGPD-ET-PARCOURS-CONTRIBUTEUR.md)
 
@@ -35,6 +37,10 @@ versionnés avec le code, pas publiés sur le site applicatif.
 - [Consignes de reprise](09-CODEX-PROMPT.md)
 
 ## Disponibilité en ligne
+
+La version 0.1.4 est publiée sur Sites (version 9) et GitHub, au commit
+`f1ec35c74e7d5101cabc98f9b6fed9ff4725d104`, tag `v0.1.4`.
+Migration 0013 installée ; voir le registre de déploiement et les notes de release.
 
 La version 0.1.3 et sa documentation sont publiées sur
 [GitHub](https://github.com/nicho2/livreDor/tree/main/docs).

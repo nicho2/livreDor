@@ -1,5 +1,24 @@
 # Déploiement LivreDor sur OpenAI Sites
 
+## Publication 0.1.4 — 8 octobre 2026
+
+Publication réussie à 21 h 23 (Paris), version Sites 9, environnement révision 9.
+URL : https://livredor.nicho2.chatgpt.site .
+Source et tag v0.1.4 : `f1ec35c74e7d5101cabc98f9b6fed9ff4725d104`.
+Version : `appgprj_6ac110ead3c88191bdbce19b3645d3eb~appgver_dc5a4ba43cfc8191b2574f9ef86f131c`.
+Déploiement : `appgdep_6ac7ed8dd1a88191b8836af00807db23`.
+Archive helper Sites : 202 fichiers, 4 014 080 octets ; scan client réussi.
+Sous Windows, PATH Git Bash et TAR_OPTIONS=--force-local nécessaires au helper.
+
+Migration 0013 appliquée juste avant publication avec TLS verify-full et
+empreintes transactionnelles des huit tables existantes identiques. Table
+d'invitations privée, rotation réservée au serveur, adhésion authentifiée et
+lecture des projets limitée aux membres vérifiées. L'audit anonyme reste vide.
+Audience et variables conservées. Pages accueil, connexion, notice, projet TEST
+et gestion répondent 200 avec version 0.1.4 ; API sensibles anonymes refusées 401.
+Release GitHub publiée. Aucun email ni contenu réel modifié ; OTP réel et
+distribution du nouveau lien organisateur restent à vérifier par l'utilisateur.
+
 ## Architecture et accès
 
 Sites héberge un Worker ESM et les assets navigateur. `npm run build:sites`

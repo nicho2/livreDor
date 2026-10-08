@@ -43,6 +43,13 @@ WebSockets HMR nécessaires à l’hydratation en développement.
 un OTP réel puis transmettre les nouveaux liens. Ces tests locaux n’appliquent
 aucune migration distante et ne constituent pas une publication hébergée.
 
+Livraison effectuée ensuite le 8 octobre : migration 0013 appliquée et droits
+vérifiés, données existantes identiques avant/après dans la transaction ; Sites
+version 9 réussie et release v0.1.4 publiée. Cinq pages HTTP 200 affichent 0.1.4,
+API invitation et annuaire refusées en anonyme (401), lectures anonymes Supabase
+vides. Aucun email envoyé pendant cette livraison ; OTP réel et partage des
+nouveaux liens restent à faire.
+
 Projet testé : `depart-demo`, application locale sur `http://localhost:3000`,
 base Supabase de développement distante. Aucun déploiement effectué.
 
