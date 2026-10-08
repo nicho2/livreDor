@@ -161,8 +161,13 @@ CORS de développement disponible dans `config/r2-cors.local.json`.
 La consultation exige une session OTP LivreDor, comme la contribution. Appliquer
 la migration `0007_authenticated_read.sql` et publier le code correspondant pour
 supprimer la lecture anonyme ; l'accueil reste accessible sans montrer les projets.
-Une liste d'invités nominative n'est pas implémentée : les comptes authentifiés
-peuvent lire les projets non brouillons. Voir ADR-017.
+L’évolution ADR-026 (migration 0013) limite la lecture aux membres : un lien
+partagé avec code aléatoire inscrit le compte après OTP. L’accueil affiche « Mes
+projets » ; le gestionnaire retrouve tous les projets dans `/all`. Dans Organisation,
+« Copier le lien d’invitation » prépare le même lien pour tout le groupe ;
+« Renouveler le lien » invalide l’ancien sans retirer les membres existants.
+Appliquer 0013 avec le nouveau code. Les anciens simples visiteurs doivent
+recevoir le nouveau lien ; les membres déjà enregistrés gardent leur accès.
 
 La contribution OTP, les souvenirs multiples, les médias R2 privés, le mur,
 la chronologie et le détail sont implémentés. L'espace organisateur permet

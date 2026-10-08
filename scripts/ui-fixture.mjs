@@ -23,9 +23,15 @@ const tables = {
   memories: Array.from({ length: largeAlbum ? 300 : 30 }, (_, i) => ({ id: `30000000-0000-4000-8000-${String(i + 1).padStart(12, "0")}`, project_id: projectId, author_id: `other-${i}`, display_name: "Léa", title: `Un bel instant ${i + 1}`, body: "Un café, des rires et cette journée que nous n’oublierons pas.\nUn souvenir à partager ensemble.", occurred_on: null, year_from: i === 29 ? null : 1990 + i, year_to: null, status: "published", created_at: timestamp })),
   media_assets: [],
   project_organizer_invites: [],
+  project_shared_invites: [],
   organizer_messages: [],
 };
 Object.assign(tables.projects[0], { theme: "album", content_revision: 0, archive_exported_at: null, deletion_started_at: null });
+if (process.argv.includes("--invitation")) {
+  tables.project_members = [];
+  tables.project_shared_invites.push({ project_id: projectId, token: "a".repeat(64) });
+  tables.projects.push({ ...tables.projects[0], id: "20000000-0000-4000-8000-000000000099", slug: "other-private", title: "PROJET À NE PAS AFFICHER" });
+}
 if (process.argv.includes("--memory-delete")) {
   Object.assign(tables.memories[0], { author_id: userId, title: "TEST — souvenir à supprimer" });
   Object.assign(tables.memories[1], { author_id: userId, title: "TEST — souvenir masqué", status: "hidden" });
@@ -74,6 +80,24 @@ const fixture = createServer(async (req, res) => {
     if (!organizer || !message) { res.writeHead(403); res.end(JSON.stringify({ message: "Accès refusé" })); return; }
     message.read_at = new Date().toISOString(); res.end("null"); return;
   }
+  if (url.pathname === "/rest/v1/rpc/accept_shared_project_invitation") {
+    const input = await body(req);
+    const project = tables.projects.find(row => row.slug === input.p_slug);
+    const member = tables.project_members.some(row => row.project_id === project?.id && row.user_id === userId);
+    const invite = tables.project_shared_invites.some(row => row.project_id === project?.id && row.token === input.p_token);
+    if (!member && project?.status === "open" && invite) tables.project_members.push({ project_id: project.id, user_id: userId, role: "contributor", joined_at: timestamp });
+    res.end(JSON.stringify(member || (project?.status === "open" && invite))); return;
+  }
+  if (url.pathname === "/rest/v1/rpc/shared_project_invitation") {
+    const input = await body(req);
+    if (req.headers.authorization !== "Bearer fixture-service" || !tables.project_members.some(row => row.project_id === input.p_project_id && row.user_id === input.p_actor && row.role === "organizer")) {
+      res.writeHead(403); res.end(JSON.stringify({ code: "42501", message: "Access denied" })); return;
+    }
+    let invite = tables.project_shared_invites.find(row => row.project_id === input.p_project_id);
+    if (!invite) { invite = { project_id: input.p_project_id, token: input.p_token }; tables.project_shared_invites.push(invite); }
+    if (input.p_renew) invite.token = input.p_token;
+    res.end(JSON.stringify(invite.token)); return;
+  }
   if (url.pathname.startsWith("/rest/v1/rpc/")) { res.end("false"); return; }
   const name = url.pathname.split("/").pop();
   const matches = row => [...url.searchParams].every(([key, value]) => {
@@ -83,6 +107,9 @@ const fixture = createServer(async (req, res) => {
     return true;
   });
   let rows = (tables[name] ?? []).filter(matches).slice(0, 1000);
+  if (req.headers.authorization !== "Bearer fixture-service" && ["projects", "memories", "guestbook_entries", "media_assets"].includes(name)) {
+    rows = rows.filter(row => tables.project_members.some(member => member.user_id === userId && member.project_id === (name === "projects" ? row.id : row.project_id)));
+  }
   if (req.method === "PATCH") { const values = await body(req); rows.forEach(row => { Object.assign(row, values); if (name === "projects" && values.theme) { row.archive_exported_at = null; row.content_revision++; } }); }
   if (req.method === "POST") { const values = await body(req); const row = { ...values, id: randomUUID(), created_at: timestamp }; tables[name]?.push(row); rows = [row]; }
   res.end(JSON.stringify(req.headers.accept?.includes("application/vnd.pgrst.object+json") ? rows[0] ?? null : rows));
@@ -163,8 +190,23 @@ const proxy = createServer(async (req, res) => {
   const upstream = httpRequest({ hostname: "127.0.0.1", port: url.pathname.startsWith("/auth/v1/") || url.pathname.startsWith("/rest/v1/") ? backendPort : appPort, path: req.url, method: req.method, headers: req.headers }, response => { res.writeHead(response.statusCode, response.headers); response.pipe(res); });
   upstream.on("error", () => { res.writeHead(503); res.end("Fixture starting"); }); req.pipe(upstream);
 });
+// Next dev uses a WebSocket for HMR; forward it through the same fixture origin.
+proxy.on("upgrade", (req, socket, head) => {
+  const upstream = httpRequest({ hostname: "127.0.0.1", port: appPort, path: req.url, headers: req.headers });
+  upstream.on("upgrade", (response, remote, remoteHead) => {
+    socket.write(`HTTP/1.1 ${response.statusCode} Switching Protocols\r\n`);
+    for (const [name, value] of Object.entries(response.headers)) socket.write(`${name}: ${value}\r\n`);
+    socket.write("\r\n");
+    if (head.length) remote.write(head);
+    if (remoteHead.length) socket.write(remoteHead);
+    socket.pipe(remote); remote.pipe(socket);
+    socket.on("error", () => remote.destroy()); remote.on("error", () => socket.destroy());
+  });
+  upstream.on("error", () => socket.destroy());
+  upstream.end();
+});
 await new Promise(resolve => proxy.listen(proxyPort, "127.0.0.1", resolve));
-const app = spawn(process.execPath, ["node_modules/next/dist/bin/next", ...(process.argv.includes("--production") ? ["start"] : ["dev", "--webpack"]), "--port", String(appPort)], { stdio: "inherit", env: { ...process.env, LIVREDOR_UI_FIXTURE: "1", LIVREDOR_SITE_MANAGERS: organizer ? "recette@example.test" : "", NEXT_PUBLIC_SUPABASE_URL: `http://localhost:${proxyPort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "fixture-only", SUPABASE_SERVICE_ROLE_KEY: "fixture-service", R2_ACCESS_KEY_ID: "", R2_SECRET_ACCESS_KEY: "" } });
+const app = spawn(process.execPath, ["node_modules/next/dist/bin/next", ...(process.argv.includes("--production") ? ["start"] : ["dev", "--webpack"]), "--port", String(appPort)], { stdio: "inherit", env: { ...process.env, LIVREDOR_UI_FIXTURE: "1", LIVREDOR_SITE_MANAGERS: organizer ? "recette@example.test" : "", SUPABASE_URL: `http://localhost:${proxyPort}`, NEXT_PUBLIC_SUPABASE_URL: `http://localhost:${proxyPort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "fixture-only", SUPABASE_SERVICE_ROLE_KEY: "fixture-service", R2_ACCESS_KEY_ID: "", R2_SECRET_ACCESS_KEY: "" } });
 let closing = false;
 async function close(code = 0) {
   if (closing) return;

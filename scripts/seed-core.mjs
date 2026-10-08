@@ -89,7 +89,7 @@ export async function seedDataset({ data, snapshot, slug, projectId, assets, bac
   let entries = 0, memories = 0, media = 0;
   for (const actor of data.actors) {
     const author = await backend.author(actor, projectId);
-    await backend.join(author, projectId);
+    await backend.join(author, projectId, slug);
     const entry = { id: stableId(projectId, `entry:${actor.key}`), project_id: projectId, author_id: author.id,
       display_name: actor.displayName, message: actor.message, formatting: actor.formatting, status: actor.status };
     await backend.insertOnly(author, "guestbook_entries", entry);

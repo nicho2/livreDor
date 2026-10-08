@@ -2,6 +2,15 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { getAuthReturnPath, getAuthHref } from "../src/lib/auth-navigation.ts";
 
+test("invitation partagée conservée pendant OTP, paramètres supplémentaires refusés", () => {
+  const path = `/p/depart-demo?invitation=${"a".repeat(64)}`;
+  assert.equal(getAuthReturnPath(path), path);
+  assert.equal(getAuthHref(path), `/auth?next=${encodeURIComponent(path)}`);
+  for (const invalid of [path + "&next=//evil.test", path + "#fragment", path + "\n", path.replace("?", "/wall?"), "/all?invitation=" + "a".repeat(64), "/p/depart-demo?invitation=short"]) {
+    assert.equal(getAuthReturnPath(invalid), "/");
+  }
+});
+
 test("retour aux routes locales du projet", () => {
   assert.equal(getAuthReturnPath("/p/depart-demo/information"), "/p/depart-demo/information");
   for (const path of ["/nouveau", "/p/depart-demo", "/p/depart-demo/contribute", "/p/autre-projet/guestbook", "/p/autre-projet/wall", "/p/autre-projet/timeline", "/p/autre-projet/memories/30000000-0000-4000-8000-000000000001"]) {

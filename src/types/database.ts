@@ -138,6 +138,8 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      shared_project_invitation: { Args: { p_project_id: string; p_actor: string; p_token: string; p_renew?: boolean }; Returns: string };
+      accept_shared_project_invitation: { Args: { p_slug: string; p_token?: string }; Returns: boolean };
       begin_memory_deletion: { Args: { p_memory_id: string; p_actor: string }; Returns: Memory };
       finish_memory_deletion: { Args: { p_memory_id: string; p_actor: string }; Returns: boolean };
       send_organizer_message: { Args: { p_project_id: string; p_display_name: string; p_category: string; p_body: string; p_request_id?: string }; Returns: string };

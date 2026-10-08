@@ -1,5 +1,10 @@
 # Jeu de test synthétique — alimentation d'un projet existant
 
+Depuis l’évolution 0013 (ADR-026), l’opérateur se connecte avant de rechercher
+le projet, puis récupère son lien partagé après vérification du projet TEST.
+Les comptes synthétiques rejoignent avec cette invitation et les permissions
+ordinaires. Le code n’est ni affiché ni conservé dans le journal de reprise.
+
 Outil d'opérateur exécuté **localement**, jamais une fonctionnalité publique.
 Il ne crée pas de projet et ne s'exécute pas automatiquement après déploiement.
 Pas de commentaires de réseau social : les « commentaires » sont les messages

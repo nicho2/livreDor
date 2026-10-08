@@ -117,7 +117,11 @@ function fixture() {
       assert.equal(body.type, "email");
       return response({ user, access_token: `seed-${user.id}`, refresh_token: "PRIVATE", expires_in: 3600, token_type: "bearer" });
     }
-    if (url.pathname === "/rest/v1/rpc/join_project") { assert.ok(token.startsWith("seed-")); return response(null); }
+    if (url.pathname === "/rest/v1/rpc/accept_shared_project_invitation") {
+      assert.ok(token.startsWith("seed-"));
+      assert.equal(body.p_slug, slug); assert.equal(body.p_token, "a".repeat(64));
+      return response(true);
+    }
     if (url.pathname.startsWith("/rest/v1/")) {
       const table = url.pathname.split("/").pop();
       assert.notEqual(token, "service-secret", "La clé service ne doit pas écrire les contributions");
@@ -145,7 +149,7 @@ function fixture() {
     throw new Error("Unexpected fixture route");
   };
   const clients = makeClients({ NEXT_PUBLIC_SUPABASE_URL: "https://fixture.supabase.co", NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key", SUPABASE_SERVICE_ROLE_KEY: "service-secret" }, fetcher);
-  return { users, tables, requests, controls, journal, backend: createBackend(clients, "https://recette.example", fetcher, journal) };
+  return { users, tables, requests, controls, journal, backend: createBackend(clients, "https://recette.example", fetcher, journal, "a".repeat(64)) };
 }
 
 test("alimentation et reprise : quatre sessions, RLS, cinq uploads finalisés, aucun doublon", async () => {

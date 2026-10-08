@@ -27,7 +27,7 @@ Ne pas afficher d'emblée un long formulaire. Le message principal doit être l'
 - Après validation du code, retour automatique vers cette destination locale.
 - Une session déjà ouverte ne nécessite pas de saisir à nouveau un code.
 - Sans destination, revenir à l'accueil dont les projets se chargent après
-  connexion. Aucune recherche anonyme d'un projet démo ou unique. Les destinations
+  connexion, limités aux projets dont le compte est membre (ADR-026). Aucune recherche anonyme d'un projet démo ou unique. Les destinations
   externes ou non reconnues sont rejetées ; les détails de souvenirs UUID sont acceptés.
 - L'en-tête affiche « Connecté » et « Se déconnecter » lorsque la session est
   ouverte, jamais l'email. La déconnexion concerne seulement le navigateur courant.
@@ -35,6 +35,15 @@ Ne pas afficher d'emblée un long formulaire. Le message principal doit être l'
   lorsque la session est absente. Ce contrôle UX ne remplace pas la RLS.
 
 ## Écran projet
+
+Le lien partagé `/p/<slug>?invitation=<code>` conserve son code pendant l’OTP.
+Après validation, le compte rejoint le projet et le code est retiré de l’URL.
+Une session existante ne demande pas de nouvel OTP. L’accès est ensuite conservé
+sur tous les appareils utilisant ce compte. Sans appartenance ni invitation valide,
+aucune métadonnée n’est affichée. Sans projet rejoint, l’accueil invite à ouvrir
+le lien transmis par l’organisateur. Les liens renouvelés et les collectes fermées
+ne permettent plus de nouvelles adhésions ; les membres gardent leur accès.
+
 Doit immédiatement expliquer :
 - pour qui est le LivreDor ;
 - à quelle occasion ;

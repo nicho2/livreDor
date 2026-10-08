@@ -23,10 +23,10 @@ begin
 end;
 $$;
 
-insert into auth.users(id) values
-  ('10000000-0000-4000-8000-000000000001'), -- organizer
-  ('10000000-0000-4000-8000-000000000002'), -- contributor A
-  ('10000000-0000-4000-8000-000000000003'); -- contributor B
+insert into auth.users(id,email,email_confirmed_at) values
+  ('10000000-0000-4000-8000-000000000001','organizer@example.test',now()),
+  ('10000000-0000-4000-8000-000000000002','author-a@example.test',now()),
+  ('10000000-0000-4000-8000-000000000003','author-b@example.test',now());
 insert into public.projects(id, slug, title, subject_name, created_by, status) values
   ('20000000-0000-4000-8000-000000000001', 'rls-test-open', 'TEST', 'TEST', '10000000-0000-4000-8000-000000000001', 'open'),
   ('20000000-0000-4000-8000-000000000002', 'rls-test-draft', 'TEST', 'TEST', '10000000-0000-4000-8000-000000000001', 'draft');
@@ -46,6 +46,7 @@ values ('20000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-0000000
 insert into public.guestbook_entries(project_id, author_id, display_name, message, status)
 values ('20000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000003', 'TEST B', 'published message', 'published');
 
+select public.shared_project_invitation('20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',repeat('a',64));
 set local role anon;
 select pg_temp.assert_count('select count(*) from public.projects', 0, 'anon: no project metadata');
 select pg_temp.assert_count('select count(*) from public.memories', 0, 'anon: no published memories');
@@ -62,10 +63,11 @@ reset role;
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000002', true);
 set local role authenticated;
-select pg_temp.assert_count('select count(*) from public.projects', 1, 'authenticated visitor sees non-draft project');
-select pg_temp.assert_count($q$select count(*) from public.guestbook_entries where message = 'published message'$q$, 1, 'authenticated visitor reads published message before joining');
+select pg_temp.assert_count('select count(*) from public.projects', 0, 'non-member cannot list project');
+select pg_temp.assert_count($q$select count(*) from public.guestbook_entries where message = 'published message'$q$, 0, 'non-member cannot read published message');
+select pg_temp.assert_count($q$select public.accept_shared_project_invitation('rls-test-open',repeat('a',64))::int$q$,1,'author accepts invitation');
 select public.join_project('20000000-0000-4000-8000-000000000001');
-select pg_temp.assert_count('select count(*) from public.memories', 3, 'author reads own drafts');
+select pg_temp.assert_count('select count(*) from public.memories', 2, 'author reads own drafts only in joined project');
 insert into public.memories(project_id, author_id, display_name, body)
 values ('20000000-0000-4000-8000-000000000001', auth.uid(), 'TEST A', 'new draft');
 select pg_temp.assert_count($q$select count(*) from public.memories where body = 'new draft'$q$, 1, 'member creates memory draft');
@@ -82,6 +84,7 @@ reset role;
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000003', true);
 set local role authenticated;
 select pg_temp.assert_denied($q$insert into public.memories(project_id, author_id, display_name, body) values ('20000000-0000-4000-8000-000000000001', auth.uid(), 'TEST B', 'not joined')$q$, 'non-member cannot write');
+select pg_temp.assert_count($q$select public.accept_shared_project_invitation('rls-test-open',repeat('a',64))::int$q$,1,'second author accepts invitation');
 select public.join_project('20000000-0000-4000-8000-000000000001');
 select pg_temp.assert_count('select count(*) from public.memories', 2, 'other contributor cannot read private drafts');
 update public.memories set body = 'intrusion' where id = '30000000-0000-4000-8000-000000000001';

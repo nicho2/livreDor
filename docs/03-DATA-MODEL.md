@@ -51,6 +51,11 @@ les écritures directes. Voir [la procédure](20-GESTION-THEMES-SUPPRESSION.md).
 ## project_members
 Relie les comptes à un projet.
 
+Depuis 0013, l’acceptation du lien partagé crée ce lien dès la consultation,
+sans attendre une contribution. `project_shared_invites` stocke un code privé
+de 256 bits par projet et sa date de renouvellement. Accès serveur uniquement,
+exclusion des exports, suppression en cascade avec le projet (ADR-026).
+
 Rôles V1 :
 - `organizer`
 - `contributor`

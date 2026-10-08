@@ -16,7 +16,12 @@ try {
   } else {
     if (values["confirm-slug"] !== values.slug) throw new SeedError("Confirmation du lien de test absente.");
     const clients = makeClients(process.env);
-    const { data: project, error } = await clients.anon().from("projects").select("id,slug,title,status").eq("slug", values.slug).single();
+    terminal = createInterface({ input: process.stdin, output: process.stdout });
+    const operator = clients.anon();
+    const organizerToken = await organizerLogin(operator, (text) => terminal.question(text));
+    const access = await operator.rpc("accept_shared_project_invitation", { p_slug: values.slug });
+    if (access.error || !access.data) throw new SeedError("Accès organisateur au projet refusé.");
+    const { data: project, error } = await operator.from("projects").select("id,slug,title,status").eq("slug", values.slug).single();
     if (error || !project || !/^[0-9a-f-]{36}$/i.test(project.id)) throw new SeedError("Projet introuvable dans le Supabase configuré.");
     if (!/^TEST\b/i.test(project.title)) throw new SeedError("Le titre du projet doit commencer par TEST.");
     await mkdir(new URL("../.seed-runs/", import.meta.url), { recursive: true });
@@ -32,13 +37,13 @@ try {
       await writeFile(pending, JSON.stringify(state), "utf8");
       await rename(pending, journalPath);
     } };
-    terminal = createInterface({ input: process.stdin, output: process.stdout });
-    const operator = clients.anon();
-    const organizerToken = await organizerLogin(operator, (text) => terminal.question(text));
     const snapshot = await httpJson(fetch, `${origin}/api/projects/${project.id}/admin`, organizerToken);
     // This check also proves the hosted application uses the same project/backend.
     assertSeedProject(snapshot, values.slug, data, project.id);
-    const counts = await seedDataset({ data, snapshot, slug: values.slug, projectId: project.id, assets, backend: createBackend(clients, origin, fetch, journal) });
+    const invitation = await httpJson(fetch, `${origin}/api/projects/${project.id}/invitation`, organizerToken, "POST");
+    const invitationToken = invitation.path?.match(/\?invitation=([a-f0-9]{64})$/)?.[1];
+    if (!invitationToken) throw new SeedError("Invitation partagée invalide ; aucun compte synthétique créé.");
+    const counts = await seedDataset({ data, snapshot, slug: values.slug, projectId: project.id, assets, backend: createBackend(clients, origin, fetch, journal, invitationToken) });
     const final = await httpJson(fetch, `${origin}/api/projects/${project.id}/admin`, organizerToken);
     if (final.entries.length !== counts.entries || final.memories.length !== counts.memories || final.media.filter((m) => ["published", "hidden"].includes(m.status)).length < counts.media) throw new SeedError("Alimentation incomplète : vérifier Organisation avant de relancer.");
     console.log("Jeu de test présent. Vérifier le mur, la chronologie, les brouillons et les médias dans Organisation.");

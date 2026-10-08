@@ -18,7 +18,6 @@ alter default privileges in schema public grant select, insert, update, delete o
 \ir project-onboarding.sql
 \ir ../../supabase/migrations/0006_project_quota.sql
 \ir ../../supabase/migrations/0007_authenticated_read.sql
-\ir content-access.sql
 \ir project-quota.sql
 \ir ../../supabase/migrations/0008_project_themes_archive_deletion.sql
 \ir project-lifecycle.sql
@@ -30,3 +29,6 @@ alter default privileges in schema public grant select, insert, update, delete o
 \ir memory-deletion.sql
 \ir ../../supabase/migrations/0012_completed_media_deletion.sql
 \ir completed-media-deletion.sql
+\ir ../../supabase/migrations/0013_shared_project_invitations.sql
+\ir content-access.sql
+\ir shared-project-invitations.sql

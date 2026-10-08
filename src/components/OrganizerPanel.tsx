@@ -6,6 +6,7 @@ import { ProjectDetailsForm } from "@/components/ProjectDetailsForm";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { ProjectDangerZone } from "@/components/ProjectDangerZone";
 import { OrganizerContact } from "@/components/OrganizerContact";
+import { SharedInvitation } from "@/components/SharedInvitation";
 import { retentionDeadline } from "@/lib/contributor-information";
 import { useProjectUpdate } from "@/components/ProjectAccess";
 import type { Project, GuestbookEntry, Memory, MediaAsset, PublicationStatus } from "@/types/database";
@@ -70,10 +71,11 @@ export function OrganizerPanel({ projectId }: { projectId: string }) {
     {data && <>
       <section className="card stack"><h2>Conservation et information des participants</h2>
         <p>Supprimez manuellement les données hébergées du projet au plus tard trois mois après l’événement, après vérification de la restitution. {retentionDeadline(data.project.event_date) ? `Échéance : ${retentionDeadline(data.project.event_date)}.` : "Renseignez la date de l’événement pour calculer l’échéance."} Aucune purge automatique ni suppression planifiée n’est prévue.</p>
-        <p>Avant de collecter : annoncez votre identité, la finalité, la base légale, les destinataires du site final et le contact de recours. Les publications sont accessibles aux comptes connectés à LivreDor, sans liste d’invités. Les demandes privées ne remplacent pas un contact externe après suppression du projet.</p>
+        <p>Avant de collecter : annoncez votre identité, la finalité, la base légale, les destinataires du site final et le contact de recours. Les publications sont accessibles aux membres connectés du projet. Toute personne recevant le lien partagé peut rejoindre la collecte ouverte. Les demandes privées ne remplacent pas un contact externe après suppression du projet.</p>
         <p>À l’échéance, clôturez, vérifiez le ZIP, archivez puis supprimez le projet depuis la zone de danger. Fixez aussi le devenir de la sauvegarde privée, des copies remises et des comptes de connexion partagés entre projets.</p>
       </section>
       <OrganizerContact projectId={projectId} organizer />
+      <SharedInvitation projectId={projectId} disabled={blocked} />
       <ThemeSelector key={data.project.theme ?? "album"} current={data.project.theme} disabled={blocked || !!data.project.deletion_started_at} onSave={theme => act({ action: "theme", theme })} />
       <ProjectDetailsForm disabled={blocked} initial={{ title: data.project.title, subjectName: data.project.subject_name, description: data.project.description ?? "", eventDate: data.project.event_date ?? "" }} onSave={async (details) => {
         // Unlike moderation, propagate errors so the form cannot report a false success.

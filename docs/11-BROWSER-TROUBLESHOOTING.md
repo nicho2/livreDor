@@ -1,5 +1,18 @@
 # Dépannage du contrôle du navigateur Codex
 
+## Récidive résolue le 8 octobre 2026
+
+Le runtime attendait `26.930.41038`, absent du cache après la mise à jour.
+Le plugin officiel correspondant était fourni par l'installation Windows
+`OpenAI.Codex_26.930.4958.0_x64__2p2nqsd0c76g0`. Les 384 fichiers ont été
+restaurés dans le cache attendu et vérifiés par SHA256, sans modifier la
+configuration ni supprimer les anciennes versions. Après réinitialisation du
+runtime JavaScript, le navigateur intégré fonctionne sans redémarrer Codex.
+
+La recette mobile des invitations passe dans ce navigateur. La confirmation
+native du renouvellement a fait expirer une commande de clic ; la lecture
+accessible puis le DOM ont confirmé sa réussite et le changement du code.
+
 Incident résolu le 3 octobre 2026, après une mise à jour de Codex sous Windows.
 Ce dépannage concerne l'outil de test de Codex, pas le code de LivreDor.
 

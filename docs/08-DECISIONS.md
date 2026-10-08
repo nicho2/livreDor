@@ -1,5 +1,37 @@
 # Journal des décisions
 
+## ADR-026 — Invitation partagée et accès limité aux membres (8 octobre 2026)
+
+À la demande de l’utilisateur, remplacer la lecture de tous les projets par les
+comptes connectés (ADR-017) par une appartenance explicite. Un lien partagé
+`/p/<slug>?invitation=<code>` donne accès après OTP confirmé et inscrit le compte
+dans `project_members`, sans attendre une contribution. L’accueil devient
+« Mes projets ». Le gestionnaire conserve l’annuaire complet dans `/all` via une
+API contrôlée côté serveur ; ce droit ne le promeut pas organisateur d’un projet.
+
+La migration 0013 ajoute `project_shared_invites`, table technique privée avec
+un code aléatoire de 256 bits, conservé pour recopier le même lien. Aucun accès
+direct navigateur, même organisateur ; seules les API serveur contrôlées peuvent
+le récupérer ou le renouveler. Cette table reste exclue des exports. L’acceptation
+est une RPC transactionnelle liée au compte OTP confirmé. Le slug ou l’UUID seuls
+ne permettent plus d’adhérer ; `join_project` vérifie seulement une appartenance
+existante. La RLS isole projets, messages, souvenirs et métadonnées média.
+
+Un renouvellement invalide le lien précédent, sans retirer les membres. Toute
+personne recevant le lien peut rejoindre ; aucune liste nominative de participants.
+La lecture peut commencer avant la date d’ouverture si le projet est `open` ;
+une collecte clôturée, archivée, en brouillon ou en suppression refuse les nouvelles
+adhésions par lien. Les droits et fenêtres de contribution sont conservés.
+L’invitation nominative du deuxième organisateur reste indépendante et est
+acceptée avant la lecture des métadonnées, y compris pour un projet brouillon.
+
+Le paramètre est conservé dans la destination OTP, validée strictement, puis retiré
+de l’URL après acceptation. La politique Referrer évite sa transmission à des sites
+tiers. Les liens sont des accès à partager avec discernement et peuvent rester
+dans les historiques techniques d’hébergement ; ne pas les journaliser en application.
+Les membres existants sont conservés ; un ancien simple visiteur doit recevoir
+le nouveau lien. Déployer le code et appliquer 0013 ensemble avant recette hébergée.
+
 ## ADR-001 — Supabase pour auth + données structurées
 **Décision :** Supabase Free au démarrage.
 

@@ -26,6 +26,7 @@ LivreDor-NomProjet/
 ```
 
 ## Exigences
+- les codes d’invitation partagée et leur table technique ne sont jamais exportés ;
 - aucun lien critique vers Supabase ;
 - aucun lien critique vers une URL R2 temporaire ;
 - médias copiés dans l'archive ;

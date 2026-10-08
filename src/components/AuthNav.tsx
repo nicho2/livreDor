@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getAuthHref } from "@/lib/auth-navigation";
@@ -10,6 +10,8 @@ import { getSupabaseBrowser } from "@/lib/supabase-browser";
 export function AuthNav() {
   const { user, ready, error } = useAuth();
   const pathname = usePathname();
+  const invitation = useSearchParams().get("invitation");
+  const returnTo = invitation ? `${pathname}?invitation=${invitation}` : pathname;
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -33,7 +35,7 @@ export function AuthNav() {
         : user ? <>
           <span className="status status-published">Connecté</span>
           <button className="link-button" type="button" disabled={busy} onClick={() => void signOut()}>{busy ? "Déconnexion…" : "Se déconnecter"}</button>
-        </> : <Link href={getAuthHref(pathname)}>Connexion</Link>}
+        </> : <Link href={getAuthHref(returnTo)}>Connexion</Link>}
       {(feedback || error) && <span role="alert" className="small">{feedback || error}</span>}
     </nav>
   );

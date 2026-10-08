@@ -44,7 +44,7 @@ reprenable. Les comptes sont conservés. Voir
 [les garanties détaillées](20-GESTION-THEMES-SUPPRESSION.md).
 Le schéma fourni impose notamment :
 - aucune lecture anonyme des projets, contributions, souvenirs ou métadonnées média (migration 0007) ;
-- lecture des contenus `published` des projets non brouillons uniquement après connexion OTP LivreDor ;
+- lecture des contenus `published` des projets non brouillons uniquement après connexion OTP LivreDor et vérification de l’appartenance (0013, ADR-026) ;
 - lecture privée des brouillons par leur auteur et les organisateurs ;
 - modification par auteur ou organisateur selon le cas.
 

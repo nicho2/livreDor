@@ -43,6 +43,14 @@ const fixture = createServer(async (request, response) => {
       const rpc = url.pathname.split("/").pop(), user = tokens[token];
       const fail = (code) => { response.statusCode = 400; response.end(JSON.stringify({ code, message: "Fixture refusal" })); };
       if (!user && token !== "test-service") { fail("42501"); return; }
+      if (rpc === "shared_project_invitation") {
+        if (token !== "test-service" || !tables.project_members.some(m => m.project_id === body.p_project_id && m.user_id === body.p_actor && m.role === "organizer")) { fail("42501"); return; }
+        tables.project_shared_invites ??= [];
+        let invite = tables.project_shared_invites.find(i => i.project_id === body.p_project_id);
+        if (!invite) { invite = { project_id: body.p_project_id, token: body.p_token }; tables.project_shared_invites.push(invite); }
+        if (body.p_renew) invite.token = body.p_token;
+        response.end(JSON.stringify(invite.token)); return;
+      }
       if (["begin_memory_deletion", "finish_memory_deletion"].includes(rpc)) {
         const memory = tables.memories.find(m => m.id === body.p_memory_id);
         const p = tables.projects.find(p => p.id === memory?.project_id);
@@ -144,6 +152,7 @@ const child = spawn(process.execPath, sitesRuntime ? ["scripts/test-sites-server
   env: { ...process.env, RESEND_API_KEY: "", LIVREDOR_CONTACT_FROM: "", LIVREDOR_SITE_MANAGERS: "a@example.test", LIVREDOR_MAX_PROJECTS: "3", SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${fixturePort}`, NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-anon", SUPABASE_SERVICE_ROLE_KEY: "test-service" },
 });
 child.stdout.on("data", () => {}); child.stderr.on("data", () => {});
+console.log(`Recette temporaire : PID ${child.pid}, application ${appPort}, backend ${fixturePort}.`);
 const base = `http://127.0.0.1:${appPort}`;
 const bucket = process.env.R2_BUCKET_NAME;
 const storage = htmlOnly ? null : new S3Client({ region: "auto", endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY } });
@@ -187,6 +196,23 @@ try {
     check(html.includes("LivreDor") && !html.includes("No such module"), `rendu HTML ${path} contient l'application sans erreur de module`);
     check(!["TEST V1", "Fixture locale", "TEST publié", "Un souvenir publié", "SECRET BROUILLON", "evil()"].some((secret) => html.includes(secret)), `aucune donnée projet dans HTML/RSC anonyme ${path}`);
   }
+  const sharedPath = `/api/projects/${ids.project}/invitation`;
+  check((await call(sharedPath, { method: "POST", token: null })).status === 401, "invitation : session obligatoire");
+  check((await call(sharedPath, { method: "POST" })).status === 403, "invitation : contributeur ne peut lire le code");
+  check((await call(sharedPath, { method: "PATCH" })).status === 403, "invitation : contributeur ne peut renouveler le code");
+  const firstShared = await call(sharedPath, { method: "POST", token: "test-organizer" });
+  check(firstShared.status === 200 && firstShared.headers.get("cache-control") === "private, no-store", "invitation : organisateur et absence de cache");
+  const firstLink = (await firstShared.json()).path;
+  check(/^\/p\/integration-test\?invitation=[a-f0-9]{64}$/.test(firstLink), "invitation : code aléatoire 256 bits");
+  check((await (await call(sharedPath, { method: "POST", token: "test-organizer" })).json()).path === firstLink, "invitation : même lien pour tout le groupe");
+  const renewed = await call(sharedPath, { method: "PATCH", token: "test-organizer" });
+  check(renewed.status === 200 && (await renewed.json()).path !== firstLink, "invitation : renouvellement explicite");
+  check((await call(`/api/projects/${randomUUID()}/invitation`, { method: "POST", token: "test-organizer" })).status === 403, "invitation : autre projet refusé");
+  check((await call("/api/site-manager/projects", { token: null })).status === 401, "annuaire global : connexion obligatoire");
+  check((await call("/api/site-manager/projects", { token: "test-b" })).status === 403, "annuaire global : contributeur refusé");
+  const managerList = await call("/api/site-manager/projects");
+  check(managerList.status === 200 && managerList.headers.get("cache-control") === "private, no-store", "annuaire global : gestionnaire et absence de cache");
+  check((await managerList.json()).projects.length === 1, "annuaire global : liste complète pour le gestionnaire");
   if (htmlOnly) {
     console.log(`PASS : ${assertions} contrôles HTML ; fixture locale, aucun accès R2/Supabase distant.`);
     return;
@@ -373,7 +399,25 @@ try {
     }
   } finally {
     // A storage failure must not leave a fixture or child server running.
-    child.kill(); await new Promise((resolve) => fixture.close(resolve));
+    if (child.pid && child.exitCode === null && child.signalCode === null) {
+      if (process.platform === "win32") {
+        await new Promise(resolve => {
+          const stop = spawn("taskkill.exe", ["/PID", String(child.pid), "/T", "/F"], { windowsHide: true, stdio: "ignore" });
+          stop.once("error", resolve); stop.once("exit", resolve);
+        });
+      } else {
+        const exited = new Promise(resolve => child.once("exit", resolve));
+        child.kill(); await exited;
+      }
+    }
+    fixture.closeAllConnections();
+    await new Promise((resolve) => fixture.close(resolve));
+    for (const port of [appPort, fixturePort]) {
+      const probe = createServer();
+      await new Promise((resolve, reject) => { probe.once("error", reject); probe.listen(port, "127.0.0.1", resolve); });
+      await new Promise(resolve => probe.close(resolve));
+    }
+    console.log("Serveurs temporaires arrêtés ; ports libérés.");
   }
 }
 }

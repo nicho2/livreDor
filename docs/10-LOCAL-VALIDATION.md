@@ -1,5 +1,48 @@
 # Validation de développement — 3 octobre 2026
 
+## Évolution invitation partagée — 8 octobre 2026
+
+Recette complémentaire dans le navigateur intégré Codex réparé, en largeur
+mobile 390 px, avec comptes et backend simulés : accueil vide avant invitation,
+refus d'un projet non rejoint et d'un code invalide, conservation du lien pendant
+la connexion OTP, adhésion puis retrait du code de l'URL, un seul projet sur
+l'accueil et consultation du livre d'or. Côté organisateur, copie du même lien
+à répétition, renouvellement avec changement du code et message de réussite,
+puis liste gestionnaire vérifiés. Aucune erreur console ni débordement horizontal
+sur l'accueil. Captures conservées dans `.archive-tests/`. Onglets fermés et
+serveurs temporaires arrêtés ; ports 3140–3142 vérifiés libres. Cette recette ne
+valide pas l'envoi réel des emails ni le site hébergé.
+
+Migration 0013 testée sur PostgreSQL 18 jetable avec toutes les migrations et
+anciennes suites : isolation des projets, messages, souvenirs et médias, code
+incorrect ou d’un autre projet, email non confirmé, refus d’adhésion par UUID,
+renouvellement, accès sans contribution, lecture après clôture, fenêtres de
+contribution et invitation organisateur sur brouillon. Quota concurrent inchangé.
+La base temporaire a été arrêtée.
+
+Recette Edge invisible à 390 px contre des données en mémoire : OTP depuis
+l’accueil puis l’invitation, connexion de l’en-tête conservant le code, refus d’un
+autre projet, adhésion sans contribution, « Mes projets », retrait du code de
+l’URL et consultation du livre. Recette organisateur : copie d’un lien stable,
+renouvellement avec confirmation, annuaire `/all`, aucun débordement horizontal.
+Aucun compte réel, email ou média R2 utilisé. Les navigateurs et serveurs de
+recette sont fermés en fin de test.
+
+45 contrôles HTML/API sur Next.js et Sites : aucune donnée dans le HTML anonyme,
+invitation réservée à l’organisateur, code 256 bits, lien stable, renouvellement,
+annuaire global réservé au gestionnaire et absence de cache. Lint, TypeScript,
+53 tests unitaires et compilations Next.js/Sites sont contrôlés. L’outil de jeu
+synthétique rejoint désormais les projets par invitation, avec lecture du projet
+après connexion organisateur. Les identifiants d’invitation ne sont pas journalisés.
+
+L’outil Browser intégré n’a pas démarré (module du runtime absent après mise à
+jour) ; recette effectuée via Playwright et Edge. Le proxy de recette relaie les
+WebSockets HMR nécessaires à l’hydratation en développement.
+
+**Livraison restante :** appliquer 0013 sur Supabase avec le nouveau code, vérifier
+un OTP réel puis transmettre les nouveaux liens. Ces tests locaux n’appliquent
+aucune migration distante et ne constituent pas une publication hébergée.
+
 Projet testé : `depart-demo`, application locale sur `http://localhost:3000`,
 base Supabase de développement distante. Aucun déploiement effectué.
 

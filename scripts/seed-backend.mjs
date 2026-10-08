@@ -27,7 +27,7 @@ export async function organizerLogin(client, ask) {
   return data.session.access_token;
 }
 
-export function createBackend(clients, origin, fetcher = fetch, journal = { retired: new Set(), retire: async () => {} }) {
+export function createBackend(clients, origin, fetcher = fetch, journal = { retired: new Set(), retire: async () => {} }, invitationToken) {
   const call = (route, token, method, body) => httpJson(fetcher, `${origin}${route}`, token, method, body);
   return {
     async author(actor, projectId) {
@@ -53,8 +53,10 @@ export function createBackend(clients, origin, fetcher = fetch, journal = { reti
       if (!session.session || session.user?.id !== link.user.id) throw new SeedError("Session synthétique incohérente.");
       return { id: link.user.id, db, token: session.session.access_token };
     },
-    async join(author, projectId) {
-      checked(await author.db.rpc("join_project", { p_project_id: projectId }), "Adhésion du contributeur");
+    async join(author, projectId, slug) {
+      if (!/^[a-f0-9]{64}$/.test(invitationToken ?? "")) throw new SeedError("Lien d’invitation partagé absent.");
+      const accepted = checked(await author.db.rpc("accept_shared_project_invitation", { p_slug: slug, p_token: invitationToken }), "Adhésion du contributeur");
+      if (!accepted) throw new SeedError("Invitation du contributeur refusée.");
     },
     async insertOnly(author, table, row) {
       const previous = checked(await author.db.from(table).select("*").eq("id", row.id).maybeSingle(), "Lecture du contenu de test");

@@ -1,5 +1,9 @@
 # Backlog V1 — état au 6 octobre 2026
 
+Évolution du 8 octobre : invitation partagée à code aléatoire, accès enregistré
+dès la lecture, accueil « Mes projets », renouvellement et isolation RLS (0013,
+ADR-026). Application sur Supabase et recette hébergée à effectuer avec la livraison.
+
 Les cases cochées indiquent une fonctionnalité implémentée, pas une certification
 de production. Les preuves et limites de validation sont dans
 `10-LOCAL-VALIDATION.md` ; l'exploitation est décrite dans `13-V1-OPERATIONS.md`.
